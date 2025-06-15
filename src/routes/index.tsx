@@ -1,35 +1,23 @@
-import { createFileRoute } from "@tanstack/react-router";
-import logo from "../logo.svg";
+import { createFileRoute, Link } from "@tanstack/react-router";
+import { useAuth } from "../features/auth/context";
 
 export const Route = createFileRoute("/")({
-  component: App,
+  component: LandingPage,
 });
 
-function App() {
+function LandingPage() {
+  const { isAuthenticated, user } = useAuth();
+
+  // If user is authenticated, show dashboard links
+  if (isAuthenticated && user) {
+    return <>Auth Dashboard</>;
+  }
+
+  // If not authenticated, show public landing page
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/routes/index.tsx</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-        <a
-          className="App-link"
-          href="https://tanstack.com"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn TanStack
-        </a>
-      </header>
+    <div className="grid">
+      <h1>Landing Page</h1>
+      <Link to="/auth/sign-in">Sign-in</Link>
     </div>
   );
 }
