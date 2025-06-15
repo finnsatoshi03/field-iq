@@ -6,15 +6,22 @@ import { TanStackRouterDevtools } from "@tanstack/react-router-devtools";
 import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
 
 import { DEV_MODE } from "@/lib/config";
+import { useIsMobile } from "@/lib/hooks/useIsMobile";
 
 import { AuthProvider } from "../features/auth/context";
 import { ChatWidget } from "../features/chat-widget/ChatWidget";
-import { Error, NotFound } from "../features/error";
+import { Error, NotFound, ComingSoon } from "../features/error";
 
 const queryClient = new QueryClient();
 
-export const Route = createRootRoute({
-  component: () => (
+const RootComponent = () => {
+  const isMobile = useIsMobile();
+
+  if (!isMobile) {
+    return <ComingSoon />;
+  }
+
+  return (
     <>
       <QueryClientProvider client={queryClient}>
         <AuthProvider>
@@ -30,7 +37,11 @@ export const Route = createRootRoute({
         </AuthProvider>
       </QueryClientProvider>
     </>
-  ),
+  );
+};
+
+export const Route = createRootRoute({
+  component: RootComponent,
   errorComponent: ({ error }) => (
     <Error
       title="Something went wrong"
