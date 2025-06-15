@@ -4,7 +4,7 @@ export const DEV_MODE = true;
 // Auth bypass configurations for development
 export const AUTH_BYPASS_CONFIG = {
   // Set to true to completely bypass authentication
-  enabled: true,
+  enabled: false,
 
   // Bypass scenarios
   scenarios: {

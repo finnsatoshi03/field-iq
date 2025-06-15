@@ -25,7 +25,7 @@ const RootComponent = () => {
     <>
       <QueryClientProvider client={queryClient}>
         <AuthProvider>
-          <div className="min-h-screen bg-gray-50">
+          <div className="h-screen p-4 bg-background">
             <Outlet />
             <ChatWidget />
           </div>
