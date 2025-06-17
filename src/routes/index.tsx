@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useAuth } from "../features/auth/context";
+import { useAuth } from "../features/auth/providers/context";
 import OnBoardingPage from "@/features/pages/OnBoarding";
 
 export const Route = createFileRoute("/")({

@@ -8,7 +8,7 @@ import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
 import { DEV_MODE } from "@/lib/config";
 import { useIsMobile } from "@/lib/hooks/useIsMobile";
 
-import { AuthProvider } from "../features/auth/context";
+import { AuthProvider } from "../features/auth/providers/context";
 import { ChatWidget } from "../features/chat-widget/ChatWidget";
 import { Error, NotFound, ComingSoon } from "../features/error";
 

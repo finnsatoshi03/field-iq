@@ -1,6 +1,6 @@
 import { createContext, useContext, useState, useEffect } from "react";
 import type { ReactNode } from "react";
-import type { AuthContextType, User } from "../../lib/types";
+import type { AuthContextType, User } from "../../../lib/types";
 import { DEV_MODE, AUTH_BYPASS_CONFIG } from "@/lib/config";
 
 const AuthContext = createContext<AuthContextType | null>(null);

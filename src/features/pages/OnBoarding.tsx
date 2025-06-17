@@ -2,6 +2,7 @@ import React from "react";
 import { Header } from "@/components/custom/header";
 import { Button } from "@/components/ui/button";
 import { motion } from "framer-motion";
+import { Link } from "@tanstack/react-router";
 
 interface OnboardingQuestion {
   id: number;
@@ -275,9 +276,11 @@ export default function OnBoardingPage() {
           ease: "easeOut",
         }}
       >
-        <Button className="w-full">
-          <p>Continue with Email</p>
-        </Button>
+        <Link to="/auth/sign-in">
+          <Button className="w-full">
+            <p>Continue with Email</p>
+          </Button>
+        </Link>
       </motion.div>
     </div>
   );
