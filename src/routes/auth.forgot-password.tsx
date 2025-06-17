@@ -1,5 +1,7 @@
-import { Header } from "@/components/custom/header";
 import { createFileRoute } from "@tanstack/react-router";
+
+import { Header } from "@/components/custom/header";
+import { ForgotPasswordForm } from "@/features/auth/components/forgot-pass-form";
 
 export const Route = createFileRoute("/auth/forgot-password")({
   component: ForgotPassword,
@@ -7,7 +9,7 @@ export const Route = createFileRoute("/auth/forgot-password")({
 
 function ForgotPassword() {
   return (
-    <div className="space-y-12">
+    <div className="space-y-10">
       <Header variant="logo" className="h-28" />
 
       <div className="space-y-2">
@@ -19,6 +21,7 @@ function ForgotPassword() {
           password
         </p>
       </div>
+      <ForgotPasswordForm />
     </div>
   );
 }
