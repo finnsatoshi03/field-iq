@@ -2,10 +2,21 @@ import { createFileRoute } from "@tanstack/react-router";
 
 import { Header } from "@/components/custom/header";
 import { SignInForm } from "@/features/auth/components/sign-in-form";
+import { AuthError } from "@/features/auth/components/auth-error";
 
 export const Route = createFileRoute("/auth/sign-in")({
   component: SignInPage,
+  errorComponent: SignInErrorComponent,
 });
+
+function SignInErrorComponent() {
+  return (
+    <div className="space-y-10">
+      <Header />
+      <AuthError type="sign-in" />
+    </div>
+  );
+}
 
 function SignInPage() {
   return (

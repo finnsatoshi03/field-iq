@@ -1,13 +1,34 @@
 import { createFileRoute } from "@tanstack/react-router";
+import { useState } from "react";
 
 import { Header } from "@/components/custom/header";
 import { CreatePasswordForm } from "@/features/auth/components/create-password-form";
+import { AuthSuccess } from "@/features/auth/components/auth-success";
+import type { UserRole } from "@/lib/types";
 
 export const Route = createFileRoute("/auth/create-password")({
   component: CreatePassword,
 });
 
 function CreatePassword() {
+  const [isSuccess, setIsSuccess] = useState(false);
+  const [userRole] = useState<UserRole>("admin"); // This should come from context or props
+
+  const handlePasswordCreated = () => {
+    setIsSuccess(true);
+  };
+
+  // Show success state
+  if (isSuccess) {
+    return (
+      <div className="space-y-10">
+        <Header />
+        <AuthSuccess type="create-password" role={userRole} />
+      </div>
+    );
+  }
+
+  // Show form state
   return (
     <div className="space-y-10">
       <Header variant="logo" className="h-28" />
@@ -21,7 +42,7 @@ function CreatePassword() {
           your account along with your email address.
         </p>
       </div>
-      <CreatePasswordForm />
+      <CreatePasswordForm onSuccess={handlePasswordCreated} />
     </div>
   );
 }

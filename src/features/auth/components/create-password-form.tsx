@@ -1,3 +1,4 @@
+import { Link } from "@tanstack/react-router";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
@@ -14,7 +15,6 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import { Link } from "@tanstack/react-router";
 
 const formSchema = z
   .object({
@@ -57,7 +57,11 @@ const RequirementItem = ({ isValid, text }: RequirementItemProps) => {
   );
 };
 
-export function CreatePasswordForm() {
+interface CreatePasswordFormProps {
+  onSuccess?: () => void;
+}
+
+export function CreatePasswordForm({ onSuccess }: CreatePasswordFormProps) {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
@@ -71,8 +75,15 @@ export function CreatePasswordForm() {
 
   const passwordValue = form.watch("password");
 
-  const handleSubmit = (values: z.infer<typeof formSchema>) => {
-    console.log(values);
+  const handleSubmit = async (values: z.infer<typeof formSchema>) => {
+    try {
+      // Simulate API call
+      console.log(values);
+      // On successful password creation, call the parent callback
+      onSuccess?.();
+    } catch (error) {
+      console.error("Error creating password:", error);
+    }
   };
 
   const handleTogglePassword = () => {
