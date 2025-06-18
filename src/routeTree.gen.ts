@@ -17,6 +17,7 @@ import { Route as AuthCreatePasswordRouteImport } from './routes/auth.create-pas
 import { Route as AuthenticatedSalesIndexRouteImport } from './routes/_authenticated.sales.index'
 import { Route as AuthenticatedFarmerIndexRouteImport } from './routes/_authenticated.farmer.index'
 import { Route as AuthenticatedAdminIndexRouteImport } from './routes/_authenticated.admin.index'
+import { Route as AuthResetPasswordTokenRouteImport } from './routes/auth.reset-password.$token'
 
 const AuthenticatedRoute = AuthenticatedRouteImport.update({
   id: '/_authenticated',
@@ -58,12 +59,18 @@ const AuthenticatedAdminIndexRoute = AuthenticatedAdminIndexRouteImport.update({
   path: '/admin/',
   getParentRoute: () => AuthenticatedRoute,
 } as any)
+const AuthResetPasswordTokenRoute = AuthResetPasswordTokenRouteImport.update({
+  id: '/auth/reset-password/$token',
+  path: '/auth/reset-password/$token',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/auth/create-password': typeof AuthCreatePasswordRoute
   '/auth/forgot-password': typeof AuthForgotPasswordRoute
   '/auth/sign-in': typeof AuthSignInRoute
+  '/auth/reset-password/$token': typeof AuthResetPasswordTokenRoute
   '/admin': typeof AuthenticatedAdminIndexRoute
   '/farmer': typeof AuthenticatedFarmerIndexRoute
   '/sales': typeof AuthenticatedSalesIndexRoute
@@ -73,6 +80,7 @@ export interface FileRoutesByTo {
   '/auth/create-password': typeof AuthCreatePasswordRoute
   '/auth/forgot-password': typeof AuthForgotPasswordRoute
   '/auth/sign-in': typeof AuthSignInRoute
+  '/auth/reset-password/$token': typeof AuthResetPasswordTokenRoute
   '/admin': typeof AuthenticatedAdminIndexRoute
   '/farmer': typeof AuthenticatedFarmerIndexRoute
   '/sales': typeof AuthenticatedSalesIndexRoute
@@ -84,6 +92,7 @@ export interface FileRoutesById {
   '/auth/create-password': typeof AuthCreatePasswordRoute
   '/auth/forgot-password': typeof AuthForgotPasswordRoute
   '/auth/sign-in': typeof AuthSignInRoute
+  '/auth/reset-password/$token': typeof AuthResetPasswordTokenRoute
   '/_authenticated/admin/': typeof AuthenticatedAdminIndexRoute
   '/_authenticated/farmer/': typeof AuthenticatedFarmerIndexRoute
   '/_authenticated/sales/': typeof AuthenticatedSalesIndexRoute
@@ -95,6 +104,7 @@ export interface FileRouteTypes {
     | '/auth/create-password'
     | '/auth/forgot-password'
     | '/auth/sign-in'
+    | '/auth/reset-password/$token'
     | '/admin'
     | '/farmer'
     | '/sales'
@@ -104,6 +114,7 @@ export interface FileRouteTypes {
     | '/auth/create-password'
     | '/auth/forgot-password'
     | '/auth/sign-in'
+    | '/auth/reset-password/$token'
     | '/admin'
     | '/farmer'
     | '/sales'
@@ -114,6 +125,7 @@ export interface FileRouteTypes {
     | '/auth/create-password'
     | '/auth/forgot-password'
     | '/auth/sign-in'
+    | '/auth/reset-password/$token'
     | '/_authenticated/admin/'
     | '/_authenticated/farmer/'
     | '/_authenticated/sales/'
@@ -125,6 +137,7 @@ export interface RootRouteChildren {
   AuthCreatePasswordRoute: typeof AuthCreatePasswordRoute
   AuthForgotPasswordRoute: typeof AuthForgotPasswordRoute
   AuthSignInRoute: typeof AuthSignInRoute
+  AuthResetPasswordTokenRoute: typeof AuthResetPasswordTokenRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -185,6 +198,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAdminIndexRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
+    '/auth/reset-password/$token': {
+      id: '/auth/reset-password/$token'
+      path: '/auth/reset-password/$token'
+      fullPath: '/auth/reset-password/$token'
+      preLoaderRoute: typeof AuthResetPasswordTokenRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -210,6 +230,7 @@ const rootRouteChildren: RootRouteChildren = {
   AuthCreatePasswordRoute: AuthCreatePasswordRoute,
   AuthForgotPasswordRoute: AuthForgotPasswordRoute,
   AuthSignInRoute: AuthSignInRoute,
+  AuthResetPasswordTokenRoute: AuthResetPasswordTokenRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
