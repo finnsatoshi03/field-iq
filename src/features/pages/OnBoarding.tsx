@@ -2,6 +2,7 @@ import React from "react";
 import { Header } from "@/components/custom/header";
 import { Button } from "@/components/ui/button";
 import { motion } from "framer-motion";
+import { Link } from "@tanstack/react-router";
 
 interface OnboardingQuestion {
   id: number;
@@ -240,7 +241,7 @@ export default function OnBoardingPage() {
 
       {/* Main Content Area */}
       <main className="min-h-0 flex-1 flex flex-col items-center justify-center px-4">
-        <div className="w-full max-w-md space-y-10">
+        <div className="w-full max-w-[17rem] space-y-10">
           {/* Questions List */}
           <div className="space-y-1">
             {ONBOARDING_QUESTIONS.map((question, index) => (
@@ -275,9 +276,11 @@ export default function OnBoardingPage() {
           ease: "easeOut",
         }}
       >
-        <Button className="w-full">
-          <p>Continue with Email</p>
-        </Button>
+        <Link to="/auth/sign-in">
+          <Button className="w-full">
+            <p>Continue with Email</p>
+          </Button>
+        </Link>
       </motion.div>
     </div>
   );
