@@ -1,7 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useState } from "react";
 
-import { Header } from "@/components/custom/header";
 import { CreatePasswordForm } from "@/features/auth/components/create-password-form";
 import { AuthSuccess } from "@/features/auth/components/auth-success";
 import { checkAuthRedirect } from "@/hooks/use-auth-redirect";
@@ -26,8 +25,7 @@ function CreatePassword() {
   // Show success state
   if (isSuccess) {
     return (
-      <div className="space-y-10 p-4 container mx-auto">
-        <Header />
+      <div className="space-y-10">
         <AuthSuccess type="create-password" role={userRole} />
       </div>
     );
@@ -35,9 +33,7 @@ function CreatePassword() {
 
   // Show form state
   return (
-    <div className="space-y-10 p-4 container mx-auto">
-      <Header variant="logo" className="h-28" />
-
+    <div className="space-y-10">
       <div className="space-y-2">
         <h1 className="text-2xl font-medium font-display">
           Create Your Password

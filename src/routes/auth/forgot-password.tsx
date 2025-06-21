@@ -1,6 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
 
-import { Header } from "@/components/custom/header";
 import { ForgotPasswordForm } from "@/features/auth/components/forgot-pass-form";
 import { checkAuthRedirect } from "@/hooks/use-auth-redirect";
 
@@ -14,9 +13,7 @@ export const Route = createFileRoute("/auth/forgot-password")({
 
 function ForgotPassword() {
   return (
-    <div className="space-y-10 p-4 container mx-auto">
-      <Header variant="logo" className="h-28" />
-
+    <div className="space-y-10">
       <div className="space-y-2">
         <h1 className="text-2xl font-medium font-display">
           Reset Your Password

@@ -55,7 +55,7 @@ export const Header = ({
   // Don't render header for unauthenticated users
   if (!isAuthenticated) {
     return (
-      <div className="flex items-center">
+      <div className="flex h-16 items-center px-4">
         <img
           src={getSrc()}
           alt={getAltText()}

@@ -1,7 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { z } from "zod";
 
-import { Header } from "@/components/custom/header";
 import { ResetPasswordForm } from "@/features/auth/components/reset-password-form";
 import { AuthError } from "@/features/auth/components/auth-error";
 import { checkAuthRedirect } from "@/hooks/use-auth-redirect";
@@ -22,8 +21,7 @@ export const Route = createFileRoute("/auth/reset-password")({
 
 function ResetPasswordErrorComponent() {
   return (
-    <div className="space-y-10 p-4">
-      <Header />
+    <div className="space-y-10">
       <AuthError type="reset-password" />
     </div>
   );
@@ -37,8 +35,7 @@ function ResetPassword() {
 
   if (!isValidTokenFormat) {
     return (
-      <div className="space-y-10 p-4">
-        <Header />
+      <div className="space-y-10">
         <AuthError
           type="reset-password"
           errors={[
@@ -52,9 +49,7 @@ function ResetPassword() {
   }
 
   return (
-    <div className="space-y-10 p-4">
-      <Header variant="logo" className="h-28" />
-
+    <div className="space-y-10">
       <div className="space-y-2">
         <h1 className="text-2xl font-medium font-display">
           Reset Your Password
