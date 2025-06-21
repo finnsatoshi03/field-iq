@@ -1,5 +1,5 @@
-export const BYPASS_AUTH = true;
-export const DEV_MODE = true;
+export const BYPASS_AUTH = false;
+export const DEV_MODE = false;
 
 // Auth bypass configurations for development
 export const AUTH_BYPASS_CONFIG = {

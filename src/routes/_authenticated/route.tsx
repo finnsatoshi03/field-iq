@@ -1,5 +1,5 @@
 import { createFileRoute, Outlet, redirect } from "@tanstack/react-router";
-import { hasRoutePermission } from "../lib/rbac";
+import { hasRoutePermission } from "@/lib/rbac";
 import { BYPASS_AUTH } from "@/lib/config";
 
 export const Route = createFileRoute("/_authenticated")({
@@ -26,10 +26,6 @@ export const Route = createFileRoute("/_authenticated")({
       const defaultRoute = getDefaultDashboardForRole(authState.user.role);
       throw redirect({
         to: defaultRoute,
-        search: {
-          error: "access_denied",
-          message: `You don't have permission to access ${currentPath}`,
-        },
       });
     }
   },

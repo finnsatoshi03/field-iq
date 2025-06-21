@@ -1,24 +1,24 @@
 import { createFileRoute, redirect } from "@tanstack/react-router";
-import { hasRoutePermission } from "../lib/rbac";
+import { hasRoutePermission } from "@/lib/rbac";
 import { BYPASS_AUTH } from "@/lib/config";
 
-export const Route = createFileRoute("/_authenticated/sales/")({
+export const Route = createFileRoute("/_authenticated/admin/")({
   beforeLoad: ({ context }) => {
     if (BYPASS_AUTH) return;
 
     const authState = getAuthStateFromContext(context);
 
-    if (authState.user && !hasRoutePermission(authState.user.role, "/sales")) {
+    if (authState.user && !hasRoutePermission(authState.user.role, "/admin")) {
       throw redirect({
         to: "/",
       });
     }
   },
-  component: SalesDashboard,
+  component: AdminDashboard,
 });
 
-function SalesDashboard() {
-  return <div>Sales</div>;
+function AdminDashboard() {
+  return <div>Admin</div>;
 }
 
 // Helper function to get auth state from context (placeholder)
