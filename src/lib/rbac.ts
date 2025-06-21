@@ -2,6 +2,7 @@ import type { UserRole } from "./types";
 
 // Define role hierarchy and permissions
 export const ROLE_HIERARCHY: Record<UserRole, number> = {
+  dev: 4,
   admin: 3,
   sales_rep: 2,
   farmer: 1,
@@ -9,9 +10,10 @@ export const ROLE_HIERARCHY: Record<UserRole, number> = {
 
 // Define which roles can access which routes
 export const ROUTE_PERMISSIONS: Record<string, UserRole[]> = {
-  "/admin": ["admin"],
-  "/sales": ["sales_rep"],
-  "/farmer": ["farmer"],
+  "/dev": ["dev"],
+  "/admin": ["admin", "dev"],
+  "/sales": ["sales_rep", "dev"],
+  "/farmer": ["farmer", "dev"],
 };
 
 /**
@@ -52,6 +54,8 @@ export const getDefaultDashboardRoute = (role: UserRole): string => {
       return "/sales";
     case "farmer":
       return "/farmer";
+    case "dev":
+      return "/dev";
     default:
       return "/";
   }
@@ -62,6 +66,8 @@ export const getDefaultDashboardRoute = (role: UserRole): string => {
  */
 export const getRoleDisplayName = (role: UserRole): string => {
   switch (role) {
+    case "dev":
+      return "Developer";
     case "admin":
       return "Administrator";
     case "sales_rep":

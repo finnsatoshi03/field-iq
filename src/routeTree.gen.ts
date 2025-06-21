@@ -14,9 +14,11 @@ import { Route as IndexRouteImport } from './routes/index'
 import { Route as AuthSignInRouteImport } from './routes/auth/sign-in'
 import { Route as AuthResetPasswordRouteImport } from './routes/auth/reset-password'
 import { Route as AuthForgotPasswordRouteImport } from './routes/auth/forgot-password'
+import { Route as AuthDevSignupRouteImport } from './routes/auth/dev-signup'
 import { Route as AuthCreatePasswordRouteImport } from './routes/auth/create-password'
 import { Route as AuthenticatedSalesIndexRouteImport } from './routes/_authenticated/sales/index'
 import { Route as AuthenticatedFarmerIndexRouteImport } from './routes/_authenticated/farmer/index'
+import { Route as AuthenticatedDevIndexRouteImport } from './routes/_authenticated/dev/index'
 import { Route as AuthenticatedAdminIndexRouteImport } from './routes/_authenticated/admin/index'
 
 const AuthenticatedRouteRoute = AuthenticatedRouteRouteImport.update({
@@ -43,6 +45,11 @@ const AuthForgotPasswordRoute = AuthForgotPasswordRouteImport.update({
   path: '/auth/forgot-password',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AuthDevSignupRoute = AuthDevSignupRouteImport.update({
+  id: '/auth/dev-signup',
+  path: '/auth/dev-signup',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AuthCreatePasswordRoute = AuthCreatePasswordRouteImport.update({
   id: '/auth/create-password',
   path: '/auth/create-password',
@@ -59,6 +66,11 @@ const AuthenticatedFarmerIndexRoute =
     path: '/farmer/',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
+const AuthenticatedDevIndexRoute = AuthenticatedDevIndexRouteImport.update({
+  id: '/dev/',
+  path: '/dev/',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
 const AuthenticatedAdminIndexRoute = AuthenticatedAdminIndexRouteImport.update({
   id: '/admin/',
   path: '/admin/',
@@ -68,20 +80,24 @@ const AuthenticatedAdminIndexRoute = AuthenticatedAdminIndexRouteImport.update({
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/auth/create-password': typeof AuthCreatePasswordRoute
+  '/auth/dev-signup': typeof AuthDevSignupRoute
   '/auth/forgot-password': typeof AuthForgotPasswordRoute
   '/auth/reset-password': typeof AuthResetPasswordRoute
   '/auth/sign-in': typeof AuthSignInRoute
   '/admin': typeof AuthenticatedAdminIndexRoute
+  '/dev': typeof AuthenticatedDevIndexRoute
   '/farmer': typeof AuthenticatedFarmerIndexRoute
   '/sales': typeof AuthenticatedSalesIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/auth/create-password': typeof AuthCreatePasswordRoute
+  '/auth/dev-signup': typeof AuthDevSignupRoute
   '/auth/forgot-password': typeof AuthForgotPasswordRoute
   '/auth/reset-password': typeof AuthResetPasswordRoute
   '/auth/sign-in': typeof AuthSignInRoute
   '/admin': typeof AuthenticatedAdminIndexRoute
+  '/dev': typeof AuthenticatedDevIndexRoute
   '/farmer': typeof AuthenticatedFarmerIndexRoute
   '/sales': typeof AuthenticatedSalesIndexRoute
 }
@@ -90,10 +106,12 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/_authenticated': typeof AuthenticatedRouteRouteWithChildren
   '/auth/create-password': typeof AuthCreatePasswordRoute
+  '/auth/dev-signup': typeof AuthDevSignupRoute
   '/auth/forgot-password': typeof AuthForgotPasswordRoute
   '/auth/reset-password': typeof AuthResetPasswordRoute
   '/auth/sign-in': typeof AuthSignInRoute
   '/_authenticated/admin/': typeof AuthenticatedAdminIndexRoute
+  '/_authenticated/dev/': typeof AuthenticatedDevIndexRoute
   '/_authenticated/farmer/': typeof AuthenticatedFarmerIndexRoute
   '/_authenticated/sales/': typeof AuthenticatedSalesIndexRoute
 }
@@ -102,20 +120,24 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/auth/create-password'
+    | '/auth/dev-signup'
     | '/auth/forgot-password'
     | '/auth/reset-password'
     | '/auth/sign-in'
     | '/admin'
+    | '/dev'
     | '/farmer'
     | '/sales'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
     | '/auth/create-password'
+    | '/auth/dev-signup'
     | '/auth/forgot-password'
     | '/auth/reset-password'
     | '/auth/sign-in'
     | '/admin'
+    | '/dev'
     | '/farmer'
     | '/sales'
   id:
@@ -123,10 +145,12 @@ export interface FileRouteTypes {
     | '/'
     | '/_authenticated'
     | '/auth/create-password'
+    | '/auth/dev-signup'
     | '/auth/forgot-password'
     | '/auth/reset-password'
     | '/auth/sign-in'
     | '/_authenticated/admin/'
+    | '/_authenticated/dev/'
     | '/_authenticated/farmer/'
     | '/_authenticated/sales/'
   fileRoutesById: FileRoutesById
@@ -135,6 +159,7 @@ export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AuthenticatedRouteRoute: typeof AuthenticatedRouteRouteWithChildren
   AuthCreatePasswordRoute: typeof AuthCreatePasswordRoute
+  AuthDevSignupRoute: typeof AuthDevSignupRoute
   AuthForgotPasswordRoute: typeof AuthForgotPasswordRoute
   AuthResetPasswordRoute: typeof AuthResetPasswordRoute
   AuthSignInRoute: typeof AuthSignInRoute
@@ -177,6 +202,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthForgotPasswordRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/auth/dev-signup': {
+      id: '/auth/dev-signup'
+      path: '/auth/dev-signup'
+      fullPath: '/auth/dev-signup'
+      preLoaderRoute: typeof AuthDevSignupRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/auth/create-password': {
       id: '/auth/create-password'
       path: '/auth/create-password'
@@ -198,6 +230,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedFarmerIndexRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/dev/': {
+      id: '/_authenticated/dev/'
+      path: '/dev'
+      fullPath: '/dev'
+      preLoaderRoute: typeof AuthenticatedDevIndexRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/admin/': {
       id: '/_authenticated/admin/'
       path: '/admin'
@@ -210,12 +249,14 @@ declare module '@tanstack/react-router' {
 
 interface AuthenticatedRouteRouteChildren {
   AuthenticatedAdminIndexRoute: typeof AuthenticatedAdminIndexRoute
+  AuthenticatedDevIndexRoute: typeof AuthenticatedDevIndexRoute
   AuthenticatedFarmerIndexRoute: typeof AuthenticatedFarmerIndexRoute
   AuthenticatedSalesIndexRoute: typeof AuthenticatedSalesIndexRoute
 }
 
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedAdminIndexRoute: AuthenticatedAdminIndexRoute,
+  AuthenticatedDevIndexRoute: AuthenticatedDevIndexRoute,
   AuthenticatedFarmerIndexRoute: AuthenticatedFarmerIndexRoute,
   AuthenticatedSalesIndexRoute: AuthenticatedSalesIndexRoute,
 }
@@ -227,6 +268,7 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AuthenticatedRouteRoute: AuthenticatedRouteRouteWithChildren,
   AuthCreatePasswordRoute: AuthCreatePasswordRoute,
+  AuthDevSignupRoute: AuthDevSignupRoute,
   AuthForgotPasswordRoute: AuthForgotPasswordRoute,
   AuthResetPasswordRoute: AuthResetPasswordRoute,
   AuthSignInRoute: AuthSignInRoute,

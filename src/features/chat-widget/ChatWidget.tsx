@@ -1,7 +1,7 @@
-import { useAuth } from "../auth/providers/context";
+import { useUser } from "@/hooks/use-user";
 
 export const ChatWidget = () => {
-  const { user } = useAuth();
+  const { user } = useUser();
 
   if (!user) return null;
 

@@ -1,21 +1,22 @@
 import { RefreshCw } from "lucide-react";
 
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { Outlet, createRootRoute } from "@tanstack/react-router";
 import { TanStackRouterDevtools } from "@tanstack/react-router-devtools";
 import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
 
 import { DEV_MODE } from "@/lib/config";
 import { useIsMobile } from "@/lib/hooks/useIsMobile";
+import { useAuthSync } from "@/hooks/use-auth-sync";
 
-import { AuthProvider } from "../features/auth/providers/context";
+import { Toaster } from "@/components/ui/sonner";
 import { ChatWidget } from "../features/chat-widget/ChatWidget";
 import { Error, NotFound, ComingSoon } from "../features/error";
 
-const queryClient = new QueryClient();
-
 const RootComponent = () => {
   const isMobile = useIsMobile();
+
+  // Sync auth state with Zustand store and React Query
+  useAuthSync();
 
   if (!isMobile) {
     return <ComingSoon />;
@@ -23,19 +24,13 @@ const RootComponent = () => {
 
   return (
     <>
-      <QueryClientProvider client={queryClient}>
-        <AuthProvider>
-          <div className="h-screen p-4 bg-background">
-            <Outlet />
-            <ChatWidget />
-          </div>
-          <TanStackRouterDevtools />
-          <ReactQueryDevtools
-            initialIsOpen={false}
-            buttonPosition="bottom-left"
-          />
-        </AuthProvider>
-      </QueryClientProvider>
+      <div className="h-screen p-4 bg-background">
+        <Outlet />
+        <ChatWidget />
+        <Toaster />
+      </div>
+      <TanStackRouterDevtools />
+      <ReactQueryDevtools initialIsOpen={false} buttonPosition="bottom-left" />
     </>
   );
 };

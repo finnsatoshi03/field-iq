@@ -14,6 +14,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Link } from "@tanstack/react-router";
+import { useSignIn } from "../mutations/sign-in";
 
 const formSchema = z.object({
   email: z.string().email(),
@@ -22,6 +23,8 @@ const formSchema = z.object({
 });
 
 export function SignInForm() {
+  const signInMutation = useSignIn();
+
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -31,9 +34,12 @@ export function SignInForm() {
     },
   });
 
-  function onSubmit(values: z.infer<typeof formSchema>) {
-    console.log(values);
-  }
+  const onSubmit = (values: z.infer<typeof formSchema>) => {
+    signInMutation.mutate({
+      email: values.email,
+      password: values.password,
+    });
+  };
 
   return (
     <Form {...form}>
@@ -86,8 +92,12 @@ export function SignInForm() {
           )}
         />
         <div className="grid gap-2">
-          <Button type="submit" className="w-full">
-            Sign in
+          <Button
+            type="submit"
+            className="w-full"
+            disabled={signInMutation.isPending}
+          >
+            {signInMutation.isPending ? "Signing in..." : "Sign in"}
           </Button>
           <Link to="/auth/forgot-password">
             <Button
