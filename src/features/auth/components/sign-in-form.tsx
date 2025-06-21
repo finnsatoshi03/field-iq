@@ -103,7 +103,7 @@ export function SignInForm() {
             <Button
               type="button"
               size="sm"
-              className="w-full bg-muted text-muted-foreground"
+              className="w-full bg-muted text-muted-foreground hover:bg-muted/80"
             >
               Forgot password?
             </Button>

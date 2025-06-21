@@ -16,7 +16,7 @@ export const Route = createFileRoute("/auth/sign-in")({
 
 function SignInErrorComponent() {
   return (
-    <div className="space-y-10">
+    <div className="space-y-10 p-4">
       <Header />
       <AuthError type="sign-in" />
     </div>
@@ -25,7 +25,7 @@ function SignInErrorComponent() {
 
 function SignInPage() {
   return (
-    <div className="space-y-10">
+    <div className="space-y-10 p-4 container mx-auto">
       <Header variant="logo" className="h-28" />
 
       <div className="space-y-2">

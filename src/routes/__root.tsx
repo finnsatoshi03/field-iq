@@ -24,7 +24,7 @@ const RootComponent = () => {
 
   return (
     <>
-      <div className="h-screen p-4 bg-background">
+      <div className="h-screen bg-background">
         <Outlet />
         <ChatWidget />
         <Toaster />

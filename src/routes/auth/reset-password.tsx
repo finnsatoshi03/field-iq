@@ -22,7 +22,7 @@ export const Route = createFileRoute("/auth/reset-password")({
 
 function ResetPasswordErrorComponent() {
   return (
-    <div className="space-y-10">
+    <div className="space-y-10 p-4">
       <Header />
       <AuthError type="reset-password" />
     </div>
@@ -37,7 +37,7 @@ function ResetPassword() {
 
   if (!isValidTokenFormat) {
     return (
-      <div className="space-y-10">
+      <div className="space-y-10 p-4">
         <Header />
         <AuthError
           type="reset-password"
@@ -52,7 +52,7 @@ function ResetPassword() {
   }
 
   return (
-    <div className="space-y-10">
+    <div className="space-y-10 p-4">
       <Header variant="logo" className="h-28" />
 
       <div className="space-y-2">

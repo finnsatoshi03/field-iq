@@ -26,7 +26,7 @@ function CreatePassword() {
   // Show success state
   if (isSuccess) {
     return (
-      <div className="space-y-10">
+      <div className="space-y-10 p-4 container mx-auto">
         <Header />
         <AuthSuccess type="create-password" role={userRole} />
       </div>
@@ -35,7 +35,7 @@ function CreatePassword() {
 
   // Show form state
   return (
-    <div className="space-y-10">
+    <div className="space-y-10 p-4 container mx-auto">
       <Header variant="logo" className="h-28" />
 
       <div className="space-y-2">

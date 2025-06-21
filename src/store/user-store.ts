@@ -9,6 +9,7 @@ export interface UserProfile {
   name: string | null;
   role: UserRole;
   isEmailVerified: boolean;
+  avatar_url: string | null;
 }
 
 interface UserState {
@@ -71,4 +72,5 @@ export const transformSupabaseUser = (user: User): UserProfile => ({
   name: user.user_metadata?.name || user.email?.split("@")[0] || null,
   role: user.user_metadata?.role || "sales_rep",
   isEmailVerified: user.email_confirmed_at !== null,
+  avatar_url: user.user_metadata?.avatar_url || null,
 });

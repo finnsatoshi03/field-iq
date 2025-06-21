@@ -14,7 +14,7 @@ export const Route = createFileRoute("/auth/forgot-password")({
 
 function ForgotPassword() {
   return (
-    <div className="space-y-10">
+    <div className="space-y-10 p-4 container mx-auto">
       <Header variant="logo" className="h-28" />
 
       <div className="space-y-2">

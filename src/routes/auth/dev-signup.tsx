@@ -23,7 +23,7 @@ export const Route = createFileRoute("/auth/dev-signup")({
 
 function DevSignUpErrorComponent() {
   return (
-    <div className="space-y-10">
+    <div className="space-y-10 p-4 container mx-auto">
       <Header />
       <AuthError type="generic" />
     </div>
@@ -41,7 +41,7 @@ function DevSignUpPage() {
   }
 
   return (
-    <div className="space-y-10">
+    <div className="space-y-10 p-4 container mx-auto">
       <Header variant="logo" className="h-28" />
 
       <div className="space-y-2">
@@ -67,7 +67,7 @@ function DevSignUpPage() {
 
 function AccessDeniedPage({ providedKey }: { providedKey?: string }) {
   return (
-    <div className="space-y-10">
+    <div className="space-y-10 p-4">
       <Header variant="logo" className="h-28" />
 
       <div className="space-y-6 text-center">

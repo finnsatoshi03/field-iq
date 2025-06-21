@@ -4,6 +4,7 @@ import { getDefaultDashboardRoute, hasRoutePermission } from "@/lib/rbac";
 import { BYPASS_AUTH } from "@/lib/config";
 
 import { useUserStore } from "@/store/user-store";
+import { Header } from "@/components/custom/header";
 
 export const Route = createFileRoute("/_authenticated")({
   beforeLoad: async ({ location }) => {
@@ -38,8 +39,11 @@ export const Route = createFileRoute("/_authenticated")({
 
 function AuthenticatedLayout() {
   return (
-    <div className="min-h-screen bg-gray-50">
-      <Outlet />
+    <div className="flex flex-col h-full min-h-0">
+      <Header />
+      <div className="flex-1 min-h-0 p-4 container mx-auto">
+        <Outlet />
+      </div>
     </div>
   );
 }

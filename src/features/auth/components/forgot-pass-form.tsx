@@ -55,7 +55,7 @@ export function ForgotPasswordForm() {
             <Button
               type="button"
               size="sm"
-              className="w-full bg-muted text-muted-foreground"
+              className="w-full bg-muted text-muted-foreground hover:bg-muted/80"
             >
               Back to sign in
             </Button>
