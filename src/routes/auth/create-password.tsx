@@ -4,9 +4,14 @@ import { useState } from "react";
 import { Header } from "@/components/custom/header";
 import { CreatePasswordForm } from "@/features/auth/components/create-password-form";
 import { AuthSuccess } from "@/features/auth/components/auth-success";
+import { checkAuthRedirect } from "@/hooks/use-auth-redirect";
 import type { UserRole } from "@/lib/types";
 
 export const Route = createFileRoute("/auth/create-password")({
+  beforeLoad: () => {
+    // Redirect authenticated users to their dashboard
+    checkAuthRedirect();
+  },
   component: CreatePassword,
 });
 

@@ -2,8 +2,13 @@ import { createFileRoute } from "@tanstack/react-router";
 
 import { Header } from "@/components/custom/header";
 import { ForgotPasswordForm } from "@/features/auth/components/forgot-pass-form";
+import { checkAuthRedirect } from "@/hooks/use-auth-redirect";
 
 export const Route = createFileRoute("/auth/forgot-password")({
+  beforeLoad: () => {
+    // Redirect authenticated users to their dashboard
+    checkAuthRedirect();
+  },
   component: ForgotPassword,
 });
 

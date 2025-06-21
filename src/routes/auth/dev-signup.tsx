@@ -5,12 +5,17 @@ import { Header } from "@/components/custom/header";
 import { DevSignUpForm } from "@/features/auth/components/dev-signup-form";
 import { AuthError } from "@/features/auth/components/auth-error";
 import { DEV_SIGNUP_CONFIG } from "@/lib/config";
+import { checkAuthRedirect } from "@/hooks/use-auth-redirect";
 
 const devSignupSearchSchema = z.object({
   key: z.string().optional(),
 });
 
 export const Route = createFileRoute("/auth/dev-signup")({
+  beforeLoad: () => {
+    // Redirect authenticated users to their dashboard
+    checkAuthRedirect();
+  },
   component: DevSignUpPage,
   errorComponent: DevSignUpErrorComponent,
   validateSearch: devSignupSearchSchema,
