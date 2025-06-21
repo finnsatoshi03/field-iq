@@ -1,5 +1,5 @@
-export const BYPASS_AUTH = false;
-export const DEV_MODE = false;
+export const BYPASS_AUTH = true;
+export const DEV_MODE = true;
 
 // Secret developer sign-up configuration
 export const DEV_SIGNUP_CONFIG = {
