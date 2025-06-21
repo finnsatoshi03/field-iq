@@ -236,52 +236,55 @@ const QuestionItem: React.FC<QuestionItemProps> = ({ question, index }) => {
  */
 export default function OnBoardingPage() {
   return (
-    <div className="flex flex-col gap-4 h-full">
+    <div className="flex flex-col gap-4 h-full p-4">
       <Header />
 
-      {/* Main Content Area */}
-      <main className="min-h-0 flex-1 flex flex-col items-center justify-center px-4">
-        <div className="w-full max-w-[17rem] space-y-10">
-          {/* Questions List */}
-          <div className="space-y-1">
-            {ONBOARDING_QUESTIONS.map((question, index) => (
-              <QuestionItem
-                key={question.id}
-                question={question}
-                index={index}
-              />
-            ))}
+      <main className="max-w-md w-full mx-auto flex-1 flex flex-col min-h-0">
+        {/* Main Content Area */}
+        <div className="min-h-0 flex-1 flex flex-col items-center justify-center px-4">
+          <div className="w-full max-w-[17rem] space-y-10">
+            {/* Questions List */}
+            <div className="space-y-1">
+              {ONBOARDING_QUESTIONS.map((question, index) => (
+                <QuestionItem
+                  key={question.id}
+                  question={question}
+                  index={index}
+                />
+              ))}
+            </div>
+            <motion.h1
+              className="text-center font-display text-2xl font-medium"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{
+                delay: ONBOARDING_QUESTIONS.length * 0.75 + 1,
+                duration: 0.25,
+                ease: "easeOut",
+              }}
+            >
+              Over time, you'll see patterns in your farm's performance and
+              sales.
+            </motion.h1>
           </div>
-          <motion.h1
-            className="text-center font-display text-2xl font-medium"
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{
-              delay: ONBOARDING_QUESTIONS.length * 0.75 + 1,
-              duration: 0.25,
-              ease: "easeOut",
-            }}
-          >
-            Over time, you'll see patterns in your farm's performance and sales.
-          </motion.h1>
         </div>
-      </main>
 
-      <motion.div
-        initial={{ opacity: 0, y: 50 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{
-          delay: ONBOARDING_QUESTIONS.length * 0.75 + 1.5,
-          duration: 0.25,
-          ease: "easeOut",
-        }}
-      >
-        <Link to="/auth/sign-in">
-          <Button className="w-full">
-            <p>Continue with Email</p>
-          </Button>
-        </Link>
-      </motion.div>
+        <motion.div
+          initial={{ opacity: 0, y: 50 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{
+            delay: ONBOARDING_QUESTIONS.length * 0.75 + 1.5,
+            duration: 0.25,
+            ease: "easeOut",
+          }}
+        >
+          <Link to="/auth/sign-in">
+            <Button className="w-full">
+              <p>Continue with Email</p>
+            </Button>
+          </Link>
+        </motion.div>
+      </main>
     </div>
   );
 }

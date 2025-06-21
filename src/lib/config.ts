@@ -1,5 +1,5 @@
-export const BYPASS_AUTH = true;
-export const DEV_MODE = true;
+export const BYPASS_AUTH = import.meta.env.VITE_BYPASS_AUTH === "true";
+export const DEV_MODE = import.meta.env.VITE_DEV_MODE === "true";
 
 // Secret developer sign-up configuration
 export const DEV_SIGNUP_CONFIG = {
@@ -10,7 +10,5 @@ export const DEV_SIGNUP_CONFIG = {
   // Enable/disable the dev sign-up feature
   enabled: true,
 
-  // Secret access key - Generate a new one for production!
-  // Usage: /auth/dev-signup?key=fiq_dev_2024_secure_7x9kL2mP8qR3nB5vX
-  accessKey: "fiq_dev_2024_secure_7x9kL2mP8qR3nB5vX",
+  accessKey: import.meta.env.VITE_SUPER_ADMIN_ACCESS_KEY,
 } as const;
