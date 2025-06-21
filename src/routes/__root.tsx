@@ -18,9 +18,9 @@ const RootComponent = () => {
   // Sync auth state with Zustand store and React Query
   useAuthSync();
 
-  if (!isMobile) {
-    return <ComingSoon />;
-  }
+  // if (!isMobile) {
+  //   return <ComingSoon />;
+  // }
 
   return (
     <>
