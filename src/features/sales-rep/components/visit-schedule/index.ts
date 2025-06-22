@@ -1,3 +1,5 @@
+export { default } from "./VisitSchedule";
+
 // Sub-components
 export * from "./components";
 

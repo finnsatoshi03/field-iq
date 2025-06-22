@@ -4,6 +4,7 @@ import {
   MonthlySalesChart,
   DealerAlertLog,
   VisitSchedule,
+  TrainingTracker,
 } from "@/features/sales-rep/components";
 
 export const Route = createFileRoute("/_authenticated/sales/")({
@@ -32,8 +33,9 @@ function SalesDashboard() {
               <VisitSchedule />
             </div>
           </div>
-          <div className="lg:col-span-1 xl:col-span-1">
+          <div className="lg:col-span-1 xl:col-span-1 space-y-6">
             <DealerAlertLog />
+            <TrainingTracker />
           </div>
         </div>
       </div>
