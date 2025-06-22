@@ -3,6 +3,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import {
   CurrentFeedInUse,
   FeedUsageCalculator,
+  GrowthPerformanceLog,
 } from "@/features/farmer/components";
 
 export const Route = createFileRoute("/_authenticated/farmer/")({
@@ -26,6 +27,9 @@ function FarmerDashboard() {
           <div className="lg:col-span-2 xl:col-span-2 h-fit gap-6 grid grid-cols-1 lg:grid-cols-2">
             <div className="lg:col-span-2 xl:col-span-2">
               <CurrentFeedInUse />
+            </div>
+            <div className="lg:col-span-2 xl:col-span-2">
+              <GrowthPerformanceLog />
             </div>
           </div>
           <div className="xl:col-span-1 space-y-6">
