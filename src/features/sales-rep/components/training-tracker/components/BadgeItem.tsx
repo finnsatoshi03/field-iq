@@ -6,9 +6,35 @@ import { getRarityBadgeColor, formatDateRelative } from "../utils";
 
 interface BadgeItemProps {
   badge: TrainingBadge & { canEarn?: boolean };
+  simplified?: boolean;
 }
 
-const BadgeItem: React.FC<BadgeItemProps> = ({ badge }) => {
+const BadgeItem: React.FC<BadgeItemProps> = ({ badge, simplified = false }) => {
+  // Simplified view - just icon and title
+  if (simplified) {
+    return (
+      <div className="flex items-center gap-2">
+        <div
+          className={cn(
+            "text-lg",
+            badge.earned ? "grayscale-0" : "grayscale opacity-50"
+          )}
+        >
+          {badge.icon}
+        </div>
+        <h4
+          className={cn(
+            "font-display font-medium text-sm tracking-tight",
+            badge.earned ? "text-foreground" : "text-muted-foreground"
+          )}
+        >
+          {badge.name}
+        </h4>
+      </div>
+    );
+  }
+
+  // Full card view with all details
   return (
     <div
       className={cn(
