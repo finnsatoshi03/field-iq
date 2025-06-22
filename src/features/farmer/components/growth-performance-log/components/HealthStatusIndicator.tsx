@@ -17,10 +17,7 @@ interface HealthStatusIndicatorProps {
   latestRecord: any;
 }
 
-const getHealthStatus = (
-  stats: any,
-  animalType: AnimalType
-): HealthIndicator => {
+const getHealthStatus = (stats: any): HealthIndicator => {
   const performanceIndex = stats.performanceIndex;
   const mortalityRate = stats.mortalityRate;
 
@@ -75,7 +72,7 @@ export const HealthStatusIndicator = ({
   animalType,
   latestRecord,
 }: HealthStatusIndicatorProps) => {
-  const healthStatus = getHealthStatus(stats, animalType);
+  const healthStatus = getHealthStatus(stats);
   const statusColor = getHealthStatusColor(healthStatus.status);
 
   return (

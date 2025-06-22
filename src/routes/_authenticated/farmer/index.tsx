@@ -5,6 +5,7 @@ import {
   FeedUsageCalculator,
   GrowthPerformanceLog,
 } from "@/features/farmer/components";
+import { HealthWatchSummary } from "@/features/farmer/components/health-watch-summary";
 
 export const Route = createFileRoute("/_authenticated/farmer/")({
   component: FarmerDashboard,
@@ -32,8 +33,10 @@ function FarmerDashboard() {
               <GrowthPerformanceLog />
             </div>
           </div>
+
           <div className="xl:col-span-1 space-y-6">
             <FeedUsageCalculator />
+            <HealthWatchSummary />
           </div>
         </div>
       </div>

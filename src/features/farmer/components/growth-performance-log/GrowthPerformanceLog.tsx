@@ -8,7 +8,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { ANIMAL_TYPES, type AnimalType } from "./constants";
+import { ANIMAL_TYPES } from "./constants";
 import { useGrowthPerformance } from "./hooks";
 import {
   HealthStatusIndicator,
