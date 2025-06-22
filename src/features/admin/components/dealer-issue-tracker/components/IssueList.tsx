@@ -10,7 +10,10 @@ import {
   getIssueTypeLabel,
   formatDate,
   getRelativeTime,
+  hasDealerGpsCoordinates,
 } from "../utils";
+import DealerDirectionsButton from "./DealerDirectionsButton";
+import DealerDirectionsModal from "./DealerDirectionsModal";
 
 interface IssueListProps {
   dealers: DealerIssue[];
@@ -25,6 +28,7 @@ interface DealerItemProps {
 
 const DealerItem = ({ dealer, onSelect }: DealerItemProps) => {
   const [isExpanded, setIsExpanded] = useState(false);
+  const hasGpsCoordinates = hasDealerGpsCoordinates(dealer);
 
   const handleToggle = () => {
     setIsExpanded(!isExpanded);
@@ -67,6 +71,27 @@ const DealerItem = ({ dealer, onSelect }: DealerItemProps) => {
         </div>
 
         <div className="flex items-center gap-2">
+          {/* GPS Direction Buttons */}
+          {hasGpsCoordinates && (
+            <div className="flex items-center gap-1">
+              <DealerDirectionsButton
+                dealer={dealer}
+                variant="ghost"
+                size="sm"
+              />
+              <DealerDirectionsModal dealer={dealer}>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="px-2"
+                  title="Detailed directions"
+                >
+                  <MapPin className="w-4 h-4" />
+                </Button>
+              </DealerDirectionsModal>
+            </div>
+          )}
+
           <Button
             variant="ghost"
             size="sm"
@@ -101,9 +126,16 @@ const DealerItem = ({ dealer, onSelect }: DealerItemProps) => {
           )}
         </div>
 
-        <span className="text-xs text-muted-foreground font-sans">
-          Updated {getRelativeTime(dealer.lastUpdated)}
-        </span>
+        <div className="flex items-center gap-2">
+          <span className="text-xs text-muted-foreground font-sans">
+            Updated {getRelativeTime(dealer.lastUpdated)}
+          </span>
+          {hasGpsCoordinates && (
+            <span className="text-xs text-green-600 dark:text-green-400 font-sans">
+              GPS Available
+            </span>
+          )}
+        </div>
       </div>
 
       {isExpanded && (
@@ -119,6 +151,16 @@ const DealerItem = ({ dealer, onSelect }: DealerItemProps) => {
               <Mail className="w-4 h-4 text-muted-foreground" />
               <span className="text-foreground">{dealer.phone}</span>
             </div>
+            {hasGpsCoordinates && (
+              <div className="col-span-1 md:col-span-2 flex items-center gap-2 text-sm font-sans">
+                <span className="text-sm">🌐</span>
+                <span className="text-muted-foreground">GPS:</span>
+                <span className="text-foreground font-mono text-xs">
+                  {dealer.location.lat.toFixed(4)},{" "}
+                  {dealer.location.lng.toFixed(4)}
+                </span>
+              </div>
+            )}
           </div>
 
           {/* Issues */}
@@ -157,7 +199,17 @@ const DealerItem = ({ dealer, onSelect }: DealerItemProps) => {
             ))}
           </div>
 
-          <div className="flex justify-end pt-2">
+          <div className="flex justify-between items-center pt-2">
+            <div className="flex items-center gap-2">
+              {hasGpsCoordinates && (
+                <DealerDirectionsModal dealer={dealer}>
+                  <Button variant="outline" size="sm" className="text-xs">
+                    Get Detailed Directions
+                  </Button>
+                </DealerDirectionsModal>
+              )}
+            </div>
+
             <Button
               variant="outline"
               size="sm"

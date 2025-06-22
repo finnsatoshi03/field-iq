@@ -89,12 +89,13 @@ export const formatDate = (dateString: string): string => {
 export const getRelativeTime = (dateString: string): string => {
   const date = new Date(dateString);
   const now = new Date();
-  const diffTime = Math.abs(now.getTime() - date.getTime());
-  const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+  const diffMs = now.getTime() - date.getTime();
+  const diffHours = Math.floor(diffMs / (1000 * 60 * 60));
+  const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
 
-  if (diffDays === 1) return "1 day ago";
-  if (diffDays < 7) return `${diffDays} days ago`;
-  if (diffDays < 30) return `${Math.floor(diffDays / 7)} weeks ago`;
+  if (diffHours < 1) return "just now";
+  if (diffHours < 24) return `${diffHours}h ago`;
+  if (diffDays < 7) return `${diffDays}d ago`;
   return formatDate(dateString);
 };
 
@@ -160,4 +161,156 @@ export const getHeatmapData = (
             ? 0.5
             : 0.3,
   }));
+};
+
+// GPS Direction utilities for dealers
+export const openGoogleMapsDirections = (
+  dealer: DealerIssue,
+  userLocation?: { lat: number; lng: number }
+) => {
+  if (!dealer.location?.lat || !dealer.location?.lng) {
+    console.warn("No GPS coordinates available for this dealer");
+    return;
+  }
+
+  // Check if user is on mobile device
+  const isMobile =
+    /Android|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(
+      navigator.userAgent
+    );
+
+  let url: string;
+  const { lat, lng } = dealer.location;
+  const destination = `${lat},${lng}`;
+
+  if (userLocation) {
+    // With starting location
+    const origin = `${userLocation.lat},${userLocation.lng}`;
+    if (isMobile) {
+      // Try app first, fallback to web
+      url = `google.maps://?saddr=${origin}&daddr=${destination}&directionsmode=driving`;
+      window.location.href = url;
+
+      // Fallback after delay
+      setTimeout(() => {
+        const webUrl = `https://www.google.com/maps/dir/${origin}/${destination}`;
+        window.open(webUrl, "_blank");
+      }, 1500);
+      return;
+    } else {
+      // Desktop web version
+      url = `https://www.google.com/maps/dir/${origin}/${destination}`;
+    }
+  } else {
+    // Without starting location
+    if (isMobile) {
+      url = `google.maps://?daddr=${destination}&directionsmode=driving`;
+      window.location.href = url;
+
+      setTimeout(() => {
+        const webUrl = `https://www.google.com/maps/dir/?api=1&destination=${destination}&travelmode=driving`;
+        window.open(webUrl, "_blank");
+      }, 1500);
+      return;
+    } else {
+      url = `https://www.google.com/maps/dir/?api=1&destination=${destination}&travelmode=driving`;
+    }
+  }
+
+  window.open(url, "_blank");
+};
+
+export const openWazeDirections = (
+  dealer: DealerIssue,
+  userLocation?: { lat: number; lng: number }
+) => {
+  if (!dealer.location?.lat || !dealer.location?.lng) {
+    console.warn("GPS coordinates not available for this dealer");
+    return;
+  }
+
+  const { lat, lng } = dealer.location;
+  let url: string;
+
+  if (userLocation) {
+    url = `https://waze.com/ul?ll=${lat},${lng}&navigate=yes&from=${userLocation.lat},${userLocation.lng}`;
+  } else {
+    url = `https://waze.com/ul?ll=${lat},${lng}&navigate=yes`;
+  }
+
+  window.open(url, "_blank");
+};
+
+export const openAppleMapsDirections = (
+  dealer: DealerIssue,
+  userLocation?: { lat: number; lng: number }
+) => {
+  if (!dealer.location?.lat || !dealer.location?.lng) {
+    console.warn("GPS coordinates not available for this dealer");
+    return;
+  }
+
+  const { lat, lng } = dealer.location;
+  let url: string;
+
+  if (userLocation) {
+    const origin = `${userLocation.lat},${userLocation.lng}`;
+    url = `http://maps.apple.com/?saddr=${origin}&daddr=${lat},${lng}&dirflg=d`;
+  } else {
+    url = `http://maps.apple.com/?daddr=${lat},${lng}&dirflg=d`;
+  }
+
+  window.open(url, "_blank");
+};
+
+export const openMapboxDirections = (
+  dealer: DealerIssue,
+  userLocation?: { lat: number; lng: number }
+) => {
+  if (!dealer.location?.lat || !dealer.location?.lng) {
+    console.warn("GPS coordinates not available for this dealer");
+    return;
+  }
+
+  const { lat, lng } = dealer.location;
+  let url: string;
+
+  if (userLocation) {
+    url = `https://www.mapbox.com/directions/#/${userLocation.lng},${userLocation.lat};${lng},${lat}`;
+  } else {
+    url = `https://www.mapbox.com/directions/#//${lng},${lat}`;
+  }
+
+  window.open(url, "_blank");
+};
+
+export const getDealerDirectionsOptions = () => [
+  {
+    id: "google",
+    name: "Google Maps",
+    icon: "🗺️",
+    action: openGoogleMapsDirections,
+  },
+  {
+    id: "waze",
+    name: "Waze",
+    icon: "🚗",
+    action: openWazeDirections,
+  },
+  {
+    id: "apple",
+    name: "Apple Maps",
+    icon: "🍎",
+    action: openAppleMapsDirections,
+  },
+  {
+    id: "mapbox",
+    name: "Mapbox",
+    icon: "📍",
+    action: openMapboxDirections,
+  },
+];
+
+export const hasDealerGpsCoordinates = (dealer: DealerIssue): boolean => {
+  return !!(dealer.location?.lat && dealer.location?.lng);
 };
