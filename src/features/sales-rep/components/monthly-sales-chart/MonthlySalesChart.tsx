@@ -1,3 +1,4 @@
+import React from "react";
 import { useIsMobile } from "@/lib/hooks/useIsMobile";
 import {
   Bar,
@@ -9,65 +10,24 @@ import {
   ReferenceLine,
   Cell,
 } from "recharts";
-
-const mockMonthlySalesData = [
-  { month: "Jan", volumeInfluenced: 45000, closedSales: 32000 },
-  { month: "Feb", volumeInfluenced: 52000, closedSales: 38000 },
-  { month: "Mar", volumeInfluenced: 48000, closedSales: 35000 },
-  { month: "Apr", volumeInfluenced: 61000, closedSales: 42000 },
-  { month: "May", volumeInfluenced: 55000, closedSales: 39000 },
-  { month: "Jun", volumeInfluenced: 67000, closedSales: 48000 },
-  { month: "Jul", volumeInfluenced: 72000, closedSales: 52000 },
-  { month: "Aug", volumeInfluenced: 68000, closedSales: 49000 },
-  { month: "Sep", volumeInfluenced: 63000, closedSales: 45000 },
-  { month: "Oct", volumeInfluenced: 71000, closedSales: 51000 },
-  { month: "Nov", volumeInfluenced: 69000, closedSales: 47000 },
-  { month: "Dec", volumeInfluenced: 74000, closedSales: 54000 },
-];
+import { CustomLabel } from "./components";
+import { mockMonthlySalesData } from "./constants";
+import {
+  calculateTotalVolumeInfluenced,
+  calculateTotalClosedSales,
+  calculateAverageVolumeInfluenced,
+  calculateAverageClosedSales,
+} from "./utils";
 
 const MonthlySalesChart: React.FC = () => {
   const isMobile = useIsMobile();
 
-  const totalVolumeInfluenced = mockMonthlySalesData.reduce(
-    (sum, data) => sum + data.volumeInfluenced,
-    0
-  );
-  const totalClosedSales = mockMonthlySalesData.reduce(
-    (sum, data) => sum + data.closedSales,
-    0
-  );
-
-  // Calculate averages
+  const totalVolumeInfluenced =
+    calculateTotalVolumeInfluenced(mockMonthlySalesData);
+  const totalClosedSales = calculateTotalClosedSales(mockMonthlySalesData);
   const avgVolumeInfluenced =
-    totalVolumeInfluenced / mockMonthlySalesData.length;
-  const avgClosedSales = totalClosedSales / mockMonthlySalesData.length;
-
-  // Custom label component for reference line
-  const CustomLabel = ({ viewBox, label, avgValue }: any) => {
-    if (viewBox) {
-      return (
-        <g>
-          <text
-            x={viewBox.x + viewBox.width / 25 + (isMobile ? 50 : 30)}
-            y={viewBox.y - 8}
-            textAnchor="end"
-            className="text-xs font-semibold fill-muted-foreground"
-          >
-            {label}
-          </text>
-          <text
-            x={viewBox.x + viewBox.width / 25 + (isMobile ? 20 : 0)}
-            y={viewBox.y - 8}
-            textAnchor="end"
-            className="text-xs font-bold fill-foreground"
-          >
-            ₱{(avgValue / 1000).toFixed(0)}k
-          </text>
-        </g>
-      );
-    }
-    return null;
-  };
+    calculateAverageVolumeInfluenced(mockMonthlySalesData);
+  const avgClosedSales = calculateAverageClosedSales(mockMonthlySalesData);
 
   return (
     <div className="bg-card space-y-6 rounded-lg border border-border p-4">
@@ -173,14 +133,26 @@ const MonthlySalesChart: React.FC = () => {
               stroke="var(--chart-1)"
               strokeDasharray="4 4"
               strokeOpacity={0.6}
-              label={<CustomLabel label="AVG" avgValue={avgVolumeInfluenced} />}
+              label={
+                <CustomLabel
+                  label="AVG"
+                  avgValue={avgVolumeInfluenced}
+                  isMobile={isMobile}
+                />
+              }
             />
             <ReferenceLine
               y={avgClosedSales}
               stroke="var(--chart-2)"
               strokeDasharray="4 4"
               strokeOpacity={0.6}
-              label={<CustomLabel label="AVG" avgValue={avgClosedSales} />}
+              label={
+                <CustomLabel
+                  label="AVG"
+                  avgValue={avgClosedSales}
+                  isMobile={isMobile}
+                />
+              }
             />
 
             <Bar
