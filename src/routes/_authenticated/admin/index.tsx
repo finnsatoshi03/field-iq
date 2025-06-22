@@ -4,6 +4,7 @@ import {
   DealerIssueTracker,
   FarmRegistrationTracker,
   CompetitorIntelligence,
+  FeedPerformanceTracker,
 } from "@/features/admin/components";
 
 export const Route = createFileRoute("/_authenticated/admin/")({
@@ -35,6 +36,7 @@ function AdminDashboard() {
           <div className="xl:col-span-1 space-y-6">
             <FarmRegistrationTracker />
             <CompetitorIntelligence />
+            <FeedPerformanceTracker />
           </div>
         </div>
       </div>
