@@ -165,3 +165,179 @@ export const formatDuration = (minutes: number) => {
   if (mins === 0) return `${hours}h`;
   return `${hours}h ${mins}m`;
 };
+
+// GPS Direction utilities
+export const openGoogleMapsDirections = (
+  visit: Visit,
+  userLocation?: { lat: number; lng: number }
+) => {
+  if (!visit.gpsCoordinates && !visit.location) {
+    console.warn("No location data available for this visit");
+    return;
+  }
+
+  // Check if user is on mobile device
+  const isMobile =
+    /Android|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(
+      navigator.userAgent
+    );
+
+  let url: string;
+
+  if (visit.gpsCoordinates) {
+    const { lat, lng } = visit.gpsCoordinates;
+    const destination = `${lat},${lng}`;
+
+    if (userLocation) {
+      // With starting location
+      const origin = `${userLocation.lat},${userLocation.lng}`;
+      if (isMobile) {
+        // Try app first, fallback to web
+        url = `google.maps://?saddr=${origin}&daddr=${destination}&directionsmode=driving`;
+        window.location.href = url;
+
+        // Fallback after delay
+        setTimeout(() => {
+          const webUrl = `https://www.google.com/maps/dir/${origin}/${destination}`;
+          window.open(webUrl, "_blank");
+        }, 1500);
+        return;
+      } else {
+        // Desktop web version
+        url = `https://www.google.com/maps/dir/${origin}/${destination}`;
+      }
+    } else {
+      // Without starting location
+      if (isMobile) {
+        url = `google.maps://?daddr=${destination}&directionsmode=driving`;
+        window.location.href = url;
+
+        setTimeout(() => {
+          const webUrl = `https://www.google.com/maps/dir/?api=1&destination=${destination}&travelmode=driving`;
+          window.open(webUrl, "_blank");
+        }, 1500);
+        return;
+      } else {
+        url = `https://www.google.com/maps/dir/?api=1&destination=${destination}&travelmode=driving`;
+      }
+    }
+  } else {
+    // Fallback to address search
+    const destination = encodeURIComponent(
+      `${visit.farmName}, ${visit.location}`
+    );
+    if (userLocation) {
+      const origin = `${userLocation.lat},${userLocation.lng}`;
+      url = `https://www.google.com/maps/dir/${origin}/${destination}`;
+    } else {
+      url = `https://www.google.com/maps/search/${destination}`;
+    }
+  }
+
+  window.open(url, "_blank");
+};
+
+export const openWazeDirections = (
+  visit: Visit,
+  userLocation?: { lat: number; lng: number }
+) => {
+  if (!visit.gpsCoordinates) {
+    console.warn("GPS coordinates not available for this visit");
+    return;
+  }
+
+  const { lat, lng } = visit.gpsCoordinates;
+  let url: string;
+
+  if (userLocation) {
+    url = `https://waze.com/ul?ll=${lat},${lng}&navigate=yes&from=${userLocation.lat},${userLocation.lng}`;
+  } else {
+    url = `https://waze.com/ul?ll=${lat},${lng}&navigate=yes`;
+  }
+
+  window.open(url, "_blank");
+};
+
+export const openAppleMapsDirections = (
+  visit: Visit,
+  userLocation?: { lat: number; lng: number }
+) => {
+  let url: string;
+
+  if (visit.gpsCoordinates) {
+    const { lat, lng } = visit.gpsCoordinates;
+    const destination = `${lat},${lng}`;
+
+    if (userLocation) {
+      const origin = `${userLocation.lat},${userLocation.lng}`;
+      url = `http://maps.apple.com/?saddr=${origin}&daddr=${destination}&dirflg=d`;
+    } else {
+      url = `http://maps.apple.com/?daddr=${destination}&dirflg=d`;
+    }
+  } else {
+    // Fallback to address search
+    const destination = encodeURIComponent(
+      `${visit.farmName}, ${visit.location}`
+    );
+    if (userLocation) {
+      const origin = `${userLocation.lat},${userLocation.lng}`;
+      url = `http://maps.apple.com/?saddr=${origin}&daddr=${destination}&dirflg=d`;
+    } else {
+      url = `http://maps.apple.com/?q=${destination}`;
+    }
+  }
+
+  window.open(url, "_blank");
+};
+
+export const openMapboxDirections = (
+  visit: Visit,
+  userLocation?: { lat: number; lng: number }
+) => {
+  if (!visit.gpsCoordinates) {
+    console.warn("GPS coordinates not available for this visit");
+    return;
+  }
+
+  const { lat, lng } = visit.gpsCoordinates;
+  let url: string;
+
+  if (userLocation) {
+    url = `https://www.mapbox.com/directions/#/${userLocation.lng},${userLocation.lat};${lng},${lat}`;
+  } else {
+    url = `https://www.mapbox.com/directions/#//${lng},${lat}`;
+  }
+
+  window.open(url, "_blank");
+};
+
+export const getDirectionsOptions = () => [
+  {
+    id: "google",
+    name: "Google Maps",
+    icon: "🗺️",
+    action: openGoogleMapsDirections,
+  },
+  {
+    id: "waze",
+    name: "Waze",
+    icon: "🚗",
+    action: openWazeDirections,
+  },
+  {
+    id: "apple",
+    name: "Apple Maps",
+    icon: "🍎",
+    action: openAppleMapsDirections,
+  },
+  {
+    id: "mapbox",
+    name: "Mapbox",
+    icon: "📍",
+    action: openMapboxDirections,
+  },
+];
+
+export const hasGpsCoordinates = (visit: Visit): boolean => {
+  return !!(visit.gpsCoordinates?.lat && visit.gpsCoordinates?.lng);
+};

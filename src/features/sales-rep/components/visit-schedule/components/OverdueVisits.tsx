@@ -15,6 +15,7 @@ import {
   getPriorityBadgeColor,
 } from "../utils";
 import { cn } from "@/lib/utils";
+import DirectionsButton from "./DirectionsButton";
 
 interface OverdueVisitsProps {
   visits: Visit[];
@@ -66,14 +67,17 @@ const VisitItem: React.FC<{ visit: Visit }> = ({ visit }) => {
                 )}
               </div>
             </div>
-            <div className="text-right flex-shrink-0">
-              <span className="text-xs font-medium text-foreground font-sans">
-                {dateString}
-              </span>
-              <br />
-              <span className="text-xs text-muted-foreground font-sans">
-                {timeString}
-              </span>
+            <div className="text-right flex-shrink-0 flex flex-col items-end gap-2">
+              <div>
+                <span className="text-xs font-medium text-foreground font-sans">
+                  {dateString}
+                </span>
+                <br />
+                <span className="text-xs text-muted-foreground font-sans">
+                  {timeString}
+                </span>
+              </div>
+              <DirectionsButton visit={visit} variant="ghost" size="sm" />
             </div>
           </div>
         </div>

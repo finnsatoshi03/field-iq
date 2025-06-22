@@ -10,6 +10,7 @@ import {
   getPriorityBadgeColor,
 } from "../utils";
 import { cn } from "@/lib/utils";
+import DirectionsButton from "./DirectionsButton";
 
 interface NextVisitsProps {
   visits: Visit[];
@@ -63,6 +64,9 @@ const VisitCard: React.FC<{ visit: Visit }> = ({ visit }) => {
                 </p>
               )}
             </div>
+          </div>
+          <div className="flex-shrink-0 ml-2">
+            <DirectionsButton visit={visit} variant="ghost" size="sm" />
           </div>
         </div>
       </div>

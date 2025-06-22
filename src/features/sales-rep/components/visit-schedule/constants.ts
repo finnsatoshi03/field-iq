@@ -75,6 +75,7 @@ export const mockVisits: Visit[] = [
     phoneNumber: "+63 918 987 6543",
     priority: "medium",
     notes: "Follow up on fertilizer delivery and usage feedback",
+    gpsCoordinates: { lat: 14.676, lng: 120.4842 },
   },
   {
     id: "3",
@@ -87,6 +88,7 @@ export const mockVisits: Visit[] = [
     phoneNumber: "+63 919 555 1234",
     priority: "high",
     notes: "Equipment maintenance check - irrigation system",
+    gpsCoordinates: { lat: 15.0794, lng: 120.62 },
   },
   {
     id: "4",
@@ -99,6 +101,7 @@ export const mockVisits: Visit[] = [
     phoneNumber: "+63 920 777 8888",
     priority: "medium",
     notes: "Seed delivery and planting consultation",
+    gpsCoordinates: { lat: 15.5784, lng: 120.9726 },
   },
   {
     id: "5",
@@ -111,6 +114,7 @@ export const mockVisits: Visit[] = [
     phoneNumber: "+63 921 333 2222",
     priority: "low",
     notes: "Quarterly review and contract renewal discussion",
+    gpsCoordinates: { lat: 15.4735, lng: 120.5965 },
   },
   {
     id: "6",
@@ -123,6 +127,7 @@ export const mockVisits: Visit[] = [
     phoneNumber: "+63 922 444 5555",
     priority: "high",
     notes: "Organic farming consultation and product demo",
+    gpsCoordinates: { lat: 16.4023, lng: 120.596 },
   },
 ];
 

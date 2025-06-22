@@ -1,5 +1,8 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { SalesActivitySummary } from "@/features/admin/components";
+import {
+  SalesActivitySummary,
+  DealerIssueTracker,
+} from "@/features/admin/components";
 
 export const Route = createFileRoute("/_authenticated/admin/")({
   component: AdminDashboard,
@@ -22,6 +25,9 @@ function AdminDashboard() {
           <div className="lg:col-span-2 xl:col-span-2 h-fit gap-6 grid grid-cols-1 lg:grid-cols-2">
             <div className="lg:col-span-2 xl:col-span-2">
               <SalesActivitySummary />
+            </div>
+            <div className="lg:col-span-2 xl:col-span-2">
+              <DealerIssueTracker />
             </div>
           </div>
         </div>
