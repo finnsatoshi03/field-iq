@@ -1,3 +1,4 @@
+import { useIsMobile } from "@/lib/hooks/useIsMobile";
 import {
   Bar,
   BarChart,
@@ -25,6 +26,8 @@ const mockMonthlySalesData = [
 ];
 
 const MonthlySalesChart: React.FC = () => {
+  const isMobile = useIsMobile();
+
   const totalVolumeInfluenced = mockMonthlySalesData.reduce(
     (sum, data) => sum + data.volumeInfluenced,
     0
@@ -45,7 +48,7 @@ const MonthlySalesChart: React.FC = () => {
       return (
         <g>
           <text
-            x={viewBox.x + viewBox.width / 25 + 30}
+            x={viewBox.x + viewBox.width / 25 + (isMobile ? 50 : 30)}
             y={viewBox.y - 8}
             textAnchor="end"
             className="text-xs font-semibold fill-muted-foreground"
@@ -53,7 +56,7 @@ const MonthlySalesChart: React.FC = () => {
             {label}
           </text>
           <text
-            x={viewBox.x + viewBox.width / 25}
+            x={viewBox.x + viewBox.width / 25 + (isMobile ? 20 : 0)}
             y={viewBox.y - 8}
             textAnchor="end"
             className="text-xs font-bold fill-foreground"
