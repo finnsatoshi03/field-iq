@@ -101,6 +101,24 @@ const getDefaultSuccessConfig = (type: AuthSuccessType, role?: UserRole) => {
             },
           ],
         },
+        dev: {
+          title: "You're all set!",
+          description:
+            "Your developer password has been created successfully. Welcome to your FieldIQ developer portal!",
+          features: [
+            "Access development tools and resources",
+            "Test application features",
+            "View system logs and analytics",
+            "Configure development settings",
+          ],
+          actions: [
+            {
+              label: "Take Me to Dashboard",
+              href: "/dev",
+              variant: "default" as const,
+            },
+          ],
+        },
       };
       return roleConfigs[role || "admin"];
 
@@ -226,7 +244,7 @@ export const AuthSuccess = ({
           </p>
 
           <div className="grid gap-1 items-center justify-center mt-4">
-            {finalFeatures.map((feature, index) => (
+            {finalFeatures.map((feature: string, index: number) => (
               <SuccessItem key={index} text={feature} />
             ))}
           </div>
@@ -234,7 +252,7 @@ export const AuthSuccess = ({
       </div>
 
       <div className="grid gap-2">
-        {finalActions.map((action, index) =>
+        {finalActions.map((action: AuthSuccessAction, index: number) =>
           action.href ? (
             <Link key={index} to={action.href}>
               <Button

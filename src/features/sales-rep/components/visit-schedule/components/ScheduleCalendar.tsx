@@ -1,7 +1,7 @@
 import React from "react";
 import { Calendar } from "@/components/ui/calendar";
 import { type Visit } from "../constants";
-import { getScheduledDates, getVisitsForDate } from "../utils";
+import { getScheduledDates } from "../utils";
 import { cn } from "@/lib/utils";
 
 interface ScheduleCalendarProps {

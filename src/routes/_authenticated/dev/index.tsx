@@ -6,8 +6,8 @@ import { useUser } from "@/hooks/use-user";
 
 import { Button } from "@/components/ui/button";
 
-import { UsersTable } from "@/features/admin/components/users-table";
-import { EmailLinkGenerator } from "@/features/admin/components/email-link-generator";
+import { UsersTable } from "@/features/super-admin/components/users-table";
+import { EmailLinkGenerator } from "@/features/super-admin/components/email-link-generator";
 import { useGetUsers } from "@/features/auth/mutations/admin-mutations";
 import { Error } from "@/features/error";
 
