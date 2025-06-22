@@ -134,7 +134,7 @@ const HeatmapView = ({ dealers, className }: HeatmapViewProps) => {
       : null;
 
   return (
-    <div className={`w-full h-full relative ${className}`}>
+    <div className={`w-full h-full relative z-0 ${className}`}>
       <link
         rel="stylesheet"
         href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
