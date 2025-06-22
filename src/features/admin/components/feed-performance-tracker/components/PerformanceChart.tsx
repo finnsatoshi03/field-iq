@@ -34,7 +34,7 @@ const PerformanceChart = ({
   chartType,
   onChartTypeChange,
 }: PerformanceChartProps) => {
-  const chartData = prepareChartData(metrics, chartType);
+  const chartData = prepareChartData(metrics);
 
   const CustomTooltip = ({ active, payload, label }: any) => {
     if (active && payload && payload.length) {

@@ -1,41 +1,38 @@
-import { createFileRoute, redirect } from "@tanstack/react-router";
-import { hasRoutePermission } from "@/lib/rbac";
-import { BYPASS_AUTH } from "@/lib/config";
+import { createFileRoute } from "@tanstack/react-router";
+
+import {
+  CurrentFeedInUse,
+  FeedUsageCalculator,
+} from "@/features/farmer/components";
 
 export const Route = createFileRoute("/_authenticated/farmer/")({
-  beforeLoad: ({ context }) => {
-    if (BYPASS_AUTH) return;
-
-    const authState = getAuthStateFromContext(context);
-
-    if (authState.user && !hasRoutePermission(authState.user.role, "/farmer")) {
-      throw redirect({
-        to: "/",
-      });
-    }
-  },
   component: FarmerDashboard,
 });
 
 function FarmerDashboard() {
-  return <div>Farmer</div>;
-}
+  return (
+    <div className="flex-1 flex flex-col min-h-0 h-full">
+      <div className="mb-4">
+        <h1 className="text-2xl font-display font-semibold text-foreground mb-1 tracking-tight">
+          Farmer Dashboard
+        </h1>
+        <p className="text-muted-foreground font-sans text-sm">
+          Monitor your farm operations and feed management
+        </p>
+      </div>
 
-// Helper function to get auth state from context (placeholder)
-function getAuthStateFromContext(context: any) {
-  // In a real app, this would extract auth state from the router context
-  // For now, we'll use the same localStorage approach
-  console.log(context);
-
-  try {
-    const mockUser = localStorage.getItem("mockUser");
-    if (mockUser) {
-      const user = JSON.parse(mockUser);
-      return { user };
-    }
-  } catch (error) {
-    console.error("Error getting auth state:", error);
-  }
-
-  return { user: null };
+      <div className="space-y-6 flex-1 min-h-0 h-full overflow-y-auto">
+        <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
+          <div className="lg:col-span-2 xl:col-span-2 h-fit gap-6 grid grid-cols-1 lg:grid-cols-2">
+            <div className="lg:col-span-2 xl:col-span-2">
+              <CurrentFeedInUse />
+            </div>
+          </div>
+          <div className="xl:col-span-1 space-y-6">
+            <FeedUsageCalculator />
+          </div>
+        </div>
+      </div>
+    </div>
+  );
 }

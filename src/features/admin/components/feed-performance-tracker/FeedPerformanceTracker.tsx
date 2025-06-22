@@ -183,10 +183,9 @@ const FeedPerformanceTracker = () => {
     <div className="bg-card rounded-lg border border-border pt-4 space-y-6">
       {/* Header */}
       <div className="flex items-center justify-between px-4">
-        <div className="flex items-center gap-2">
-          <BarChart3 className="h-5 w-5 text-primary" />
-          <h3 className="text-lg font-semibold">Feed Performance Tracker</h3>
-        </div>
+        <h3 className="text-foreground font-display font-medium text-base tracking-tight">
+          Feed Performance Tracker
+        </h3>
         <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
           <DialogTrigger asChild>
             <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
@@ -232,7 +231,7 @@ const FeedPerformanceTracker = () => {
       <div className="px-4">{renderCompactView()}</div>
 
       {/* Footer */}
-      <div className="px-4 pb-4">
+      <div className="px-4 bg-muted/20 py-4">
         <div className="text-xs text-muted-foreground">
           Feed performance observations
         </div>
