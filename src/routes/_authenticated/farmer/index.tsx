@@ -2,6 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 
 import {
   CurrentFeedInUse,
+  FeedIntakeBehavior,
   FeedUsageCalculator,
   GrowthPerformanceLog,
 } from "@/features/farmer/components";
@@ -26,11 +27,12 @@ function FarmerDashboard() {
       <div className="space-y-6 flex-1 min-h-0 h-full overflow-y-auto">
         <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
           <div className="lg:col-span-2 xl:col-span-2 h-fit gap-6 grid grid-cols-1 lg:grid-cols-2">
-            <div className="lg:col-span-2 xl:col-span-2">
+            <div className="grid lg:grid-cols-2 gap-6 lg:col-span-2 xl:col-span-2">
               <CurrentFeedInUse />
+              <GrowthPerformanceLog />
             </div>
             <div className="lg:col-span-2 xl:col-span-2">
-              <GrowthPerformanceLog />
+              <FeedIntakeBehavior />
             </div>
           </div>
 
