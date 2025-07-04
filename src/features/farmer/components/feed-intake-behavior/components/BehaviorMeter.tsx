@@ -6,6 +6,41 @@ interface BehaviorMeterProps {
   summary: FeedIntakeSummary;
 }
 
+// Quick date formatter function
+const formatLastUpdated = (dateString: string): string => {
+  if (!dateString) return "";
+
+  try {
+    const date = new Date(dateString);
+    const now = new Date();
+    const diffInMs = now.getTime() - date.getTime();
+    const diffInMinutes = Math.floor(diffInMs / (1000 * 60));
+    const diffInHours = Math.floor(diffInMinutes / 60);
+    const diffInDays = Math.floor(diffInHours / 24);
+
+    if (diffInMinutes < 1) {
+      return "just now";
+    } else if (diffInMinutes < 60) {
+      return `${diffInMinutes}m ago`;
+    } else if (diffInHours < 24) {
+      return `${diffInHours}h ago`;
+    } else if (diffInDays === 1) {
+      return "yesterday";
+    } else if (diffInDays < 7) {
+      return `${diffInDays}d ago`;
+    } else {
+      // For older dates, show the actual date
+      return date.toLocaleDateString("en-US", {
+        month: "short",
+        day: "numeric",
+      });
+    }
+  } catch (error) {
+    console.error("Error formatting date:", error);
+    return dateString; // Fallback to original string
+  }
+};
+
 export const BehaviorMeter = ({ summary }: BehaviorMeterProps) => {
   const statusColor = getBehaviorStatusColor(summary.status);
   const smileyIcon = getSmileyIcon(summary.behaviorScore);
@@ -54,7 +89,7 @@ export const BehaviorMeter = ({ summary }: BehaviorMeterProps) => {
             </span>
           </div>
           <p className="text-xs text-muted-foreground">
-            Updated {summary.lastUpdated}
+            Updated {formatLastUpdated(summary.lastUpdated)}
           </p>
         </div>
       </div>

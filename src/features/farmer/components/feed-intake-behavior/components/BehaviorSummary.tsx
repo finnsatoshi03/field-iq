@@ -16,8 +16,8 @@ export const BehaviorSummary = ({ summary }: BehaviorSummaryProps) => {
     {
       type: "picking_only",
       count: summary.pickingOnlyCount,
-      icon: getBehaviorIcon("picking_only"),
-      label: getBehaviorLabel("picking_only"),
+      icon: getBehaviorIcon("picky"),
+      label: getBehaviorLabel("picky"),
     },
     {
       type: "not_eating",
