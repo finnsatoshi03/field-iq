@@ -35,16 +35,16 @@ export const useChatMessages = (initialMessage: string) => {
     );
   };
 
-  const sendAIResponse = (userMessage: string) => {
+  const sendAIResponse = async (userMessage: string) => {
     setIsTyping(true);
 
     // Simulate AI response with realistic delay
     setTimeout(
-      () => {
+      async () => {
         setIsTyping(false);
         const response: Message = {
           id: Date.now() + 1,
-          message: getAIResponse(userMessage),
+          message: await getAIResponse(userMessage),
           isUser: false,
           timestamp: new Date(),
           feedback: null,

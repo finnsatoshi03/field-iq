@@ -32,7 +32,7 @@ export const getInitialMessage = (
   }
 };
 
-export const getAIResponse = (userMessage: string): string => {
+export const getAIResponse = async (userMessage: string): Promise<string> => {
   // Simple response logic based on keywords
   const message = userMessage.toLowerCase();
 
@@ -42,9 +42,9 @@ export const getAIResponse = (userMessage: string): string => {
     return `Thank you for letting me know about ${selectionText}. Based on this information, I recommend monitoring this closely. Would you like specific advice on how to address this?`;
   }
 
-  if (message.includes("feed") || message.includes("nutrition")) {
-    return "For optimal chicken nutrition, I recommend a balanced diet with proper protein levels. Could you tell me more about your current feeding schedule?";
-  }
+  // if (message.includes("feed") || message.includes("nutrition")) {
+  //   return "For optimal chicken nutrition, I recommend a balanced diet with proper protein levels. Could you tell me more about your current feeding schedule?";
+  // }
   if (message.includes("egg") || message.includes("production")) {
     return "Egg production depends on several factors including nutrition, lighting, and flock health. What specific concerns do you have about egg production?";
   }
@@ -52,5 +52,26 @@ export const getAIResponse = (userMessage: string): string => {
     return "Chicken health is crucial for productivity. Are you noticing any specific symptoms in your flock?";
   }
 
-  return "I understand your concern. Let me help you with that. Could you provide more details so I can give you the most accurate assistance?";
+  // If no keyword matched, make request to the backend AI
+    try {      
+    const response = await fetch("http://127.0.0.1:8000/farmer/chat", {
+      method: "POST",
+      headers: {
+        "Accept": "application/json",
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        prompt: userMessage,
+        user_id: 1,
+        chat_id: 8,
+      }),
+    });
+
+    const data = await response.json();
+
+    return data.data.response || "Received a response, but it was not in the expected format.";
+  } catch (error) {
+    console.error("Error fetching AI response:", error);
+    return "There was an error processing your request. Please try again later.";
+  }
 };

@@ -8,14 +8,32 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { AlertItem, FarmItem, MoreButton } from "./components";
-import { mockAlerts, mockFarms } from "./constants";
+// import { mockAlerts, mockFarms } from "./constants";
+import { fetchAlerts, fetchFarms } from "./constants"
+import { useEffect, useState } from "react";
+
 import { getAddedFarmsCount, getVisitedFarmsCount } from "./utils";
 
 const DealerAlertLog: React.FC = () => {
-  const visibleAlerts = mockAlerts.slice(0, 3);
-  const remainingAlerts = mockAlerts.slice(3);
-  const visibleFarms = mockFarms.slice(0, 3);
-  const remainingFarms = mockFarms.slice(3);
+  const [alerts, setAlerts] = useState([]);
+  const [farms, setFarms] = useState([]);
+
+  // const visibleAlerts = mockAlerts.slice(0, 3);
+  // const remainingAlerts = mockAlerts.slice(3);
+  // const visibleFarms = mockFarms.slice(0, 3);
+  // const remainingFarms = mockFarms.slice(3);
+  
+  useEffect(() => {
+    const userId = 3; // Replace with dynamic ID if needed
+
+    fetchAlerts(userId).then(setAlerts).catch(console.error);
+    fetchFarms(userId).then(setFarms).catch(console.error);
+  }, []);
+
+  const visibleAlerts = alerts.slice(0, 3);
+  const remainingAlerts = alerts.slice(3);
+  const visibleFarms = farms.slice(0, 3);
+  const remainingFarms = farms.slice(3);
 
   return (
     <div className="bg-card rounded-lg border border-border pt-4 space-y-6">
@@ -42,7 +60,7 @@ const DealerAlertLog: React.FC = () => {
                 <DialogTitle>All Alerts</DialogTitle>
               </DialogHeader>
               <div className="space-y-3 mt-4">
-                {mockAlerts.map((alert) => (
+                {alerts.map((alert) => (
                   <AlertItem key={alert.id} alert={alert} />
                 ))}
               </div>
@@ -61,14 +79,14 @@ const DealerAlertLog: React.FC = () => {
               <Plus className="h-3 w-3 text-blue-600 dark:text-blue-400" />
               <span className="text-muted-foreground font-sans">Added</span>
               <span className="font-medium text-foreground font-sans">
-                {getAddedFarmsCount(mockFarms)}
+                {getAddedFarmsCount(farms)}
               </span>
             </div>
             <div className="flex items-center gap-1.5">
               <MapPin className="h-3 w-3 text-emerald-600 dark:text-emerald-400" />
               <span className="text-muted-foreground font-sans">Visited</span>
               <span className="font-medium text-foreground font-sans">
-                {getVisitedFarmsCount(mockFarms)}
+                {getVisitedFarmsCount(farms)}
               </span>
             </div>
           </div>
@@ -105,12 +123,12 @@ const DealerAlertLog: React.FC = () => {
                   <DialogTitle>All Farms - Added + Visited</DialogTitle>
                 </DialogHeader>
                 <div className="space-y-0 mt-4">
-                  {mockFarms.map((farm, index) => (
+                  {farms.map((farm, index) => (
                     <FarmItem
                       key={index}
                       farm={farm}
                       index={index}
-                      showConnector={index < mockFarms.length - 1}
+                      showConnector={index < visibleFarms.length - 1}
                       isDialog={true}
                     />
                   ))}

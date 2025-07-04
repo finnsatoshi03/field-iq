@@ -1,11 +1,11 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   ScheduleCalendar,
   OverdueVisits,
   NextVisits,
   DailyPlanner,
 } from "./components";
-import { mockVisits } from "./constants";
+import { mockVisits, fetchVisits } from "./constants";
 import { cn } from "@/lib/utils";
 
 interface VisitScheduleProps {
@@ -14,7 +14,16 @@ interface VisitScheduleProps {
 
 const VisitSchedule: React.FC<VisitScheduleProps> = ({ className }) => {
   const [selectedDate, setSelectedDate] = useState<Date | undefined>();
-  const [visits] = useState(mockVisits);
+  const [visits, setVisits] = useState([]);
+
+  useEffect(() => {
+    async function loadData() {
+      const val = await fetchVisits(3)
+      setVisits(val)
+    };
+
+    loadData();
+  }, []);
 
   const handleDateSelect = (date: Date | undefined) => {
     setSelectedDate(date);

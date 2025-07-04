@@ -1,6 +1,8 @@
 export const BYPASS_AUTH = import.meta.env.VITE_BYPASS_AUTH === "true";
 export const DEV_MODE = import.meta.env.VITE_DEV_MODE === "true";
 
+console.log(import.meta.env.VITE_SUPABASE_URL);
+
 // Secret developer sign-up configuration
 export const DEV_SIGNUP_CONFIG = {
   // Secret URL path for developer sign-up

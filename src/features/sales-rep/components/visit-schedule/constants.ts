@@ -10,6 +10,7 @@ export const VISIT_TYPES = {
   FOLLOW_UP: "follow_up",
   MAINTENANCE: "maintenance",
   DELIVERY: "delivery",
+  VISIT: "visit"
 } as const;
 
 export type VisitStatus = (typeof VISIT_STATUS)[keyof typeof VISIT_STATUS];
@@ -49,13 +50,29 @@ export interface Task {
   estimatedDuration: number; // in minutes
 }
 
+export const fetchVisits = async (user_id : number) => {
+  try {
+    const res = await fetch(`http://127.0.0.1:8000/salesrep/visit-schedule?user_id=${user_id}`);
+    const data = await res.json();
+    const d = data.data
+    const parsed = d.map((v: any) => ({
+      ...v,
+      scheduledDate: new Date(v.scheduledDate), // ensure correct Date object
+    }));
+
+    return parsed
+  } catch (err) {
+    console.error("Failed to fetch visits:", err);
+  }
+};
+
 // Mock data
 export const mockVisits: Visit[] = [
   {
     id: "1",
     farmName: "Makiling Farm",
     location: "Laguna",
-    scheduledDate: new Date("2024-01-15T09:00:00"),
+    scheduledDate: new Date("2025-09-20T09:00:00"),
     status: VISIT_STATUS.SCHEDULED,
     type: VISIT_TYPES.INITIAL,
     contactPerson: "Juan dela Cruz",

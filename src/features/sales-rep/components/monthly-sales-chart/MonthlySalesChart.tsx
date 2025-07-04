@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState, useEffect} from "react";
 import { useIsMobile } from "@/lib/hooks/useIsMobile";
 import {
   Bar,
@@ -11,23 +11,43 @@ import {
   Cell,
 } from "recharts";
 import { CustomLabel } from "./components";
-import { mockMonthlySalesData } from "./constants";
+import { fetchMonthlySalesData } from "./constants";
+import type { MonthlySalesData } from "./constants";
 import {
   calculateTotalVolumeInfluenced,
   calculateTotalClosedSales,
   calculateAverageVolumeInfluenced,
   calculateAverageClosedSales,
 } from "./utils";
+// import type { useEffect } from "react";
 
 const MonthlySalesChart: React.FC = () => {
   const isMobile = useIsMobile();
 
+  const [monthlyData, setMonthlyData] = useState<MonthlySalesData[]>([]);
+  const [averageSales, setAverageSales] = useState<number>(0);
+
+  useEffect(() => {
+    async function loadData() {
+      const { data, average } = await fetchMonthlySalesData(3);
+      setMonthlyData(data);
+      setAverageSales(average);      
+    }        
+    loadData();
+  }, []);
+
+  // const totalVolumeInfluenced =
+  //   calculateTotalVolumeInfluenced(mockMonthlySalesData);
+  // const totalClosedSales = calculateTotalClosedSales(mockMonthlySalesData);
+  // const avgVolumeInfluenced =
+  //   calculateAverageVolumeInfluenced(mockMonthlySalesData);
+  // const avgClosedSales = calculateAverageClosedSales(mockMonthlySalesData);
+
   const totalVolumeInfluenced =
-    calculateTotalVolumeInfluenced(mockMonthlySalesData);
-  const totalClosedSales = calculateTotalClosedSales(mockMonthlySalesData);
-  const avgVolumeInfluenced =
-    calculateAverageVolumeInfluenced(mockMonthlySalesData);
-  const avgClosedSales = calculateAverageClosedSales(mockMonthlySalesData);
+    calculateTotalVolumeInfluenced(monthlyData);
+  const totalClosedSales = calculateTotalClosedSales(monthlyData);
+  const avgVolumeInfluenced = 0;    
+  const avgClosedSales = averageSales;
 
   return (
     <div className="bg-card space-y-6 rounded-lg border border-border p-4">
@@ -70,7 +90,7 @@ const MonthlySalesChart: React.FC = () => {
       <div className="h-72 w-full">
         <ResponsiveContainer width="100%" height="100%">
           <BarChart
-            data={mockMonthlySalesData}
+            data={monthlyData}
             margin={{
               top: 20,
               right: 10,
@@ -162,7 +182,7 @@ const MonthlySalesChart: React.FC = () => {
               radius={[3, 3, 0, 0]}
               maxBarSize={32}
             >
-              {mockMonthlySalesData.map((entry, index) => (
+              {monthlyData.map((entry, index) => (
                 <Cell
                   key={`volume-${index}`}
                   fillOpacity={
@@ -178,7 +198,7 @@ const MonthlySalesChart: React.FC = () => {
               radius={[3, 3, 0, 0]}
               maxBarSize={32}
             >
-              {mockMonthlySalesData.map((entry, index) => (
+              {monthlyData.map((entry, index) => (
                 <Cell
                   key={`sales-${index}`}
                   fillOpacity={entry.closedSales >= avgClosedSales ? 1 : 0.4}
