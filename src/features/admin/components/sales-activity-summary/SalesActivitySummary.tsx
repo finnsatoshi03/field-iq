@@ -15,20 +15,22 @@ const SalesActivitySummary = () => {
   };
 
   return (
-    <div className="bg-card space-y-6 rounded-lg border border-border p-4">
+    <div className="bg-card space-y-4 rounded-lg border border-border p-4">
       <div>
         <div className="flex items-center justify-between mb-4">
-          <h3 className="text-foreground font-display font-semibold text-base tracking-tight">
-            Sales Activity Summary
-          </h3>
+          <div>
+            <h3 className="text-foreground font-display font-semibold text-base tracking-tight">
+              Sales Activity Summary
+            </h3>
+            <p className="text-muted-foreground text-sm font-sans">
+              Sales volume influenced or closed
+            </p>
+          </div>
           <ViewToggle currentView={viewMode} onViewChange={handleViewChange} />
         </div>
-        <p className="text-muted-foreground text-sm font-sans mb-4">
-          Sales volume influenced or closed
-        </p>
 
         {/* Summary moved to top */}
-        <div className="flex items-center justify-between flex-wrap gap-6">
+        <div className="flex items-center justify-between flex-wrap gap-4">
           <div className="flex items-center gap-3">
             <div className="flex flex-col">
               <div className="flex items-center gap-2">

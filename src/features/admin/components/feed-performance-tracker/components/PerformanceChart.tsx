@@ -210,6 +210,48 @@ const PerformanceChart = ({
 
   return (
     <div className="space-y-4">
+      {/* Performance Indicators */}
+      {chartData.length > 0 && (
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+          <div className="p-3 rounded-lg bg-accent">
+            <div className="text-muted-foreground text-sm flex items-center gap-2">
+              <div className="size-2.5 bg-red-600 rounded-full" />
+              Latest FCR
+            </div>
+            <div className="text-2xl font-semibold font-display">
+              {formatFcr(chartData[chartData.length - 1]?.fcr || 0)}
+            </div>
+          </div>
+          <div className="p-3 rounded-lg bg-accent">
+            <div className="text-muted-foreground text-sm flex items-center gap-2">
+              <div className="size-2.5 bg-green-600 rounded-full" />
+              Latest Weight Gain
+            </div>
+            <div className="text-2xl font-semibold font-display">
+              {formatWeight(chartData[chartData.length - 1]?.weightGain || 0)}
+            </div>
+          </div>
+          <div className="p-3 rounded-lg bg-accent">
+            <div className="text-muted-foreground text-sm flex items-center gap-2">
+              <div className="size-2.5 bg-yellow-600 rounded-full" />
+              Latest Mortality
+            </div>
+            <div className="text-2xl font-semibold font-display">
+              {formatMortality(chartData[chartData.length - 1]?.mortality || 0)}
+            </div>
+          </div>
+          <div className="p-3 rounded-lg bg-accent">
+            <div className="text-muted-foreground text-sm flex items-center gap-2">
+              <div className="size-2.5 bg-blue-600 rounded-full" />
+              Data Points
+            </div>
+            <div className="text-2xl font-semibold font-display">
+              {chartData.length}
+            </div>
+          </div>
+        </div>
+      )}
+
       <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3 sm:gap-4">
         <div className="w-full sm:w-auto">
           <label className="text-xs font-medium text-gray-700 block mb-1">
@@ -241,40 +283,6 @@ const PerformanceChart = ({
           </div>
         )}
       </div>
-
-      {/* Performance Indicators */}
-      {chartData.length > 0 && (
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-          <div className="text-center p-3 rounded-lg bg-card border">
-            <div className="text-lg font-bold text-red-600">
-              {formatFcr(chartData[chartData.length - 1]?.fcr || 0)}
-            </div>
-            <div className="text-xs text-muted-foreground">Latest FCR</div>
-          </div>
-          <div className="text-center p-3 rounded-lg bg-card border">
-            <div className="text-lg font-bold text-green-600">
-              {formatWeight(chartData[chartData.length - 1]?.weightGain || 0)}
-            </div>
-            <div className="text-xs text-muted-foreground">
-              Latest Weight Gain
-            </div>
-          </div>
-          <div className="text-center p-3 rounded-lg bg-card border">
-            <div className="text-lg font-bold text-yellow-600">
-              {formatMortality(chartData[chartData.length - 1]?.mortality || 0)}
-            </div>
-            <div className="text-xs text-muted-foreground">
-              Latest Mortality
-            </div>
-          </div>
-          <div className="text-center p-3 rounded-lg bg-card border">
-            <div className="text-lg font-bold text-blue-600">
-              {chartData.length}
-            </div>
-            <div className="text-xs text-muted-foreground">Data Points</div>
-          </div>
-        </div>
-      )}
     </div>
   );
 };

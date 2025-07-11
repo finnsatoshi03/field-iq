@@ -169,22 +169,61 @@ const FarmMap: React.FC<FarmMapProps> = ({ filters = {}, className = "" }) => {
   return (
     <div className={`w-full ${className}`}>
       <div className="bg-card rounded-lg border border-border overflow-hidden">
-        <div className="p-3 sm:p-4">
-          <div className="flex items-center gap-2 mb-3">
-            <div className="p-1.5 sm:p-2 rounded-lg bg-gray-50 flex-shrink-0">
-              <MapPin className="h-3 w-3 sm:h-4 sm:w-4 text-gray-600" />
-            </div>
-            <div className="min-w-0">
-              <h3 className="text-sm sm:text-base font-semibold">
-                Farm Locations
-              </h3>
+        <div className="p-2 space-y-2">
+          <div className="flex items-center gap-1">
+            <MapPin className="size-3 sm:size-4 text-muted-foreground" />
+            <h3 className="text-sm sm:text-base font-display font-medium">
+              Farm Locations
+            </h3>
+          </div>
+
+          <div className="flex items-end justify-between flex-wrap gap-2">
+            <div className="w-1/3">
               <p className="text-xs sm:text-sm text-muted-foreground">
-                {farms.length} registered farms across the Philippines
+                Registered farms across the Philippines
               </p>
+              <div className="text-lg sm:text-xl lg:text-2xl font-bold font-display">
+                {farms.length}
+              </div>
+            </div>
+            <div className="grid grid-cols-3 gap-2 sm:gap-4 text-xs sm:text-sm">
+              <div className="w-fit">
+                <div className="flex items-center gap-1">
+                  <div className="w-2 h-2 sm:w-3 sm:h-3 rounded-full bg-green-500"></div>
+                  <span className="text-muted-foreground">New</span>
+                </div>
+                <div className="text-lg sm:text-xl lg:text-2xl font-bold font-display">
+                  {farms.filter((f) => f.registrationType === "new").length}
+                </div>
+              </div>
+              <div className="w-fit">
+                <div className="flex items-center gap-1">
+                  <div className="w-2 h-2 sm:w-3 sm:h-3 rounded-full bg-blue-500"></div>
+                  <span className="text-muted-foreground">Expansion</span>
+                </div>
+                <div className="text-lg sm:text-xl lg:text-2xl font-bold font-display">
+                  {
+                    farms.filter((f) => f.registrationType === "expansion")
+                      .length
+                  }
+                </div>
+              </div>
+              <div className="w-fit">
+                <div className="flex items-center gap-1">
+                  <div className="w-2 h-2 sm:w-3 sm:h-3 rounded-full bg-purple-500"></div>
+                  <span className="text-muted-foreground">Conversion</span>
+                </div>
+                <div className="text-lg sm:text-xl lg:text-2xl font-bold font-display">
+                  {
+                    farms.filter((f) => f.registrationType === "conversion")
+                      .length
+                  }
+                </div>
+              </div>
             </div>
           </div>
 
-          <div className="relative h-[200px] sm:h-[300px] lg:h-[400px] w-full rounded-lg overflow-hidden border border-gray-200">
+          <div className="relative h-[200px] z-0 sm:h-[300px] lg:h-[400px] w-full rounded-lg overflow-hidden border border-gray-200">
             <MapContainer
               ref={mapRef}
               center={[12.8797, 121.774]} // Philippines center
@@ -243,7 +282,7 @@ const FarmMap: React.FC<FarmMapProps> = ({ filters = {}, className = "" }) => {
                           >
                             {getRegistrationTypeLabel(farm.registrationType)}
                           </Badge>
-                          <span className="text-gray-600">
+                          <span className="text-muted-foreground">
                             {formatHectares(farm.farmSize)}
                           </span>
                         </div>
@@ -268,7 +307,7 @@ const FarmMap: React.FC<FarmMapProps> = ({ filters = {}, className = "" }) => {
                         <div className="flex gap-1 pt-2 border-t border-gray-100">
                           <div className="flex items-center gap-1">
                             <Phone className="h-3 w-3 text-gray-500" />
-                            <span className="text-gray-600">
+                            <span className="text-muted-foreground">
                               {farm.contactInfo.phone}
                             </span>
                           </div>
@@ -293,39 +332,6 @@ const FarmMap: React.FC<FarmMapProps> = ({ filters = {}, className = "" }) => {
               onNext={handleNext}
               onViewAll={handleViewAll}
             />
-          </div>
-
-          <div className="mt-3 sm:mt-4 grid grid-cols-3 gap-2 sm:gap-4 text-xs sm:text-sm">
-            <div className="text-center">
-              <div className="flex items-center justify-center gap-1 mb-1">
-                <div className="w-2 h-2 sm:w-3 sm:h-3 rounded-full bg-green-500"></div>
-                <span className="text-gray-600">New</span>
-              </div>
-              <div className="font-medium">
-                {farms.filter((f) => f.registrationType === "new").length}
-              </div>
-            </div>
-            <div className="text-center">
-              <div className="flex items-center justify-center gap-1 mb-1">
-                <div className="w-2 h-2 sm:w-3 sm:h-3 rounded-full bg-blue-500"></div>
-                <span className="text-gray-600">Expansion</span>
-              </div>
-              <div className="font-medium">
-                {farms.filter((f) => f.registrationType === "expansion").length}
-              </div>
-            </div>
-            <div className="text-center">
-              <div className="flex items-center justify-center gap-1 mb-1">
-                <div className="w-2 h-2 sm:w-3 sm:h-3 rounded-full bg-purple-500"></div>
-                <span className="text-gray-600">Conversion</span>
-              </div>
-              <div className="font-medium">
-                {
-                  farms.filter((f) => f.registrationType === "conversion")
-                    .length
-                }
-              </div>
-            </div>
           </div>
         </div>
       </div>

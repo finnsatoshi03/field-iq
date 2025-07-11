@@ -91,33 +91,52 @@ const DealerIssueTracker: React.FC<DealerIssueTrackerProps> = ({
   };
 
   return (
-    <div className="bg-card space-y-6 rounded-lg border border-border p-4">
+    <div className="bg-card space-y-4 rounded-lg border border-border p-4">
       <div>
         <h3 className="text-foreground font-display font-semibold text-base tracking-tight">
           Dealer Issue Tracker
         </h3>
       </div>
 
-      <div className={cn("space-y-6", className)}>
+      {/* Filters */}
+      <div className="-mx-4">
+        <div className="bg-accent p-4">
+          <div className="mb-2">
+            <h3 className="text-foreground font-display font-semibold text-base tracking-tight">
+              Filters
+            </h3>
+          </div>
+          <FilterControls
+            selectedSeverity={selectedSeverity}
+            selectedIssueType={selectedIssueType}
+            onSeverityChange={setSelectedSeverity}
+            onIssueTypeChange={setSelectedIssueType}
+          />
+        </div>
+      </div>
+
+      <div className={cn("space-y-4", className)}>
         {/* Responsive Grid Layout */}
-        <div className="grid grid-cols-1 lg:grid-cols-[1fr_0.4fr] gap-6">
+        <div className="grid grid-cols-1 lg:grid-cols-[1fr_0.4fr] gap-4">
           {/* Left Column - Map/List View */}
-          <div className="space-y-6">
+          <div className="space-y-4">
             {/* Main Map/List View */}
-            <div className="bg-card rounded-lg border border-border p-4">
-              <div className="mb-4">
-                <div className="flex items-center justify-between">
-                  <h3 className="text-foreground font-display font-semibold text-base tracking-tight">
-                    Dealer Locations
-                  </h3>
+            <div className="bg-card rounded-lg border border-border p-2">
+              <div className="mb-2">
+                <div className="flex flex-wrap gap-2 justify-between">
+                  <div>
+                    <h3 className="text-foreground font-display font-semibold text-base tracking-tight">
+                      Dealer Locations
+                    </h3>
+                    <p className="text-xs text-muted-foreground">
+                      Interactive map and issue tracking
+                    </p>
+                  </div>
                   <ViewToggle
                     currentView={viewMode}
                     onViewChange={handleViewChange}
                   />
                 </div>
-                <p className="text-xs text-muted-foreground mt-1">
-                  Interactive map and issue tracking
-                </p>
               </div>
 
               <div className="h-96 w-full bg-muted/10 rounded-lg overflow-hidden border border-border">
@@ -126,17 +145,17 @@ const DealerIssueTracker: React.FC<DealerIssueTrackerProps> = ({
             </div>
 
             {/* Issue Distribution */}
-            <div className="bg-card rounded-lg border border-border p-4">
-              <div className="mb-4">
+            <div className="bg-card rounded-lg border border-border p-2">
+              <div className="mb-2">
                 <h3 className="text-foreground font-display font-semibold text-base tracking-tight">
                   Issue Distribution
                 </h3>
-                <p className="text-xs text-muted-foreground mt-1">
+                <p className="text-xs text-muted-foreground">
                   Breakdown by issue type and severity
                 </p>
               </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div className="grid grid-cols-3 gap-2">
                 <div className="rounded-lg bg-muted/50 px-3 py-2">
                   <div className="flex items-center gap-2">
                     <div className="w-2 h-2 rounded-full bg-red-500"></div>
@@ -177,39 +196,24 @@ const DealerIssueTracker: React.FC<DealerIssueTrackerProps> = ({
           </div>
 
           {/* Right Column - Filters and Summary */}
-          <div className="space-y-6">
-            {/* Filters */}
-            <div className="bg-card rounded-lg border border-border p-4">
-              <div className="mb-4">
-                <h3 className="text-foreground font-display font-semibold text-base tracking-tight">
-                  Filters
-                </h3>
-              </div>
-              <FilterControls
-                selectedSeverity={selectedSeverity}
-                selectedIssueType={selectedIssueType}
-                onSeverityChange={setSelectedSeverity}
-                onIssueTypeChange={setSelectedIssueType}
-              />
-            </div>
-
+          <div className="space-y-4">
             {/* Summary Metrics */}
-            <div className="bg-card rounded-lg border border-border p-4">
-              <div className="mb-4">
+            <div className="bg-card rounded-lg border border-border p-2">
+              <div className="mb-2">
                 <h3 className="text-foreground font-display font-semibold text-base tracking-tight">
                   Summary
                 </h3>
-                <p className="text-xs text-muted-foreground mt-1">
+                <p className="text-xs text-muted-foreground">
                   Key performance indicators
                 </p>
               </div>
 
-              <div className="space-y-3">
+              <div className="space-y-1">
                 <div className="flex items-center justify-between">
                   <span className="text-xs text-muted-foreground font-sans">
                     Total Dealers
                   </span>
-                  <span className="text-sm font-medium text-foreground font-sans">
+                  <span className="text-sm font-medium text-foreground font-display">
                     {metrics.totalDealers}
                   </span>
                 </div>
@@ -218,7 +222,7 @@ const DealerIssueTracker: React.FC<DealerIssueTrackerProps> = ({
                   <span className="text-xs text-muted-foreground font-sans">
                     Total Issues
                   </span>
-                  <span className="text-sm font-medium text-foreground font-sans">
+                  <span className="text-sm font-medium text-foreground font-display">
                     {metrics.totalIssues}
                   </span>
                 </div>
@@ -227,7 +231,7 @@ const DealerIssueTracker: React.FC<DealerIssueTrackerProps> = ({
                   <span className="text-xs text-muted-foreground font-sans">
                     Critical Issues
                   </span>
-                  <span className="text-sm font-medium text-foreground font-sans">
+                  <span className="text-sm font-medium text-foreground font-display">
                     {metrics.criticalIssues}
                   </span>
                 </div>
@@ -236,7 +240,7 @@ const DealerIssueTracker: React.FC<DealerIssueTrackerProps> = ({
                   <span className="text-xs text-muted-foreground font-sans">
                     Resolution Rate
                   </span>
-                  <span className="text-sm font-medium text-foreground font-sans">
+                  <span className="text-sm font-medium text-foreground font-display">
                     {resolutionRate.toFixed(1)}%
                   </span>
                 </div>
@@ -244,22 +248,22 @@ const DealerIssueTracker: React.FC<DealerIssueTrackerProps> = ({
             </div>
 
             {/* Supply Chain Health */}
-            <div className="bg-card rounded-lg border border-border p-4">
-              <div className="mb-4">
+            <div className="bg-card rounded-lg border border-border p-2">
+              <div className="mb-2">
                 <h3 className="text-foreground font-display font-semibold text-base tracking-tight">
                   Supply Chain Health
                 </h3>
-                <p className="text-xs text-muted-foreground mt-1">
+                <p className="text-xs text-muted-foreground">
                   Overall system performance
                 </p>
               </div>
 
-              <div className="space-y-3">
+              <div className="space-y-1">
                 <div className="flex items-center justify-between">
                   <span className="text-xs text-muted-foreground font-sans">
                     Issues Resolved
                   </span>
-                  <span className="text-sm font-medium text-foreground font-sans">
+                  <span className="text-sm font-semibold text-foreground font-display">
                     {metrics.resolvedIssues}/{metrics.totalIssues}
                   </span>
                 </div>
@@ -275,7 +279,7 @@ const DealerIssueTracker: React.FC<DealerIssueTrackerProps> = ({
                   <span className="text-xs text-muted-foreground font-sans">
                     Supply Chain Issues
                   </span>
-                  <span className="text-sm font-medium text-foreground font-sans">
+                  <span className="text-sm font-semibold text-foreground font-display">
                     {metrics.stockoutIssues + metrics.deliveryIssues}
                   </span>
                 </div>

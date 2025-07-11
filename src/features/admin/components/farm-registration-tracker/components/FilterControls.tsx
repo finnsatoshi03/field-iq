@@ -55,11 +55,12 @@ const FilterControls: React.FC<FilterControlsProps> = ({
   const activeFilterCount = getActiveFilterCount();
 
   return (
-    <div className={`space-y-4 ${className}`}>
+    <div className={`space-y-2 ${className}`}>
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
-          <Filter className="h-4 w-4 text-gray-600" />
-          <span className="text-sm font-medium">Filters</span>
+          <span className="font-display font-medium tracking-tight">
+            Filters
+          </span>
           {activeFilterCount > 0 && (
             <Badge variant="secondary" className="text-xs">
               {activeFilterCount}
@@ -71,7 +72,7 @@ const FilterControls: React.FC<FilterControlsProps> = ({
             variant="ghost"
             size="sm"
             onClick={clearFilters}
-            className="text-xs h-8 px-2"
+            className="text-xs px-2"
           >
             <X className="h-3 w-3 mr-1" />
             Clear All
@@ -79,10 +80,10 @@ const FilterControls: React.FC<FilterControlsProps> = ({
         )}
       </div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+      <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
         {/* Registration Type Filter */}
         <div className="space-y-1">
-          <label className="text-xs font-medium text-gray-700">
+          <label className="text-xs font-semibold text-muted-foreground">
             Registration Type
           </label>
           <Select
@@ -91,7 +92,7 @@ const FilterControls: React.FC<FilterControlsProps> = ({
               handleFilterChange("registrationType", value)
             }
           >
-            <SelectTrigger className="h-8 text-xs">
+            <SelectTrigger className="text-xs border-black">
               <SelectValue placeholder="All Types" />
             </SelectTrigger>
             <SelectContent>
@@ -105,12 +106,14 @@ const FilterControls: React.FC<FilterControlsProps> = ({
 
         {/* Status Filter */}
         <div className="space-y-1">
-          <label className="text-xs font-medium text-gray-700">Status</label>
+          <label className="text-xs font-semibold text-muted-foreground">
+            Status
+          </label>
           <Select
             value={filters.status || "all"}
             onValueChange={(value) => handleFilterChange("status", value)}
           >
-            <SelectTrigger className="h-8 text-xs">
+            <SelectTrigger className="text-xs border-black">
               <SelectValue placeholder="All Status" />
             </SelectTrigger>
             <SelectContent>
@@ -124,12 +127,14 @@ const FilterControls: React.FC<FilterControlsProps> = ({
 
         {/* Sales Rep Filter */}
         <div className="space-y-1">
-          <label className="text-xs font-medium text-gray-700">Sales Rep</label>
+          <label className="text-xs font-semibold text-muted-foreground">
+            Sales Rep
+          </label>
           <Select
             value={filters.salesRep || "all"}
             onValueChange={(value) => handleFilterChange("salesRep", value)}
           >
-            <SelectTrigger className="h-8 text-xs">
+            <SelectTrigger className="text-xs border-black">
               <SelectValue placeholder="All Reps" />
             </SelectTrigger>
             <SelectContent>
@@ -145,12 +150,14 @@ const FilterControls: React.FC<FilterControlsProps> = ({
 
         {/* Region Filter */}
         <div className="space-y-1">
-          <label className="text-xs font-medium text-gray-700">Region</label>
+          <label className="text-xs font-semibold text-muted-foreground">
+            Region
+          </label>
           <Select
             value={filters.region || "all"}
             onValueChange={(value) => handleFilterChange("region", value)}
           >
-            <SelectTrigger className="h-8 text-xs">
+            <SelectTrigger className="text-xs border-black">
               <SelectValue placeholder="All Regions" />
             </SelectTrigger>
             <SelectContent>
@@ -166,7 +173,7 @@ const FilterControls: React.FC<FilterControlsProps> = ({
 
         {/* Time Period Filter */}
         <div className="space-y-1">
-          <label className="text-xs font-medium text-gray-700">
+          <label className="text-xs font-semibold text-muted-foreground">
             Time Period
           </label>
           <Select
@@ -178,7 +185,7 @@ const FilterControls: React.FC<FilterControlsProps> = ({
               )
             }
           >
-            <SelectTrigger className="h-8 text-xs">
+            <SelectTrigger className="text-xs border-black">
               <SelectValue placeholder="All Time" />
             </SelectTrigger>
             <SelectContent>
@@ -192,8 +199,8 @@ const FilterControls: React.FC<FilterControlsProps> = ({
         </div>
 
         {/* Custom Date Range */}
-        <div className="space-y-1">
-          <label className="text-xs font-medium text-gray-700">
+        <div className="space-y-1 flex flex-col">
+          <label className="text-xs font-semibold text-muted-foreground">
             Custom Date
           </label>
           <Popover>
@@ -201,7 +208,7 @@ const FilterControls: React.FC<FilterControlsProps> = ({
               <Button
                 variant="outline"
                 className={cn(
-                  "h-8 text-xs justify-start text-left font-normal",
+                  "text-xs justify-start w-fit text-left font-normal",
                   !filters.dateRange && "text-muted-foreground"
                 )}
               >

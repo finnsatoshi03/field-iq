@@ -10,6 +10,7 @@ import {
 import {
   Dialog,
   DialogContent,
+  DialogDescription,
   DialogHeader,
   DialogTitle,
   DialogTrigger,
@@ -31,7 +32,7 @@ import {
 } from "./utils";
 
 const FarmRegistrationTracker: React.FC = () => {
-  const [currentView, setCurrentView] = useState<ViewMode>("stats");
+  const [currentView, setCurrentView] = useState<ViewMode>("chart");
   const [chartType, setChartType] = useState<ChartType>("registrations");
   const [timePeriod, setTimePeriod] = useState<TimePeriod>("month");
   const [filters, setFilters] = useState<FilterOptions>({});
@@ -91,40 +92,50 @@ const FarmRegistrationTracker: React.FC = () => {
       case "stats":
       default:
         return (
-          <div className="space-y-3">
+          <div className="space-y-2 p-2 rounded-lg border">
             <div className="grid grid-cols-2 gap-2">
-              <div className="text-center p-2 bg-muted/10 rounded">
-                <div className="text-sm font-bold text-green-600">
+              <div className="text-center p-2 bg-accent rounded">
+                <div className="text-lg sm:text-xl lg:text-2xl font-bold font-display text-green-600">
                   {formatNumber(metrics.newAccounts)}
                 </div>
-                <div className="text-xs text-muted-foreground">New</div>
+                <div className="text-xs text-muted-foreground font-semibold">
+                  New
+                </div>
               </div>
-              <div className="text-center p-2 bg-muted/10 rounded">
-                <div className="text-sm font-bold text-blue-600">
+              <div className="text-center p-2 bg-accent rounded">
+                <div className="text-lg sm:text-xl lg:text-2xl font-bold font-display text-blue-600">
                   {formatNumber(metrics.expansions)}
                 </div>
-                <div className="text-xs text-muted-foreground">Expansions</div>
+                <div className="text-xs text-muted-foreground font-semibold">
+                  Expansions
+                </div>
               </div>
             </div>
             <div className="grid grid-cols-2 gap-2">
-              <div className="text-center p-2 bg-muted/10 rounded">
-                <div className="text-sm font-bold text-purple-600">
+              <div className="text-center p-2 bg-accent rounded">
+                <div className="text-lg sm:text-xl lg:text-2xl font-bold font-display text-purple-600">
                   {formatNumber(metrics.conversions)}
                 </div>
-                <div className="text-xs text-muted-foreground">Conversions</div>
+                <div className="text-xs text-muted-foreground font-semibold">
+                  Conversions
+                </div>
               </div>
-              <div className="text-center p-2 bg-muted/10 rounded">
-                <div className="text-sm font-bold text-orange-600">
+              <div className="text-center p-2 bg-accent rounded">
+                <div className="text-lg sm:text-xl lg:text-2xl font-bold font-display text-orange-600">
                   {formatNumber(metrics.thisMonth)}
                 </div>
-                <div className="text-xs text-muted-foreground">This Month</div>
+                <div className="text-xs text-muted-foreground font-semibold">
+                  This Month
+                </div>
               </div>
             </div>
-            <div className="text-center p-2 bg-muted/10 rounded">
-              <div className="text-sm font-bold text-gray-700">
+            <div className="text-center p-2 bg-accent rounded">
+              <div className="text-lg sm:text-xl lg:text-2xl font-bold font-display text-gray-700">
                 {formatNumber(metrics.totalRegistrations)}
               </div>
-              <div className="text-xs text-muted-foreground">Total Farms</div>
+              <div className="text-xs text-muted-foreground font-semibold">
+                Total Farms
+              </div>
             </div>
           </div>
         );
@@ -132,68 +143,21 @@ const FarmRegistrationTracker: React.FC = () => {
   };
 
   const renderExpandedView = () => {
-    switch (currentView) {
-      case "chart":
-        return (
-          <div className="space-y-4">
-            <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3 sm:gap-4">
-              <div className="w-full sm:w-auto">
-                <label className="text-xs font-medium text-gray-700 block mb-1">
-                  Chart Type
-                </label>
-                <Select
-                  value={chartType}
-                  onValueChange={(value: ChartType) => setChartType(value)}
-                >
-                  <SelectTrigger className="w-full sm:w-[150px] h-9">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="registrations">Registrations</SelectItem>
-                    <SelectItem value="revenue">Revenue</SelectItem>
-                    <SelectItem value="farmSize">Farm Size</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-              <div className="w-full sm:w-auto">
-                <label className="text-xs font-medium text-gray-700 block mb-1">
-                  Time Period
-                </label>
-                <Select
-                  value={timePeriod}
-                  onValueChange={(value: TimePeriod) => setTimePeriod(value)}
-                >
-                  <SelectTrigger className="w-full sm:w-[120px] h-9">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="week">Week</SelectItem>
-                    <SelectItem value="month">Month</SelectItem>
-                    <SelectItem value="quarter">Quarter</SelectItem>
-                    <SelectItem value="year">Year</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-            </div>
-            <RegistrationChart chartType={chartType} timePeriod={timePeriod} />
-          </div>
-        );
-      case "map":
-        return <FarmMap filters={filters} />;
-      case "stats":
-        return <RegistrationStats filters={filters} />;
-      default:
-        return <RegistrationStats filters={filters} />;
-    }
+    return <RegistrationStats filters={filters} />;
   };
 
   return (
-    <div className="bg-card rounded-lg border border-border pt-4 space-y-6">
+    <div className="bg-card rounded-lg border border-border pt-4 space-y-4">
       <div className="px-4">
-        <div className="flex items-center justify-between">
-          <h3 className="text-foreground font-display font-medium text-base tracking-tight">
-            Farm Registration Tracker
-          </h3>
+        <div className="flex flex-wrap gap-2 justify-between">
+          <div>
+            <h3 className="text-foreground font-display font-medium text-base tracking-tight">
+              Farm Registration Tracker
+            </h3>
+            <p className="text-muted-foreground text-xs font-sans">
+              Track farm registrations and expansions
+            </p>
+          </div>
           <div className="flex items-center gap-1">
             <Button
               variant="ghost"
@@ -214,8 +178,8 @@ const FarmRegistrationTracker: React.FC = () => {
 
       {/* Filters */}
       {showFilters && (
-        <div className="px-4">
-          <div className="p-3 bg-muted/20 rounded-lg">
+        <div className="px-4 -mx-4">
+          <div className="p-4 bg-accent">
             <FilterControls filters={filters} onFiltersChange={setFilters} />
           </div>
         </div>
@@ -225,9 +189,9 @@ const FarmRegistrationTracker: React.FC = () => {
       <div className="px-4">{renderCompactView()}</div>
 
       {/* Expanded View Dialog */}
-      <div className="px-4 bg-muted/20 py-4">
-        <div className="flex items-end justify-between mb-3">
-          <h4 className="text-foreground font-display font-medium text-sm tracking-tight">
+      <div className="px-4 bg-muted/20 py-4 space-y-2">
+        <div className="flex items-center gap-2 flex-wrap justify-between">
+          <h4 className="text-foreground font-display font-medium tracking-tight">
             Penetration & Expansion Tracking
           </h4>
           <div className="flex items-center gap-4 text-xs">
@@ -250,7 +214,7 @@ const FarmRegistrationTracker: React.FC = () => {
 
         <Dialog>
           <DialogTrigger asChild>
-            <div className="flex items-center cursor-pointer hover:bg-muted/30 rounded p-2 transition-colors">
+            <div className="flex items-center cursor-pointer hover:bg-muted/30 rounded transition-colors">
               <div className="flex flex-col items-center mr-3 relative">
                 <div className="size-8 rounded-full flex-shrink-0 z-10 flex items-center justify-center border-2 border-dashed border-muted-foreground/30 bg-background">
                   <Plus className="size-4 text-muted-foreground" />
@@ -264,24 +228,23 @@ const FarmRegistrationTracker: React.FC = () => {
             </div>
           </DialogTrigger>
           <DialogContent className="max-w-[95vw] sm:max-w-[90vw] lg:max-w-4xl xl:max-w-6xl max-h-[90vh] overflow-y-auto">
-            <DialogHeader>
-              <DialogTitle>Farm Registration Analytics</DialogTitle>
+            <DialogHeader className="gap-0 space-y-0">
+              <DialogTitle className="font-semibold font-display text-lg">
+                Farm Registration Analytics
+              </DialogTitle>
+              <DialogDescription>
+                View detailed analytics and full dashboard
+              </DialogDescription>
             </DialogHeader>
-            <div className="mt-4">
+            <div className="space-y-2">
               {/* Filters in expanded view */}
-              <div className="mb-4 p-3 bg-muted/20 rounded-lg">
-                <FilterControls
-                  filters={filters}
-                  onFiltersChange={setFilters}
-                />
-              </div>
-
-              {/* View Toggle for expanded view */}
-              <div className="mb-4 flex justify-center">
-                <ViewToggle
-                  currentView={currentView}
-                  onViewChange={setCurrentView}
-                />
+              <div className="-mx-10 px-4">
+                <div className="bg-accent p-4">
+                  <FilterControls
+                    filters={filters}
+                    onFiltersChange={setFilters}
+                  />
+                </div>
               </div>
 
               {/* Expanded Content */}

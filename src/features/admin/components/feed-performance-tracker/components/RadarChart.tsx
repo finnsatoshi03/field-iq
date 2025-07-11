@@ -8,7 +8,7 @@ import {
   Legend,
   Tooltip,
 } from "recharts";
-import { Badge } from "@/components/ui/badge";
+import { AlertTriangle, Shield, ShieldAlert } from "lucide-react";
 import type { PerformanceMetric } from "../constants";
 import {
   prepareRadarData,
@@ -16,6 +16,7 @@ import {
   getPerformanceColor,
   formatPerformanceScore,
 } from "../utils";
+import { capitalizeFirstLetter } from "@/lib/helpers/string";
 
 interface RadarChartProps {
   metrics: PerformanceMetric[];
@@ -49,25 +50,87 @@ const RadarChart = ({ metrics }: RadarChartProps) => {
     return null;
   };
 
+  const getMetricIcon = (metric: string) => {
+    switch (metric.toLowerCase()) {
+      case "fcr":
+      case "feed conversion ratio":
+        return <AlertTriangle className="h-4 w-4 text-yellow-600 shrink-0" />;
+      case "weight gain":
+      case "weight":
+        return <Shield className="h-4 w-4 text-green-600 shrink-0" />;
+      case "mortality":
+      case "verification":
+      case "management":
+      default:
+        return <ShieldAlert className="h-4 w-4 text-blue-600 shrink-0" />;
+    }
+  };
+
   return (
     <div className="space-y-4">
-      {/* Performance Summary */}
-      <div className="text-center space-y-2">
-        <div className="text-2xl font-bold" style={{ color: performanceColor }}>
-          {formatPerformanceScore(overallScore)}
+      {/* Performance Breakdown */}
+      {radarData.length > 0 && (
+        <div className="space-y-2">
+          <div className="grid grid-cols-3 gap-2">
+            {/* First row - 3 columns */}
+            {radarData.slice(0, 3).map((item, index) => (
+              <div key={index} className="p-3 rounded-lg bg-accent">
+                <div className="text-muted-foreground text-sm flex items-center gap-2">
+                  {getMetricIcon(item.metric)}
+                  {item.metric}
+                </div>
+                <div className="text-2xl font-semibold font-display">
+                  {item.value.toFixed(1)}
+                </div>
+                <div className="w-full bg-muted-foreground rounded-full h-2 mt-2">
+                  <div
+                    className="h-2 rounded-full transition-all bg-blue-600"
+                    style={{
+                      width: `${item.value}%`,
+                    }}
+                  />
+                </div>
+              </div>
+            ))}
+          </div>
+
+          {/* Second row - 2 columns */}
+          {radarData.length > 3 && (
+            <div className="grid grid-cols-2 gap-2">
+              {radarData.slice(3, 5).map((item, index) => (
+                <div key={index + 3} className="p-3 rounded-lg bg-accent">
+                  <div className="text-muted-foreground text-sm flex items-center gap-2">
+                    {getMetricIcon(item.metric)}
+                    {item.metric}
+                  </div>
+                  <div className="text-2xl font-semibold font-display">
+                    {item.value.toFixed(1)}
+                  </div>
+                  <div className="w-full bg-muted-foreground rounded-full h-2 mt-2">
+                    <div
+                      className="h-2 rounded-full transition-all bg-blue-600"
+                      style={{
+                        width: `${item.value}%`,
+                      }}
+                    />
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
         </div>
-        <Badge
-          variant="outline"
-          className="text-sm"
-          style={{
-            borderColor: performanceColor,
-            color: performanceColor,
-          }}
-        >
-          {performanceRating.toUpperCase()} Performance
-        </Badge>
-        <div className="text-xs text-muted-foreground">
-          Overall Performance Score
+      )}
+
+      {/* Performance Summary */}
+      <div
+        className="-mx-6 px-6 py-3 flex items-center justify-between bg-blue-100 border-t border-b border-blue-700"
+        style={{ color: performanceColor }}
+      >
+        <p className="font-semibold font-display">
+          {capitalizeFirstLetter(performanceRating)} Performance
+        </p>
+        <div className="font-semibold font-display">
+          {formatPerformanceScore(overallScore)}
         </div>
       </div>
 
@@ -111,63 +174,22 @@ const RadarChart = ({ metrics }: RadarChartProps) => {
         )}
       </div>
 
-      {/* Performance Breakdown */}
-      {radarData.length > 0 && (
-        <div className="space-y-3">
-          <h4 className="text-sm font-medium">Performance Breakdown</h4>
-          <div className="space-y-2">
-            {radarData.map((item, index) => (
-              <div
-                key={index}
-                className="flex items-center justify-between p-2 rounded bg-muted/10"
-              >
-                <div className="flex items-center gap-2">
-                  <div
-                    className="w-3 h-3 rounded-full"
-                    style={{
-                      backgroundColor: getPerformanceColor(
-                        getPerformanceRating(item.value)
-                      ),
-                    }}
-                  />
-                  <span className="text-sm font-medium">{item.metric}</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <span className="text-sm">{item.value.toFixed(1)}</span>
-                  <div className="w-16 bg-gray-200 rounded-full h-2">
-                    <div
-                      className="h-2 rounded-full transition-all"
-                      style={{
-                        width: `${item.value}%`,
-                        backgroundColor: getPerformanceColor(
-                          getPerformanceRating(item.value)
-                        ),
-                      }}
-                    />
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
-
       {/* Performance Insights */}
       {radarData.length > 0 && (
-        <div className="space-y-3">
-          <h4 className="text-sm font-medium">Performance Insights</h4>
-          <div className="space-y-2">
+        <div className="space-y-2">
+          <h4 className="font-display font-medium">Performance Insights</h4>
+          <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
             {/* Best performing metric */}
             {(() => {
               const bestMetric = radarData.reduce((best, current) =>
                 current.value > best.value ? current : best
               );
               return (
-                <div className="flex items-center gap-2 p-2 rounded bg-green-50 border border-green-200">
-                  <div className="w-2 h-2 rounded-full bg-green-500" />
-                  <span className="text-sm">
-                    <strong>{bestMetric.metric}</strong> is performing
-                    excellently ({bestMetric.value.toFixed(1)}/100)
+                <div className="flex items-center gap-2 p-2 rounded-md bg-green-100 border border-green-700">
+                  <ShieldAlert className="size-4 text-green-600 shrink-0" />
+                  <span className="text-sm text-muted-foreground font-semibold">
+                    <span className="text-black">{bestMetric.metric}</span> is
+                    performing excellently ({bestMetric.value.toFixed(1)}/100)
                   </span>
                 </div>
               );
@@ -179,21 +201,22 @@ const RadarChart = ({ metrics }: RadarChartProps) => {
                 current.value < worst.value ? current : worst
               );
               return (
-                <div className="flex items-center gap-2 p-2 rounded bg-red-50 border border-red-200">
-                  <div className="w-2 h-2 rounded-full bg-red-500" />
-                  <span className="text-sm">
-                    <strong>{worstMetric.metric}</strong> needs improvement (
-                    {worstMetric.value.toFixed(1)}/100)
+                <div className="flex items-center font-semibold gap-2 p-2 rounded-md bg-red-100 border border-red-700">
+                  <ShieldAlert className="size-4 text-red-600 shrink-0" />
+                  <span className="text-sm text-muted-foreground font-semibold">
+                    <span className="text-black">{worstMetric.metric}</span>{" "}
+                    needs improvement ({worstMetric.value.toFixed(1)}/100)
                   </span>
                 </div>
               );
             })()}
 
             {/* Overall assessment */}
-            <div className="flex items-center gap-2 p-2 rounded bg-blue-50 border border-blue-200">
-              <div className="w-2 h-2 rounded-full bg-blue-500" />
-              <span className="text-sm">
-                Overall performance is <strong>{performanceRating}</strong> with{" "}
+            <div className="col-span-2 sm:col-span-1 flex items-center gap-2 p-2 rounded-md bg-blue-100 border border-blue-700">
+              <ShieldAlert className="size-4 text-blue-600 shrink-0" />
+              <span className="text-sm text-muted-foreground font-semibold">
+                Overall performance is{" "}
+                <span className="text-black">{performanceRating}</span> with{" "}
                 {metrics.length} field observations
               </span>
             </div>

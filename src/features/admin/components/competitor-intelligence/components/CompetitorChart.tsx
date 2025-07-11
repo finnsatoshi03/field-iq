@@ -1,13 +1,6 @@
-import {
-  PieChart,
-  Pie,
-  Cell,
-  ResponsiveContainer,
-  Tooltip,
-  Legend,
-} from "recharts";
+import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from "recharts";
 import { Badge } from "@/components/ui/badge";
-import { TrendingUp, TrendingDown, Minus } from "lucide-react";
+import { Frown, Meh, Laugh } from "lucide-react";
 import type { CompetitorBrand, BrandMention } from "../constants";
 import {
   calculateMarketShareData,
@@ -15,6 +8,7 @@ import {
   getSentimentColor,
   getCategoryIcon,
 } from "../utils";
+import { capitalizeFirstLetter } from "@/lib/helpers/string";
 
 interface CompetitorChartProps {
   brands: CompetitorBrand[];
@@ -43,11 +37,11 @@ const CompetitorChart = ({ brands, mentions }: CompetitorChartProps) => {
   const getTrendIcon = (trend: string) => {
     switch (trend) {
       case "up":
-        return <TrendingUp className="h-3 w-3 text-green-500" />;
+        return <Laugh className="size-4 text-green-500" />;
       case "down":
-        return <TrendingDown className="h-3 w-3 text-red-500" />;
+        return <Frown className="size-4 text-red-500" />;
       default:
-        return <Minus className="h-3 w-3 text-gray-500" />;
+        return <Meh className="size-4 text-gray-500" />;
     }
   };
 
@@ -55,16 +49,17 @@ const CompetitorChart = ({ brands, mentions }: CompetitorChartProps) => {
     <div className="space-y-6">
       {/* Market Share Pie Chart */}
       <div>
-        <h3 className="text-sm font-medium mb-3">Market Share Distribution</h3>
-        <div className="h-[200px] sm:h-[250px]">
+        <h3 className="text-base font-medium font-display">
+          Market Share Distribution
+        </h3>
+        <div className="h-[200px] sm:h-[250px] items-center grid grid-cols-2 gap-4">
           <ResponsiveContainer width="100%" height="100%">
             <PieChart>
               <Pie
                 data={marketShareData}
                 cx="50%"
                 cy="50%"
-                outerRadius={60}
-                innerRadius={25}
+                innerRadius={"30%"}
                 paddingAngle={2}
                 dataKey="value"
               >
@@ -73,47 +68,67 @@ const CompetitorChart = ({ brands, mentions }: CompetitorChartProps) => {
                 ))}
               </Pie>
               <Tooltip content={<CustomTooltip />} />
-              <Legend wrapperStyle={{ fontSize: "12px" }} iconSize={8} />
             </PieChart>
           </ResponsiveContainer>
+          <div className="space-y-1">
+            {marketShareData.map((item) => (
+              <div
+                key={item.name}
+                className="flex items-center justify-between"
+              >
+                <div className="flex items-center gap-2">
+                  <div
+                    className="w-2 h-2 rounded-full"
+                    style={{ backgroundColor: item.color }}
+                  ></div>
+                  <span className="text-sm font-medium text-muted-foreground">
+                    {item.name}
+                  </span>
+                </div>
+              </div>
+            ))}
+          </div>
         </div>
       </div>
 
       {/* Brand Mentions Tag Cloud */}
-      <div>
-        <h3 className="text-sm font-medium mb-3">Brand Mentions & Sentiment</h3>
-        <div className="flex flex-wrap gap-2 justify-center min-h-[100px] items-center">
+      <div className="space-y-1">
+        <h3 className="text-base font-medium font-display">
+          Brand Mentions & Sentiment
+        </h3>
+        <div className="grid grid-cols-2 gap-2">
           {mentionsData.map((mention) => (
             <div
               key={mention.brandName}
-              className="flex items-center gap-1 p-2 rounded-lg border bg-card hover:bg-accent transition-colors"
-              style={{
-                fontSize: `${Math.max(10, Math.min(16, mention.mentions / 10))}px`,
-              }}
+              className="flex items-center gap-1 p-2 rounded-lg border border-black"
             >
-              <span className="text-lg">
+              <span className="text-sm">
                 {getCategoryIcon(mention.category as any)}
               </span>
-              <div className="flex flex-col">
-                <div className="flex items-center gap-1">
-                  <span className="font-medium">{mention.brandName}</span>
-                  {getTrendIcon(mention.trend)}
+              <div className="flex flex-col w-full">
+                <div className="flex items-center w-full justify-between gap-2">
+                  <h3 className="font-medium font-display text-sm">
+                    {mention.brandName}
+                  </h3>
+                  <div className="flex items-center gap-1">
+                    {getTrendIcon(mention.trend)}
+                    <Badge
+                      variant="outline"
+                      className="py-0.5 text-xs text-white rounded-md"
+                      style={{
+                        backgroundColor: getSentimentColor(mention.sentiment),
+                      }}
+                    >
+                      {capitalizeFirstLetter(mention.sentiment)}
+                    </Badge>
+                  </div>
                 </div>
-                <div className="flex items-center gap-2 text-xs">
-                  <Badge
-                    variant="outline"
-                    className="px-1 py-0 text-xs"
-                    style={{
-                      borderColor: getSentimentColor(mention.sentiment),
-                      color: getSentimentColor(mention.sentiment),
-                    }}
-                  >
-                    {mention.sentiment}
-                  </Badge>
-                  <span className="text-muted-foreground">
-                    {mention.mentions} mentions
-                  </span>
-                </div>
+                <p className="text-muted-foreground text-xs">
+                  <span className="text-sm font-medium text-black font-display">
+                    {mention.mentions}
+                  </span>{" "}
+                  mentions
+                </p>
               </div>
             </div>
           ))}
@@ -122,26 +137,26 @@ const CompetitorChart = ({ brands, mentions }: CompetitorChartProps) => {
 
       {/* Quick Stats */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-        <div className="text-center p-3 rounded-lg bg-card border">
-          <div className="text-lg font-bold text-green-600">
+        <div className="text-center p-3 rounded-lg bg-muted">
+          <div className="text-xl font-bold font-display">
             {mentionsData.filter((m) => m.sentiment === "positive").length}
           </div>
           <div className="text-xs text-muted-foreground">Positive</div>
         </div>
-        <div className="text-center p-3 rounded-lg bg-card border">
-          <div className="text-lg font-bold text-gray-600">
+        <div className="text-center p-3 rounded-lg bg-muted">
+          <div className="text-xl font-bold font-display">
             {mentionsData.filter((m) => m.sentiment === "neutral").length}
           </div>
           <div className="text-xs text-muted-foreground">Neutral</div>
         </div>
-        <div className="text-center p-3 rounded-lg bg-card border">
-          <div className="text-lg font-bold text-red-600">
+        <div className="text-center p-3 rounded-lg bg-muted">
+          <div className="text-xl font-bold font-display">
             {mentionsData.filter((m) => m.sentiment === "negative").length}
           </div>
           <div className="text-xs text-muted-foreground">Negative</div>
         </div>
-        <div className="text-center p-3 rounded-lg bg-card border">
-          <div className="text-lg font-bold text-blue-600">
+        <div className="text-center p-3 rounded-lg bg-muted">
+          <div className="text-xl font-bold font-display">
             {mentionsData.reduce((sum, m) => sum + m.mentions, 0)}
           </div>
           <div className="text-xs text-muted-foreground">Total Mentions</div>

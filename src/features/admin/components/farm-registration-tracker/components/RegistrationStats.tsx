@@ -31,6 +31,7 @@ import {
   getRegistrationTrend,
 } from "../utils";
 import { MOCK_SALES_REPS } from "../constants";
+import { cn } from "@/lib/utils";
 
 interface RegistrationStatsProps {
   filters?: FilterOptions;
@@ -58,14 +59,18 @@ const StatCard: React.FC<StatCardProps> = ({
   className = "",
 }) => {
   return (
-    <Card className={className}>
-      <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-        <CardTitle className="text-sm font-medium">{title}</CardTitle>
-        <Icon className="h-4 w-4 text-muted-foreground" />
+    <Card className={cn("rounded", className)}>
+      <CardHeader className="flex flex-row items-start justify-between space-y-0 pb-2">
+        <CardTitle className="text-sm font-medium font-display">
+          {title}
+        </CardTitle>
+        <Icon className="size-5" />
       </CardHeader>
-      <CardContent>
-        <div className="text-2xl font-bold">{value}</div>
-        <div className="flex items-center justify-between">
+      <CardContent className="">
+        <div className="text-lg sm:text-xl lg:text-2xl font-bold font-display">
+          {value}
+        </div>
+        <div className="flex items-end gap-2 justify-between">
           <p className="text-xs text-muted-foreground">{description}</p>
           {trend && (
             <Badge
@@ -148,7 +153,7 @@ const RegistrationStats: React.FC<RegistrationStatsProps> = ({
   return (
     <div className={`space-y-6 ${className}`}>
       {/* Main Stats Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         <StatCard
           title="Total Registrations"
           value={formatNumber(metrics.totalRegistrations)}
@@ -180,7 +185,7 @@ const RegistrationStats: React.FC<RegistrationStatsProps> = ({
       </div>
 
       {/* Secondary Stats Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         <StatCard
           title="This Month"
           value={formatNumber(metrics.thisMonth)}
@@ -212,10 +217,10 @@ const RegistrationStats: React.FC<RegistrationStatsProps> = ({
       {/* Detailed Analytics */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Top Regions */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-lg font-semibold flex items-center gap-2">
-              <MapPin className="h-5 w-5" />
+        <Card className="border-none rounded bg-accent gap-4">
+          <CardHeader className="gap-0">
+            <CardTitle className="text-base font-semibold font-display flex items-center gap-1">
+              <MapPin className="size-5" />
               Top Regions
             </CardTitle>
             <CardDescription>
@@ -223,7 +228,7 @@ const RegistrationStats: React.FC<RegistrationStatsProps> = ({
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <div className="space-y-4">
+            <div className="space-y-2">
               {topRegions.map(([region, count]) => {
                 const percentage = (count / metrics.totalRegistrations) * 100;
                 return (
@@ -233,12 +238,17 @@ const RegistrationStats: React.FC<RegistrationStatsProps> = ({
                   >
                     <div className="flex-1">
                       <div className="flex items-center justify-between mb-1">
-                        <span className="text-sm font-medium">{region}</span>
-                        <span className="text-sm text-muted-foreground">
-                          {formatNumber(count)} ({percentage.toFixed(1)}%)
+                        <span className="text-sm font-semibold text-muted-foreground">
+                          {region}
+                        </span>
+                        <span className="text-sm text-muted-foreground font-display font-medium">
+                          <span className="text-black">
+                            {formatNumber(count)}
+                          </span>{" "}
+                          ({percentage.toFixed(1)}%)
                         </span>
                       </div>
-                      <div className="w-full bg-gray-200 rounded-full h-2">
+                      <div className="w-full bg-muted-foreground rounded-full h-2">
                         <div
                           className="bg-blue-600 h-2 rounded-full"
                           style={{ width: `${percentage}%` }}
@@ -253,10 +263,10 @@ const RegistrationStats: React.FC<RegistrationStatsProps> = ({
         </Card>
 
         {/* Top Sales Reps */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-lg font-semibold flex items-center gap-2">
-              <Users className="h-5 w-5" />
+        <Card className="border-none rounded bg-accent gap-4">
+          <CardHeader className="gap-0">
+            <CardTitle className="text-base font-semibold font-display flex items-center gap-1">
+              <Users className="size-5" />
               Top Sales Reps
             </CardTitle>
             <CardDescription>Performance this month</CardDescription>
@@ -287,19 +297,16 @@ const RegistrationStats: React.FC<RegistrationStatsProps> = ({
                           </span>
                         </div>
                         <div className="text-right">
-                          <span className="text-sm font-medium">
-                            {formatNumber(rep.registrationsThisMonth)}/
-                            {formatNumber(rep.targetRegistrations)}
+                          <span className="text-sm text-muted-foreground font-display font-medium flex items-center gap-1">
+                            <span className="text-black">
+                              {formatNumber(rep.registrationsThisMonth)}/
+                              {formatNumber(rep.targetRegistrations)}
+                            </span>
+                            ({percentage.toFixed(0)}%)
                           </span>
-                          <Badge
-                            variant={isOnTarget ? "default" : "secondary"}
-                            className="ml-2 text-xs"
-                          >
-                            {percentage.toFixed(0)}%
-                          </Badge>
                         </div>
                       </div>
-                      <div className="w-full bg-gray-200 rounded-full h-2">
+                      <div className="w-full bg-muted-foreground rounded-full h-2">
                         <div
                           className={`h-2 rounded-full ${
                             isOnTarget ? "bg-green-600" : "bg-blue-600"
@@ -317,15 +324,15 @@ const RegistrationStats: React.FC<RegistrationStatsProps> = ({
       </div>
 
       {/* Farm Size & Revenue Details */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <Card>
-          <CardHeader className="pb-3">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 -mx-6 px-6 py-4 bg-accent">
+        <Card className="border-none">
+          <CardHeader>
             <CardTitle className="text-base font-semibold">
               Average Farm Size
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-green-600 mb-1">
+            <div className="text-lg sm:text-xl lg:text-2xl font-bold font-display">
               {formatHectares(metrics.averageFarmSize)}
             </div>
             <p className="text-sm text-muted-foreground">
@@ -334,14 +341,14 @@ const RegistrationStats: React.FC<RegistrationStatsProps> = ({
           </CardContent>
         </Card>
 
-        <Card>
-          <CardHeader className="pb-3">
+        <Card className="border-none">
+          <CardHeader>
             <CardTitle className="text-base font-semibold">
               Active Farms
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-blue-600 mb-1">
+            <div className="text-lg sm:text-xl lg:text-2xl font-bold font-display">
               {formatNumber(
                 registrations.filter((r) => r.status === "active").length
               )}
@@ -352,14 +359,14 @@ const RegistrationStats: React.FC<RegistrationStatsProps> = ({
           </CardContent>
         </Card>
 
-        <Card>
-          <CardHeader className="pb-3">
+        <Card className="border-none">
+          <CardHeader>
             <CardTitle className="text-base font-semibold">
               Avg Monthly Revenue
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-purple-600 mb-1">
+            <div className="text-lg sm:text-xl lg:text-2xl font-bold font-display">
               {formatCurrency(
                 registrations.filter((r) => r.status === "active").length > 0
                   ? metrics.totalRevenue /

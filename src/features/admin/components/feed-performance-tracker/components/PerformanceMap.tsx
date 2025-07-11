@@ -11,6 +11,7 @@ import {
   formatMortality,
   formatDate,
 } from "../utils";
+import { Frown, Laugh, Meh, Smile } from "lucide-react";
 
 interface PerformanceMapProps {
   metrics: PerformanceMetric[];
@@ -209,6 +210,46 @@ const PerformanceMap = ({ metrics, regionalData }: PerformanceMapProps) => {
 
   return (
     <div className="space-y-4">
+      {/* Regional Performance Summary */}
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+        <div className="text-center p-3 rounded-lg bg-accent">
+          <div className="text-2xl font-semibold font-display">
+            {stats.excellentCount}
+          </div>
+          <div className="text-xs text-muted-foreground font-semibold flex items-center justify-center gap-2">
+            <Laugh className="size-4 text-green-600" />
+            Excellent
+          </div>
+        </div>
+        <div className="text-center p-3 rounded-lg bg-accent">
+          <div className="text-2xl font-semibold font-display">
+            {stats.goodCount}
+          </div>
+          <div className="text-xs text-muted-foreground font-semibold flex items-center justify-center gap-2">
+            <Smile className="size-4 text-blue-600" />
+            Good
+          </div>
+        </div>
+        <div className="text-center p-3 rounded-lg bg-accent">
+          <div className="text-2xl font-semibold font-display">
+            {stats.averageCount}
+          </div>
+          <div className="text-xs text-muted-foreground font-semibold flex items-center justify-center gap-2">
+            <Meh className="size-4 text-yellow-600" />
+            Average
+          </div>
+        </div>
+        <div className="text-center p-3 rounded-lg bg-accent">
+          <div className="text-2xl font-semibold font-display">
+            {stats.poorCount}
+          </div>
+          <div className="text-xs text-muted-foreground font-semibold flex items-center justify-center gap-2">
+            <Frown className="size-4 text-red-600" />
+            Poor
+          </div>
+        </div>
+      </div>
+
       {/* Map */}
       <div className="relative">
         <div
@@ -240,37 +281,9 @@ const PerformanceMap = ({ metrics, regionalData }: PerformanceMapProps) => {
         </div>
       </div>
 
-      {/* Regional Performance Summary */}
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-        <div className="text-center p-3 rounded-lg bg-card border">
-          <div className="text-lg font-bold text-green-600">
-            {stats.excellentCount}
-          </div>
-          <div className="text-xs text-muted-foreground">Excellent</div>
-        </div>
-        <div className="text-center p-3 rounded-lg bg-card border">
-          <div className="text-lg font-bold text-blue-600">
-            {stats.goodCount}
-          </div>
-          <div className="text-xs text-muted-foreground">Good</div>
-        </div>
-        <div className="text-center p-3 rounded-lg bg-card border">
-          <div className="text-lg font-bold text-yellow-600">
-            {stats.averageCount}
-          </div>
-          <div className="text-xs text-muted-foreground">Average</div>
-        </div>
-        <div className="text-center p-3 rounded-lg bg-card border">
-          <div className="text-lg font-bold text-red-600">
-            {stats.poorCount}
-          </div>
-          <div className="text-xs text-muted-foreground">Poor</div>
-        </div>
-      </div>
-
       {/* Top Performing Regions */}
-      <div className="space-y-3">
-        <h4 className="text-sm font-medium">Top Performing Regions</h4>
+      <div className="space-y-2">
+        <h4 className="font-medium font-display">Top Performing Regions</h4>
         <div className="space-y-2">
           {regionalData
             .sort((a, b) => {
@@ -296,33 +309,34 @@ const PerformanceMap = ({ metrics, regionalData }: PerformanceMapProps) => {
             .map((region, index) => (
               <div
                 key={region.region}
-                className="flex items-center justify-between p-2 rounded bg-muted/10"
+                className="flex items-center justify-between p-2 rounded-md bg-accent"
               >
                 <div className="flex items-center gap-2">
                   <div className="flex items-center justify-center w-5 h-5 rounded-full bg-primary text-primary-foreground text-xs font-bold">
                     #{index + 1}
                   </div>
                   <div>
-                    <div className="text-sm font-medium">{region.region}</div>
+                    <div className="text-sm font-medium font-display">
+                      {region.region}
+                    </div>
                     <div className="text-xs text-muted-foreground">
                       {region.province}
                     </div>
                   </div>
                 </div>
-                <div className="flex items-center gap-2">
+                <div className="flex items-end flex-col">
                   <Badge
                     variant="outline"
-                    className="text-xs"
+                    className="text-xs font-semibold text-white"
                     style={{
-                      borderColor: getPerformanceColor(
+                      backgroundColor: getPerformanceColor(
                         region.performanceRating
                       ),
-                      color: getPerformanceColor(region.performanceRating),
                     }}
                   >
                     {region.performanceRating}
                   </Badge>
-                  <span className="text-xs text-muted-foreground">
+                  <span className="text-xs font-display font-medium">
                     {region.totalFarms} farms
                   </span>
                 </div>

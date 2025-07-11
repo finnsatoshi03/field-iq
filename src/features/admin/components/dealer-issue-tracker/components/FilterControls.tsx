@@ -28,7 +28,7 @@ const FilterControls = ({
   const hasActiveFilters = selectedSeverity || selectedIssueType;
 
   return (
-    <div className={`space-y-4 ${className}`}>
+    <div className={`space-y-2 ${className}`}>
       {hasActiveFilters && (
         <div className="flex items-center justify-between">
           <span className="text-xs text-muted-foreground font-sans">
@@ -47,8 +47,8 @@ const FilterControls = ({
       )}
 
       {/* Severity Filter */}
-      <div className="space-y-2">
-        <span className="text-xs text-muted-foreground font-sans">
+      <div>
+        <span className="text-xs text-muted-foreground font-display font-semibold">
           Severity Level
         </span>
         <div className="flex flex-wrap gap-2">
@@ -56,7 +56,7 @@ const FilterControls = ({
             <Badge
               key={severity}
               variant={selectedSeverity === severity ? "default" : "outline"}
-              className={`cursor-pointer text-xs transition-all hover:scale-105 ${
+              className={`cursor-pointer text-xs border-black rounded-full transition-all hover:scale-105 ${
                 selectedSeverity === severity
                   ? "bg-foreground text-background"
                   : "hover:bg-muted"
@@ -74,8 +74,8 @@ const FilterControls = ({
       </div>
 
       {/* Issue Type Filter */}
-      <div className="space-y-2">
-        <span className="text-xs text-muted-foreground font-sans">
+      <div>
+        <span className="text-xs text-muted-foreground font-display font-semibold">
           Issue Type
         </span>
         <div className="flex flex-wrap gap-2">
@@ -83,7 +83,7 @@ const FilterControls = ({
             <Badge
               key={issueType}
               variant={selectedIssueType === issueType ? "default" : "outline"}
-              className={`cursor-pointer text-xs transition-all hover:scale-105 ${
+              className={`cursor-pointer text-xs border-black rounded-full transition-all hover:scale-105 ${
                 selectedIssueType === issueType
                   ? "bg-foreground text-background"
                   : "hover:bg-muted"

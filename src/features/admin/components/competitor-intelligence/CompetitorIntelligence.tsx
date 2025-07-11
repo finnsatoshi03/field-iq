@@ -4,17 +4,13 @@ import { Badge } from "@/components/ui/badge";
 import {
   Dialog,
   DialogContent,
+  DialogDescription,
   DialogHeader,
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import {
-  Eye,
-  TrendingUp,
-  AlertTriangle,
-  Building2,
-  BarChart3,
-} from "lucide-react";
+import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from "recharts";
+import { Eye, TrendingUp, AlertTriangle, Building2 } from "lucide-react";
 import {
   FilterControls,
   ViewToggle,
@@ -36,6 +32,7 @@ import {
   filterCompetitorPromos,
   filterSwitchingRisks,
   calculateCompetitorMetrics,
+  calculateMarketShareData,
   getUniqueRegions,
   formatCurrency,
   type FilterOptions,
@@ -116,37 +113,75 @@ const CompetitorIntelligence = () => {
   const renderCompactView = () => {
     switch (currentView) {
       case VIEW_MODES.CHART:
+        const marketShareData = calculateMarketShareData(filteredBrands);
+
+        const CustomTooltip = ({ active, payload }: any) => {
+          if (active && payload && payload.length) {
+            const data = payload[0].payload;
+            return (
+              <div className="bg-background border rounded-lg p-2 shadow-lg">
+                <p className="font-medium text-xs">{data.name}</p>
+                <p className="text-xs text-muted-foreground">
+                  {data.value.toFixed(1)}%
+                </p>
+              </div>
+            );
+          }
+          return null;
+        };
+
         return (
-          <div className="space-y-3">
-            <div className="grid grid-cols-2 gap-2">
-              <div className="text-center p-2 bg-muted/10 rounded">
-                <div className="text-sm font-bold text-blue-600">
-                  {metrics.totalBrands}
-                </div>
-                <div className="text-xs text-muted-foreground">Competitors</div>
-              </div>
-              <div className="text-center p-2 bg-muted/10 rounded">
-                <div className="text-sm font-bold text-green-600">
-                  {metrics.activePromos}
-                </div>
-                <div className="text-xs text-muted-foreground">
-                  Active Promos
-                </div>
-              </div>
+          <div className="grid grid-cols-2 gap-4">
+            {/* Chart on the left */}
+            <div className="h-full min-h-0">
+              <ResponsiveContainer width="100%" height="100%">
+                <PieChart>
+                  <Pie
+                    data={marketShareData}
+                    cx="50%"
+                    cy="50%"
+                    innerRadius={"30%"}
+                    paddingAngle={2}
+                    dataKey="value"
+                  >
+                    {marketShareData.map((entry, index) => (
+                      <Cell key={`cell-${index}`} fill={entry.color} />
+                    ))}
+                  </Pie>
+                  <Tooltip content={<CustomTooltip />} />
+                </PieChart>
+              </ResponsiveContainer>
             </div>
-            <div className="grid grid-cols-2 gap-2">
-              <div className="text-center p-2 bg-muted/10 rounded">
-                <div className="text-sm font-bold text-red-600">
-                  {metrics.highRiskSwitchers}
+
+            {/* Legend on the right */}
+            <div className="space-y-1">
+              {marketShareData.slice(0, 5).map((item) => (
+                <div
+                  key={item.name}
+                  className="flex items-center justify-between p-1.5 bg-muted/10 rounded"
+                >
+                  <div className="flex items-center gap-2">
+                    <div
+                      className="w-2 h-2 rounded-full"
+                      style={{ backgroundColor: item.color }}
+                    ></div>
+                    <span className="text-xs font-medium truncate">
+                      {item.name}
+                    </span>
+                  </div>
+                  <span
+                    className="text-xs font-bold"
+                    style={{ color: item.color }}
+                  >
+                    {item.value.toFixed(1)}%
+                  </span>
                 </div>
-                <div className="text-xs text-muted-foreground">High Risk</div>
-              </div>
-              <div className="text-center p-2 bg-muted/10 rounded">
-                <div className="text-sm font-bold text-yellow-600">
-                  {filteredMentions.reduce((sum, m) => sum + m.mentions, 0)}
+              ))}
+              {marketShareData.length > 5 && (
+                <div className="text-center text-xs text-muted-foreground">
+                  +{marketShareData.length - 5} more
                 </div>
-                <div className="text-xs text-muted-foreground">Mentions</div>
-              </div>
+              )}
             </div>
           </div>
         );
@@ -164,7 +199,7 @@ const CompetitorIntelligence = () => {
                   </div>
                   <span className="text-sm font-medium">{brand.name}</span>
                 </div>
-                <div className="text-xs text-muted-foreground">
+                <div className="text-xs font-medium font-display text-muted-foreground">
                   {brand.marketShare.toFixed(1)}%
                 </div>
               </div>
@@ -196,7 +231,7 @@ const CompetitorIntelligence = () => {
                   />
                   <span className="text-sm font-medium">{risk.farmerName}</span>
                 </div>
-                <div className="text-xs text-muted-foreground">
+                <div className="text-xs font-medium font-display text-muted-foreground">
                   {formatCurrency(risk.estimatedRevenueLoss)}
                 </div>
               </div>
@@ -249,27 +284,60 @@ const CompetitorIntelligence = () => {
   return (
     <div className="bg-card rounded-lg border border-border pt-4 space-y-6">
       <div className="px-4">
-        <div className="flex items-center justify-between">
-          <h3 className="text-foreground font-display font-medium text-base tracking-tight">
-            Competitor Intelligence
+        <div className="flex flex-wrap gap-2 justify-between">
+          <div>
+            <h3 className="text-foreground font-display font-medium text-base tracking-tight">
+              Competitor Intelligence
+            </h3>
+            <p className="text-muted-foreground text-xs font-sans">
+              Track competitor activity and market share
+            </p>
+          </div>
+          <ViewToggle currentView={currentView} onViewChange={setCurrentView} />
+        </div>
+      </div>
+
+      <div className="px-4 space-y-2">
+        <div className="flex justify-between items-center">
+          <h3 className="text-sm sm:text-base font-medium font-display truncate">
+            {currentView === VIEW_MODES.CHART
+              ? "Market Distribution"
+              : currentView === VIEW_MODES.BRANDS
+                ? "Brand Rankings"
+                : currentView === VIEW_MODES.RISKS
+                  ? "Revenue at Risk"
+                  : "Sentiment Analysis"}
           </h3>
           <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
             <DialogTrigger asChild>
-              <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
-                <BarChart3 className="h-4 w-4" />
+              <Button
+                size="sm"
+                variant="link"
+                className="text-xs underline p-0 w-fit h-fit"
+              >
+                More Details
               </Button>
             </DialogTrigger>
             <DialogContent className="max-w-[95vw] sm:max-w-[90vw] lg:max-w-4xl xl:max-w-6xl max-h-[90vh] overflow-y-auto">
-              <DialogHeader>
-                <DialogTitle>Competitor Intelligence Analytics</DialogTitle>
+              <DialogHeader className="gap-0 space-y-0">
+                <DialogTitle className="font-semibold font-display text-lg">
+                  Competitor Intelligence Analytics
+                </DialogTitle>
+                <DialogDescription>
+                  Track competitor activity and market share
+                </DialogDescription>
               </DialogHeader>
               <div className="space-y-6">
                 {/* Filters */}
-                <FilterControls
-                  filters={filters}
-                  onFiltersChange={setFilters}
-                  regions={regions}
-                />
+                <div className="-mx-6 px-2 bg-accent">
+                  <div className="p-4">
+                    <FilterControls
+                      filters={filters}
+                      onFiltersChange={setFilters}
+                      regions={regions}
+                    />
+                  </div>
+                </div>
 
                 {/* View Toggle */}
                 <ViewToggle
@@ -283,26 +351,21 @@ const CompetitorIntelligence = () => {
             </DialogContent>
           </Dialog>
         </div>
+        {renderCompactView()}
       </div>
-
-      <div className="px-4">
-        <ViewToggle currentView={currentView} onViewChange={setCurrentView} />
-      </div>
-
-      <div className="px-4">{renderCompactView()}</div>
 
       <div className="px-4 bg-muted/20 py-4 space-y-4">
-        <div className="flex items-end justify-between">
+        <div className="flex gap-4 justify-between">
           <h4 className="text-foreground font-display font-medium text-sm tracking-tight">
             Threat Intelligence Summary
           </h4>
-          <div className="flex items-center gap-4 text-xs">
+          <div className="flex flex-col items-end gap-1 text-xs">
             <div className="flex items-center gap-1.5">
               <AlertTriangle className="h-3 w-3 text-red-600 dark:text-red-400" />
               <span className="text-muted-foreground font-sans">
                 Top Threat
               </span>
-              <span className="font-medium text-foreground font-sans">
+              <span className="font-medium text-foreground font-display">
                 {metrics.topThreat}
               </span>
             </div>
@@ -311,7 +374,7 @@ const CompetitorIntelligence = () => {
               <span className="text-muted-foreground font-sans">
                 Market Loss
               </span>
-              <span className="font-medium text-foreground font-sans">
+              <span className="font-medium text-foreground font-display">
                 {metrics.marketShareLoss.toFixed(1)}%
               </span>
             </div>
@@ -319,27 +382,30 @@ const CompetitorIntelligence = () => {
         </div>
 
         <div className="space-y-2">
-          <div className="flex items-center justify-between p-2 rounded bg-muted/10">
+          <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
               <Building2 className="h-3 w-3 text-blue-500" />
               <span className="text-sm font-medium">Market Share Analysis</span>
             </div>
-            <Badge variant="outline" className="text-xs">
+            <Badge
+              variant="outline"
+              className="text-xs font-display border-black"
+            >
               {metrics.emergingCompetitors} Emerging
             </Badge>
           </div>
 
-          <div className="flex items-center justify-between p-2 rounded bg-muted/10">
+          <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
               <Eye className="h-3 w-3 text-yellow-500" />
               <span className="text-sm font-medium">Revenue at Risk</span>
             </div>
-            <div className="text-xs text-muted-foreground">
+            <div className="text-xs font-medium font-display">
               {formatCurrency(metrics.estimatedRevenueLoss || 0)}
             </div>
           </div>
 
-          <div className="flex items-center justify-between p-2 rounded bg-muted/10">
+          <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
               <TrendingUp className="h-3 w-3 text-green-500" />
               <span className="text-sm font-medium">Sentiment Analysis</span>

@@ -93,42 +93,65 @@ const RegistrationChart: React.FC<RegistrationChartProps> = ({
   return (
     <div className={`w-full ${className}`}>
       <div className="bg-card rounded-lg border border-border overflow-hidden">
-        <div className="p-3 sm:p-4">
-          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 mb-3">
-            <div className="flex items-center gap-2">
-              <div className="p-1.5 sm:p-2 rounded-lg bg-gray-50 flex-shrink-0">
-                <IconComponent className="h-3 w-3 sm:h-4 sm:w-4 text-gray-600" />
-              </div>
+        <div className="p-2">
+          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 mb-2">
+            <div className="flex items-center gap-1">
+              <IconComponent className="size-3 sm:size-4 text-muted-foreground" />
               <div className="min-w-0">
-                <h3 className="text-sm sm:text-base font-semibold truncate">
+                <h3 className="text-sm sm:text-base font-medium font-display truncate">
                   {config.title}
                 </h3>
-                <p className="text-xs sm:text-sm text-muted-foreground hidden sm:block">
+                <p className="text-xs sm:text-sm text-muted-foreground hidden sm:block font-sans">
                   {config.description}
                 </p>
               </div>
             </div>
-            <Badge
-              variant={isPositiveTrend ? "default" : "destructive"}
-              className="flex items-center gap-1 text-xs flex-shrink-0"
-            >
-              {isPositiveTrend ? (
-                <TrendingUp className="h-3 w-3" />
-              ) : (
-                <TrendingDown className="h-3 w-3" />
-              )}
-              {trendPercentage}%
-            </Badge>
           </div>
 
-          <div className="mb-3 sm:mb-4">
-            <div className="text-lg sm:text-xl lg:text-2xl font-bold text-gray-900">
-              {config.formatValue(currentValue)}
+          <div className="mb-2 flex justify-between">
+            <div>
+              <p className="text-xs sm:text-sm text-muted-foreground font-sans">
+                {isPositiveTrend ? "+" : ""}
+                {config.formatValue(trend)} vs previous period
+              </p>
+              <div className="flex items-center gap-2">
+                <div className="text-lg sm:text-xl lg:text-2xl font-bold text-gray-900 font-display">
+                  {config.formatValue(currentValue)}
+                </div>
+                <Badge
+                  variant={isPositiveTrend ? "default" : "destructive"}
+                  className="flex items-center gap-1 text-xs flex-shrink-0"
+                >
+                  {isPositiveTrend ? (
+                    <TrendingUp className="h-3 w-3" />
+                  ) : (
+                    <TrendingDown className="h-3 w-3" />
+                  )}
+                  {trendPercentage}%
+                </Badge>
+              </div>
             </div>
-            <p className="text-xs sm:text-sm text-muted-foreground">
-              {isPositiveTrend ? "+" : ""}
-              {config.formatValue(trend)} vs previous period
-            </p>
+            <div className="grid grid-cols-2 gap-2 sm:gap-4 text-xs sm:text-sm">
+              <div className="min-w-0">
+                <span className="text-muted-foreground font-medium">Peak</span>
+                <div className="text-lg sm:text-xl lg:text-2xl font-bold font-display">
+                  {config.formatValue(
+                    Math.max(...chartData.map((d) => d.value))
+                  )}
+                </div>
+              </div>
+              <div className="min-w-0">
+                <span className="text-muted-foreground font-medium">
+                  Average
+                </span>
+                <div className="text-lg sm:text-xl lg:text-2xl font-bold font-display">
+                  {config.formatValue(
+                    chartData.reduce((sum, d) => sum + d.value, 0) /
+                      chartData.length
+                  )}
+                </div>
+              </div>
+            </div>
           </div>
 
           <div className="h-[150px] sm:h-[200px] lg:h-[250px] w-full overflow-hidden">
@@ -195,28 +218,6 @@ const RegistrationChart: React.FC<RegistrationChartProps> = ({
                 />
               </AreaChart>
             </ResponsiveContainer>
-          </div>
-
-          <div className="mt-3 sm:mt-4 pt-3 sm:pt-4 border-t border-gray-100">
-            <div className="grid grid-cols-2 gap-2 sm:gap-4 text-xs sm:text-sm">
-              <div className="min-w-0">
-                <span className="text-muted-foreground">Peak:</span>
-                <div className="font-medium truncate">
-                  {config.formatValue(
-                    Math.max(...chartData.map((d) => d.value))
-                  )}
-                </div>
-              </div>
-              <div className="min-w-0">
-                <span className="text-muted-foreground">Average:</span>
-                <div className="font-medium truncate">
-                  {config.formatValue(
-                    chartData.reduce((sum, d) => sum + d.value, 0) /
-                      chartData.length
-                  )}
-                </div>
-              </div>
-            </div>
           </div>
         </div>
       </div>
