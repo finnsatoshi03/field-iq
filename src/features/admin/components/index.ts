@@ -3,3 +3,4 @@ export { DealerIssueTracker } from "./dealer-issue-tracker";
 export { FarmRegistrationTracker } from "./farm-registration-tracker";
 export { FeedPerformanceTracker } from "./feed-performance-tracker";
 export { SalesActivitySummary } from "./sales-activity-summary";
+export { FaqManager } from "./faq-manager";
