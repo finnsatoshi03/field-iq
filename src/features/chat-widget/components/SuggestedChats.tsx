@@ -54,7 +54,11 @@ export const SuggestedChats = ({
 
     const subtypeOptions =
       typeOptions[reportSubType as keyof typeof typeOptions];
-    return subtypeOptions || [];
+    return (subtypeOptions || []) as Array<{
+      id: string;
+      label: string;
+      emoji: string;
+    }>;
   };
 
   // Get template suggestions (for API responses)
@@ -84,13 +88,55 @@ export const SuggestedChats = ({
       }
     }
 
+    // Farmer-specific templates
+    if (reportType === "report-issue") {
+      if (reportSubType === "health-issue") {
+        templates.push(...SUGGESTED_CHAT_TEMPLATES.flock_health);
+      }
+      if (reportSubType === "feed-issue") {
+        templates.push(...SUGGESTED_CHAT_TEMPLATES.feed_management);
+      }
+      if (reportSubType === "equipment-issue") {
+        templates.push(...SUGGESTED_CHAT_TEMPLATES.equipment_maintenance);
+      }
+      if (reportSubType === "other-issue") {
+        templates.push(...SUGGESTED_CHAT_TEMPLATES.environmental_monitoring);
+      }
+    }
+
+    if (reportType === "log-performance") {
+      if (
+        reportSubType === "egg-production" ||
+        reportSubType === "feed-consumption" ||
+        reportSubType === "flock-mortality" ||
+        reportSubType === "growth-metrics"
+      ) {
+        templates.push(...SUGGESTED_CHAT_TEMPLATES.performance_tracking);
+      }
+      if (reportSubType === "other-performance") {
+        templates.push(...SUGGESTED_CHAT_TEMPLATES.environmental_monitoring);
+      }
+    }
+
     return templates.slice(0, 3); // Limit to 3 template suggestions
   };
 
   const initialSuggestions = getInitialSuggestions();
   const templateSuggestions = showTemplates ? getTemplateSuggestions() : [];
 
-  if (initialSuggestions.length === 0 && templateSuggestions.length === 0) {
+  // Type guard to ensure suggestions are properly typed
+  const validInitialSuggestions = initialSuggestions.filter(
+    (suggestion) =>
+      suggestion &&
+      typeof suggestion === "object" &&
+      "id" in suggestion &&
+      "label" in suggestion,
+  );
+
+  if (
+    validInitialSuggestions.length === 0 &&
+    templateSuggestions.length === 0
+  ) {
     return null;
   }
 
@@ -102,11 +148,11 @@ export const SuggestedChats = ({
       className="space-y-3"
     >
       {/* Initial Suggestions */}
-      {initialSuggestions.length > 0 && (
+      {validInitialSuggestions.length > 0 && (
         <div className="space-y-2">
           <p className="text-xs text-gray-600 font-medium">Quick notes:</p>
           <div className="flex flex-wrap gap-2">
-            {initialSuggestions.map((suggestion) => (
+            {validInitialSuggestions.map((suggestion) => (
               <motion.button
                 key={suggestion.id}
                 variants={suggestionVariants}

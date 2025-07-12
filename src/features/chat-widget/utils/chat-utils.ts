@@ -73,6 +73,36 @@ export const getAPISuggestedChats = async (
       }
     }
 
+    // Farmer-specific templates
+    if (reportType === "report-issue") {
+      if (reportSubType === "health-issue") {
+        templates.push(...SUGGESTED_CHAT_TEMPLATES.flock_health);
+      }
+      if (reportSubType === "feed-issue") {
+        templates.push(...SUGGESTED_CHAT_TEMPLATES.feed_management);
+      }
+      if (reportSubType === "equipment-issue") {
+        templates.push(...SUGGESTED_CHAT_TEMPLATES.equipment_maintenance);
+      }
+      if (reportSubType === "other-issue") {
+        templates.push(...SUGGESTED_CHAT_TEMPLATES.environmental_monitoring);
+      }
+    }
+
+    if (reportType === "log-performance") {
+      if (
+        reportSubType === "egg-production" ||
+        reportSubType === "feed-consumption" ||
+        reportSubType === "flock-mortality" ||
+        reportSubType === "growth-metrics"
+      ) {
+        templates.push(...SUGGESTED_CHAT_TEMPLATES.performance_tracking);
+      }
+      if (reportSubType === "other-performance") {
+        templates.push(...SUGGESTED_CHAT_TEMPLATES.environmental_monitoring);
+      }
+    }
+
     // Return a subset of templates (simulating AI selection)
     return templates.slice(0, 3);
   } catch (error) {
@@ -195,6 +225,91 @@ export const getAIResponse = (userMessage: string): string => {
 
   if (message.includes("health") || message.includes("sick")) {
     return "I've recorded the health concern. Flock health is critical. Would you like to add any specific symptoms, affected birds, or actions you've taken to address the health issue?";
+  }
+
+  // Handle specific farmer diary entries
+  if (
+    message.includes("birds showing signs of illness") ||
+    message.includes("sick birds")
+  ) {
+    return "I've recorded the illness observation. This is critical for flock health. Would you like to add specific symptoms, number of affected birds, or any immediate actions you've taken?";
+  }
+
+  if (
+    message.includes("increased mortality rate") ||
+    message.includes("mortality increase")
+  ) {
+    return "I've noted the mortality increase. This requires immediate attention. Would you like to add details about the number of losses, age of affected birds, or potential causes?";
+  }
+
+  if (
+    message.includes("unusual bird behavior") ||
+    message.includes("behavior changes")
+  ) {
+    return "I've recorded the behavior changes. This could indicate health or environmental issues. Would you like to add specific behaviors observed or potential triggers?";
+  }
+
+  if (
+    message.includes("feed quality concerns") ||
+    message.includes("feed quality")
+  ) {
+    return "I've noted the feed quality concern. This affects flock nutrition and performance. Would you like to add specific quality issues, affected feed batches, or supplier information?";
+  }
+
+  if (
+    message.includes("reduced feed consumption") ||
+    message.includes("consumption drop")
+  ) {
+    return "I've recorded the feed consumption drop. This could indicate health or environmental issues. Would you like to add specific consumption levels, duration, or potential causes?";
+  }
+
+  if (
+    message.includes("equipment malfunction") ||
+    message.includes("equipment breakdown")
+  ) {
+    return "I've noted the equipment malfunction. This affects operational efficiency. Would you like to add specific equipment details, impact on operations, or repair needs?";
+  }
+
+  if (
+    message.includes("daily egg count") ||
+    message.includes("egg count recorded")
+  ) {
+    return "I've recorded your egg count. This is valuable for tracking production trends. Would you like to add any specific metrics, quality observations, or comparison to previous days?";
+  }
+
+  if (
+    message.includes("egg production decreased") ||
+    message.includes("production drop")
+  ) {
+    return "I've noted the production decrease. This is important to track. Would you like to add specific numbers, duration of the decrease, or potential contributing factors?";
+  }
+
+  if (
+    message.includes("daily feed consumption") ||
+    message.includes("feed consumption")
+  ) {
+    return "I've recorded your feed consumption data. This helps track efficiency. Would you like to add specific consumption amounts, efficiency metrics, or cost analysis?";
+  }
+
+  if (
+    message.includes("mortality rate recorded") ||
+    message.includes("mortality rate")
+  ) {
+    return "I've noted the mortality rate. This is critical for flock health monitoring. Would you like to add specific numbers, age groups affected, or potential causes?";
+  }
+
+  if (
+    message.includes("weight gain recorded") ||
+    message.includes("weight gain")
+  ) {
+    return "I've recorded the weight gain data. This tracks flock development. Would you like to add specific weight measurements, growth rates, or comparison to targets?";
+  }
+
+  if (
+    message.includes("general flock observation") ||
+    message.includes("flock observation")
+  ) {
+    return "I've recorded your flock observation. These notes are valuable for overall management. Would you like to add any specific behaviors, environmental factors, or management actions?";
   }
 
   // Generic response for other diary entries

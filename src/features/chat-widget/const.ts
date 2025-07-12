@@ -317,6 +317,210 @@ export const SUGGESTED_CHAT_OPTIONS = {
       },
     ],
   },
+  // Farmer-specific suggestions for report issues
+  "report-issue": {
+    "health-issue": [
+      {
+        id: "sick-birds",
+        label: "Birds showing signs of illness",
+        emoji: "🏥",
+      },
+      {
+        id: "mortality-increase",
+        label: "Increased mortality rate",
+        emoji: "💀",
+      },
+      {
+        id: "behavior-changes",
+        label: "Unusual bird behavior",
+        emoji: "🤔",
+      },
+      {
+        id: "disease-symptoms",
+        label: "Disease symptoms observed",
+        emoji: "🦠",
+      },
+    ],
+    "feed-issue": [
+      {
+        id: "feed-quality",
+        label: "Feed quality concerns",
+        emoji: "🌾",
+      },
+      {
+        id: "consumption-drop",
+        label: "Reduced feed consumption",
+        emoji: "📉",
+      },
+      {
+        id: "feed-wastage",
+        label: "Excessive feed wastage",
+        emoji: "🗑️",
+      },
+      {
+        id: "nutrition-problem",
+        label: "Nutrition-related issues",
+        emoji: "🥗",
+      },
+    ],
+    "equipment-issue": [
+      {
+        id: "equipment-breakdown",
+        label: "Equipment malfunction",
+        emoji: "🔧",
+      },
+      {
+        id: "system-failure",
+        label: "System or automation failure",
+        emoji: "⚙️",
+      },
+      {
+        id: "maintenance-needed",
+        label: "Maintenance required",
+        emoji: "🔨",
+      },
+      {
+        id: "safety-equipment",
+        label: "Safety equipment issue",
+        emoji: "🛡️",
+      },
+    ],
+    "other-issue": [
+      {
+        id: "environmental-concern",
+        label: "Environmental concern",
+        emoji: "🌍",
+      },
+      {
+        id: "weather-impact",
+        label: "Weather-related problem",
+        emoji: "🌦️",
+      },
+      {
+        id: "infrastructure-issue",
+        label: "Infrastructure problem",
+        emoji: "🏗️",
+      },
+      {
+        id: "general-problem",
+        label: "Other general problem",
+        emoji: "⚠️",
+      },
+    ],
+  },
+  // Farmer-specific suggestions for performance logging
+  "log-performance": {
+    "egg-production": [
+      {
+        id: "daily-eggs",
+        label: "Daily egg count recorded",
+        emoji: "🥚",
+      },
+      {
+        id: "production-drop",
+        label: "Egg production decreased",
+        emoji: "📉",
+      },
+      {
+        id: "quality-issues",
+        label: "Egg quality problems",
+        emoji: "🔍",
+      },
+      {
+        id: "production-peak",
+        label: "Peak production period",
+        emoji: "📈",
+      },
+    ],
+    "feed-consumption": [
+      {
+        id: "daily-consumption",
+        label: "Daily feed consumption",
+        emoji: "📊",
+      },
+      {
+        id: "consumption-change",
+        label: "Feed consumption pattern change",
+        emoji: "🔄",
+      },
+      {
+        id: "efficiency-metric",
+        label: "Feed conversion efficiency",
+        emoji: "⚡",
+      },
+      {
+        id: "cost-analysis",
+        label: "Feed cost analysis",
+        emoji: "💰",
+      },
+    ],
+    "flock-mortality": [
+      {
+        id: "mortality-rate",
+        label: "Mortality rate recorded",
+        emoji: "📋",
+      },
+      {
+        id: "death-causes",
+        label: "Death causes identified",
+        emoji: "🔍",
+      },
+      {
+        id: "age-related-losses",
+        label: "Age-related mortality",
+        emoji: "⏰",
+      },
+      {
+        id: "prevention-measures",
+        label: "Prevention measures taken",
+        emoji: "🛡️",
+      },
+    ],
+    "growth-metrics": [
+      {
+        id: "weight-gain",
+        label: "Weight gain recorded",
+        emoji: "⚖️",
+      },
+      {
+        id: "growth-rate",
+        label: "Growth rate measurement",
+        emoji: "📏",
+      },
+      {
+        id: "development-stage",
+        label: "Development stage tracking",
+        emoji: "🌱",
+      },
+      {
+        id: "health-indicators",
+        label: "Health indicators noted",
+        emoji: "💪",
+      },
+    ],
+    "other-performance": [
+      {
+        id: "general-observation",
+        label: "General flock observation",
+        emoji: "👀",
+      },
+      {
+        id: "behavior-tracking",
+        label: "Behavior pattern tracking",
+        emoji: "📝",
+      },
+      {
+        id: "environmental-factors",
+        label: "Environmental factors noted",
+        emoji: "🌡️",
+      },
+      {
+        id: "management-action",
+        label: "Management action taken",
+        emoji: "👨‍🌾",
+      },
+    ],
+  },
 } as const;
 
 // Template suggestions for AI-generated prompts (based on context)
@@ -351,68 +555,47 @@ export const SUGGESTED_CHAT_TEMPLATES = {
     "Prevention measures implemented",
     "Lessons learned and recommendations",
   ],
+  // Farmer-specific templates
+  flock_health: [
+    "Flock health status and observations",
+    "Disease symptoms and affected birds",
+    "Treatment measures implemented",
+    "Prevention strategies for future",
+  ],
+  feed_management: [
+    "Feed consumption patterns and changes",
+    "Feed quality assessment and issues",
+    "Nutritional adjustments made",
+    "Feed cost and efficiency analysis",
+  ],
+  equipment_maintenance: [
+    "Equipment status and functionality",
+    "Maintenance activities performed",
+    "Repair needs and actions taken",
+    "Safety equipment checks",
+  ],
+  performance_tracking: [
+    "Daily performance metrics recorded",
+    "Production trends and patterns",
+    "Growth and development observations",
+    "Management decisions and actions",
+  ],
+  environmental_monitoring: [
+    "Environmental conditions and changes",
+    "Weather impact on operations",
+    "Infrastructure status and needs",
+    "Environmental management actions",
+  ],
 } as const;
 
 // Chat mode mapping for different report types
 export const getChatModeForReportType = (
   reportType: keyof typeof REPORT_OPTIONS,
 ): ChatMode => {
-  if (reportType === "log-performance") {
-    return "quick"; // Log performance uses quick chat (selection-based, no input)
-  }
-  return "report"; // All other reports use report mode (has input, report-focused mood)
+  return "report"; // All reports use report mode (has input, report-focused mood)
 };
 
 // Quick chat options for log performance (selection-based)
 export const QUICK_CHAT_OPTIONS = {
-  "egg-production": [
-    { id: "low-production", label: "Low egg production", emoji: "📉" },
-    { id: "peak-production", label: "Peak production achieved", emoji: "📈" },
-    { id: "quality-issues", label: "Egg quality concerns", emoji: "🥚" },
-    {
-      id: "seasonal-changes",
-      label: "Seasonal production changes",
-      emoji: "🌦️",
-    },
-  ],
-  "feed-consumption": [
-    {
-      id: "increased-consumption",
-      label: "Feed consumption increased",
-      emoji: "⬆️",
-    },
-    {
-      id: "decreased-consumption",
-      label: "Feed consumption decreased",
-      emoji: "⬇️",
-    },
-    { id: "feed-waste", label: "Feed waste concerns", emoji: "🗑️" },
-    { id: "feed-quality", label: "Feed quality issues", emoji: "🌾" },
-  ],
-  "flock-mortality": [
-    {
-      id: "high-mortality",
-      label: "Higher than normal mortality",
-      emoji: "📊",
-    },
-    { id: "disease-outbreak", label: "Possible disease outbreak", emoji: "🦠" },
-    { id: "age-related", label: "Age-related mortality", emoji: "📅" },
-    { id: "environmental", label: "Environmental factors", emoji: "🌡️" },
-  ],
-  "growth-metrics": [
-    { id: "slow-growth", label: "Slower than expected growth", emoji: "📉" },
-    { id: "optimal-growth", label: "Optimal growth rates", emoji: "📈" },
-    { id: "weight-concerns", label: "Weight concerns", emoji: "⚖️" },
-    { id: "health-metrics", label: "Health metric issues", emoji: "🏥" },
-  ],
-  "other-performance": [
-    { id: "behavioral-changes", label: "Behavioral changes", emoji: "🐔" },
-    { id: "environmental-impact", label: "Environmental factors", emoji: "🌡️" },
-    { id: "management-issues", label: "Management concerns", emoji: "👤" },
-    {
-      id: "equipment-performance",
-      label: "Equipment performance",
-      emoji: "⚙️",
-    },
-  ],
+  // Removed log-performance options since farmers now use input mode
 } as const;

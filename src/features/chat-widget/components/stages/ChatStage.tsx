@@ -115,10 +115,13 @@ export const ChatStage = ({
     }
   };
 
-  // Check if we should show suggested chats (sales rep with report context)
+  // Check if we should show suggested chats (sales rep with report context OR farmer with specific report types)
   const shouldShowSuggestedChats =
     reportContext &&
-    (chatType === "report-sales" || chatType === "report-issue-sales");
+    (chatType === "report-sales" ||
+      chatType === "report-issue-sales" ||
+      chatType === "report-issue" ||
+      chatType === "log-performance");
 
   return (
     <div className="flex-1 h-full min-h-0 rounded-b-lg flex flex-col bg-white">
