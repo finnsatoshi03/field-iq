@@ -1,12 +1,12 @@
-import { useState, useEffect } from "react";
-import { BiSolidMessageSquareDots } from "react-icons/bi";
 import { motion } from "framer-motion";
+import { useEffect, useState } from "react";
+import { BiSolidMessageSquareDots } from "react-icons/bi";
 
-import { BYPASS_AUTH } from "@/lib/config";
-import { ROLE_BASED_MESSAGES } from "./const";
 import { useUser } from "@/hooks/use-user";
+import { ROLE_BASED_MESSAGES } from "./const";
 
-import { PopupMessage, ChatWindow } from "./components";
+import type { UserRole } from "@/lib/types";
+import { ChatWindow, PopupMessage } from "./components";
 
 // Animation variants
 const bounceVariants = {
@@ -36,12 +36,14 @@ export const ChatWidget = () => {
   // Get messages for current user role
   const getRoleMessages = (): string[] => {
     if (!user?.role) return ROLE_BASED_MESSAGES.farmer;
-    return ROLE_BASED_MESSAGES[user.role] || ROLE_BASED_MESSAGES.farmer;
+    return (
+      ROLE_BASED_MESSAGES[user.role as Exclude<UserRole, "admin" | "dev">] ||
+      ROLE_BASED_MESSAGES.farmer
+    );
   };
 
   // Handle popup message cycling (only when chat is closed)
   useEffect(() => {
-    if (!user && !BYPASS_AUTH) return;
     if (isChatOpen) return; // Don't show popup when chat is open
 
     const messages = getRoleMessages();
@@ -87,7 +89,7 @@ export const ChatWidget = () => {
     setIsChatOpen(false);
   };
 
-  if (!user && !BYPASS_AUTH) return null;
+  // if (user?.role !== "sales_rep" && user?.role !== "farmer") return null;
 
   return (
     <>

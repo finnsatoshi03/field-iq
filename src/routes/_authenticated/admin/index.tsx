@@ -1,12 +1,13 @@
-import { createFileRoute } from "@tanstack/react-router";
 import {
-  SalesActivitySummary,
-  DealerIssueTracker,
-  FarmRegistrationTracker,
   CompetitorIntelligence,
-  FeedPerformanceTracker,
+  DealerIssueTracker,
   FaqManager,
+  FarmRegistrationTracker,
+  FeedPerformanceTracker,
+  SalesActivitySummary,
+  UserManager,
 } from "@/features/admin/components";
+import { createFileRoute } from "@tanstack/react-router";
 
 export const Route = createFileRoute("/_authenticated/admin/")({
   component: AdminDashboard,
@@ -38,6 +39,7 @@ function AdminDashboard() {
             </div>
           </div>
           <div className="xl:col-span-1 space-y-6">
+            <UserManager />
             <FarmRegistrationTracker />
             <CompetitorIntelligence />
             <FeedPerformanceTracker />

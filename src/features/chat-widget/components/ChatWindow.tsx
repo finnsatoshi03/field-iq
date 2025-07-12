@@ -1,18 +1,18 @@
-import { useState, useEffect } from "react";
-import { X, Minimize2, ArrowLeft } from "lucide-react";
-import { motion, AnimatePresence } from "framer-motion";
+import { AnimatePresence, motion } from "framer-motion";
+import { ArrowLeft, Minimize2, X } from "lucide-react";
+import { useEffect, useState } from "react";
 
 import { useUser } from "@/hooks/use-user";
 import { BYPASS_AUTH } from "@/lib/config";
 
-import { WelcomeStage, ReportStage, ChatStage } from "./stages";
 import {
-  REPORT_OPTIONS,
   CHAT_OPTIONS,
   getChatModeForReportType,
-  type ChatStage as ChatStageType,
+  REPORT_OPTIONS,
   type ChatMode,
+  type ChatStage as ChatStageType,
 } from "../const";
+import { ChatStage, ReportStage, WelcomeStage } from "./stages";
 
 const chatWindowVariants = {
   hidden: {
@@ -82,7 +82,7 @@ export const ChatWindow = ({ isOpen, onClose }: ChatWindowProps) => {
     // Instead of closing, proceed to chat with the appropriate mode
     setReportSubType(reportSubType);
     const mode = getChatModeForReportType(
-      reportType as keyof typeof REPORT_OPTIONS
+      reportType as keyof typeof REPORT_OPTIONS,
     );
     setChatMode(mode);
     setCurrentStage("chat");
@@ -158,7 +158,7 @@ export const ChatWindow = ({ isOpen, onClose }: ChatWindowProps) => {
       case "welcome":
         return (
           <WelcomeStage
-            userRole={user?.role ?? "sales_rep"}
+            userRole={"sales_rep"}
             onOptionSelect={handleOptionSelect}
           />
         );

@@ -1,13 +1,10 @@
 import type { UserRole } from "@/lib/types";
 
 // Constants for role-based messages (chicken agriculture related)
-export const ROLE_BASED_MESSAGES: Record<UserRole, string[]> = {
-  admin: [
-    "Need help managing your farm operations? 🐔",
-    "Questions about flock analytics? Let's chat! 📊",
-    "Need assistance with farm management? I'm here! 🏡",
-    "Want to optimize your poultry business? Ask me! 💼",
-  ],
+export const ROLE_BASED_MESSAGES: Record<
+  Exclude<UserRole, "admin" | "dev">,
+  string[]
+> = {
   sales_rep: [
     "Need help with client presentations? 🎯",
     "Questions about poultry products? Let's discuss! 🥚",
@@ -19,12 +16,6 @@ export const ROLE_BASED_MESSAGES: Record<UserRole, string[]> = {
     "Questions about feed optimization? Let's chat! 🌾",
     "Want to improve egg production? Ask me! 🥚",
     "Need assistance with flock health? I can help! 🏥",
-  ],
-  dev: [
-    "Need technical support? I'm ready to help! 💻",
-    "Questions about system integration? Let's debug! 🔧",
-    "Want to optimize farm tech? I can assist! ⚙️",
-    "Need help with API documentation? Chat with me! 📚",
   ],
 };
 
@@ -64,7 +55,7 @@ export const CHAT_OPTIONS = {
       type: "chat" as const,
     },
     {
-      id: "report-issue",
+      id: "report-issue-sales",
       label: "Report Issue",
       emoji: "📝",
       type: "report" as const,
@@ -113,6 +104,15 @@ export const REPORT_OPTIONS = {
     { id: "territory-update", label: "Territory Update", emoji: "🗺️" },
     { id: "other-sales", label: "Other Sales Report", emoji: "📝" },
   ],
+  "report-issue-sales": [
+    { id: "dealer-problems", label: "Dealer Problems", emoji: "🤝" },
+    {
+      id: "product-or-field-issues",
+      label: "Product or Field Issues",
+      emoji: "🌽",
+    },
+    { id: "other-sales", label: "Other Issues", emoji: "🤖" },
+  ],
   "report-issue": [
     { id: "health-issue", label: "Health Issue", emoji: "🏥" },
     { id: "feed-issue", label: "Feed Issue", emoji: "🌾" },
@@ -134,9 +134,228 @@ export const REPORT_OPTIONS = {
   ],
 } as const;
 
+// Suggested chat options for sales representatives
+export const SUGGESTED_CHAT_OPTIONS = {
+  // Initial suggestions for sales reports
+  "report-sales": {
+    "daily-sales": [
+      {
+        id: "dealer-contract",
+        label: "Dealer didn't sign contract",
+        emoji: "📝",
+      },
+      {
+        id: "client-meeting",
+        label: "Had meeting with client",
+        emoji: "🤝",
+      },
+      {
+        id: "territory-visit",
+        label: "Visited new territory",
+        emoji: "🗺️",
+      },
+      {
+        id: "sales-target",
+        label: "Met/fell short of daily target",
+        emoji: "🎯",
+      },
+    ],
+    "weekly-sales": [
+      {
+        id: "weekly-performance",
+        label: "Weekly performance summary",
+        emoji: "📊",
+      },
+      {
+        id: "top-clients",
+        label: "Top performing clients this week",
+        emoji: "⭐",
+      },
+      {
+        id: "challenges-faced",
+        label: "Challenges faced this week",
+        emoji: "⚠️",
+      },
+      {
+        id: "next-week-plan",
+        label: "Plans for next week",
+        emoji: "📅",
+      },
+    ],
+    "client-visit": [
+      {
+        id: "visit-outcome",
+        label: "Client visit outcome",
+        emoji: "✅",
+      },
+      {
+        id: "client-feedback",
+        label: "Client provided feedback",
+        emoji: "💬",
+      },
+      {
+        id: "follow-up-needed",
+        label: "Follow-up actions needed",
+        emoji: "📞",
+      },
+      {
+        id: "sales-opportunities",
+        label: "New sales opportunities identified",
+        emoji: "💰",
+      },
+    ],
+    "territory-update": [
+      {
+        id: "territory-changes",
+        label: "Changes in territory",
+        emoji: "🗺️",
+      },
+      {
+        id: "market-trends",
+        label: "Market trends observed",
+        emoji: "📈",
+      },
+      {
+        id: "competition-update",
+        label: "Competitor activities",
+        emoji: "👥",
+      },
+      {
+        id: "territory-potential",
+        label: "Territory potential assessment",
+        emoji: "🚀",
+      },
+    ],
+    "other-sales": [
+      {
+        id: "general-update",
+        label: "General sales update",
+        emoji: "📝",
+      },
+      {
+        id: "special-circumstances",
+        label: "Special circumstances to note",
+        emoji: "⚠️",
+      },
+      {
+        id: "training-needed",
+        label: "Training or support needed",
+        emoji: "📚",
+      },
+      {
+        id: "equipment-issues",
+        label: "Equipment or technical issues",
+        emoji: "🔧",
+      },
+    ],
+  },
+  "report-issue-sales": {
+    "dealer-problems": [
+      {
+        id: "dealer-complaint",
+        label: "Dealer filed complaint",
+        emoji: "😤",
+      },
+      {
+        id: "dealer-dissatisfaction",
+        label: "Dealer expressed dissatisfaction",
+        emoji: "😞",
+      },
+      {
+        id: "dealer-request",
+        label: "Dealer made special request",
+        emoji: "🙏",
+      },
+      {
+        id: "dealer-feedback",
+        label: "Dealer provided feedback",
+        emoji: "💬",
+      },
+    ],
+    "product-or-field-issues": [
+      {
+        id: "product-problem",
+        label: "Product malfunction reported",
+        emoji: "🔧",
+      },
+      {
+        id: "field-issue",
+        label: "Field-related problem",
+        emoji: "🌾",
+      },
+      {
+        id: "quality-issue",
+        label: "Quality control issue",
+        emoji: "⚠️",
+      },
+      {
+        id: "delivery-problem",
+        label: "Delivery or logistics issue",
+        emoji: "🚚",
+      },
+    ],
+    "other-sales": [
+      {
+        id: "general-issue",
+        label: "General issue to report",
+        emoji: "📝",
+      },
+      {
+        id: "urgent-matter",
+        label: "Urgent matter requiring attention",
+        emoji: "🚨",
+      },
+      {
+        id: "safety-concern",
+        label: "Safety concern",
+        emoji: "🛡️",
+      },
+      {
+        id: "compliance-issue",
+        label: "Compliance or regulatory issue",
+        emoji: "📋",
+      },
+    ],
+  },
+} as const;
+
+// Template suggestions for AI-generated prompts (based on context)
+export const SUGGESTED_CHAT_TEMPLATES = {
+  sales_performance: [
+    "Today's sales activities and outcomes",
+    "Key client interactions and feedback",
+    "Territory performance and market observations",
+    "Challenges encountered and solutions implemented",
+  ],
+  client_relationship: [
+    "Client meeting outcomes and action items",
+    "Client feedback and satisfaction levels",
+    "Relationship building activities",
+    "Follow-up tasks and next steps",
+  ],
+  territory_management: [
+    "Territory changes and market dynamics",
+    "Competitor activities and market positioning",
+    "Growth opportunities identified",
+    "Territory performance metrics",
+  ],
+  product_knowledge: [
+    "Product performance in the field",
+    "Technical issues and resolutions",
+    "Customer product feedback",
+    "Product training and support needs",
+  ],
+  issue_resolution: [
+    "Issue details and impact assessment",
+    "Resolution steps taken",
+    "Prevention measures implemented",
+    "Lessons learned and recommendations",
+  ],
+} as const;
+
 // Chat mode mapping for different report types
 export const getChatModeForReportType = (
-  reportType: keyof typeof REPORT_OPTIONS
+  reportType: keyof typeof REPORT_OPTIONS,
 ): ChatMode => {
   if (reportType === "log-performance") {
     return "quick"; // Log performance uses quick chat (selection-based, no input)

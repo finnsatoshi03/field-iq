@@ -1,26 +1,26 @@
-import React, { useState, useMemo } from "react";
+import { cn } from "@/lib/utils";
+import React, { useMemo, useState } from "react";
 import {
   DealerMap,
+  FilterControls,
   HeatmapView,
   IssueList,
   ViewToggle,
-  FilterControls,
 } from "./components";
-import { MOCK_DEALER_ISSUES, VIEW_MODES } from "./constants";
 import type {
-  ViewMode,
-  SeverityLevel,
-  IssueTypeKey,
   DealerIssue,
+  IssueTypeKey,
+  SeverityLevel,
+  ViewMode,
 } from "./constants";
+import { MOCK_DEALER_ISSUES, VIEW_MODES } from "./constants";
 import {
   calculateIssueMetrics,
-  filterDealersBySeverity,
-  filterDealersByIssueType,
-  sortDealersBySeverity,
   calculateResolutionRate,
+  filterDealersByIssueType,
+  filterDealersBySeverity,
+  sortDealersBySeverity,
 } from "./utils";
-import { cn } from "@/lib/utils";
 
 interface DealerIssueTrackerProps {
   className?: string;
