@@ -33,12 +33,14 @@ function AdminDashboard() {
             <div className="lg:col-span-2 xl:col-span-2">
               <DealerIssueTracker />
             </div>
+            <div className="lg:col-span-2 xl:col-span-2">
+              <FaqManager />
+            </div>
           </div>
           <div className="xl:col-span-1 space-y-6">
             <FarmRegistrationTracker />
             <CompetitorIntelligence />
             <FeedPerformanceTracker />
-            <FaqManager />
           </div>
         </div>
       </div>

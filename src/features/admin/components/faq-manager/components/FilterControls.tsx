@@ -52,7 +52,7 @@ const FilterControls = ({
 
   const handleDateRangeChange = (
     field: "from" | "to",
-    date: Date | undefined
+    date: Date | undefined,
   ) => {
     onFiltersChange({
       ...filters,
@@ -86,18 +86,18 @@ const FilterControls = ({
       <div className="flex flex-wrap gap-4 items-center">
         <div className="flex-1 min-w-[200px]">
           <div className="relative">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground " />
             <Input
               placeholder="Search FAQs..."
               value={filters.search}
               onChange={(e) => handleSearchChange(e.target.value)}
-              className="pl-10"
+              className="pl-10 bg-white"
             />
           </div>
         </div>
 
         <Select value={filters.category} onValueChange={handleCategoryChange}>
-          <SelectTrigger className="w-[140px]">
+          <SelectTrigger className="w-[140px] bg-white">
             <SelectValue placeholder="Category" />
           </SelectTrigger>
           <SelectContent>
@@ -111,7 +111,7 @@ const FilterControls = ({
         </Select>
 
         <Select value={filters.status} onValueChange={handleStatusChange}>
-          <SelectTrigger className="w-[120px]">
+          <SelectTrigger className="w-[120px] bg-white">
             <SelectValue placeholder="Status" />
           </SelectTrigger>
           <SelectContent>
@@ -126,7 +126,7 @@ const FilterControls = ({
           value={filters.priority.toString()}
           onValueChange={handlePriorityChange}
         >
-          <SelectTrigger className="w-[140px]">
+          <SelectTrigger className="w-[140px] bg-white">
             <SelectValue placeholder="Priority" />
           </SelectTrigger>
           <SelectContent>
@@ -145,8 +145,8 @@ const FilterControls = ({
               <Button
                 variant="outline"
                 className={cn(
-                  "w-[140px] justify-start text-left font-normal",
-                  !filters.dateRange.from && "text-muted-foreground"
+                  "w-[140px] justify-start text-left font-normal bg-white",
+                  !filters.dateRange.from && "text-muted-foreground",
                 )}
               >
                 <CalendarIcon className="mr-2 h-4 w-4" />
@@ -172,8 +172,8 @@ const FilterControls = ({
               <Button
                 variant="outline"
                 className={cn(
-                  "w-[140px] justify-start text-left font-normal",
-                  !filters.dateRange.to && "text-muted-foreground"
+                  "w-[140px] justify-start text-left font-normal bg-white",
+                  !filters.dateRange.to && "text-muted-foreground",
                 )}
               >
                 <CalendarIcon className="mr-2 h-4 w-4" />
