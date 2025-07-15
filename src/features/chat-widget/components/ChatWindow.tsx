@@ -54,6 +54,7 @@ export const ChatWindow = ({ isOpen, onClose }: ChatWindowProps) => {
   >("");
   const [chatMode, setChatMode] = useState<ChatMode>("normal");
   const [reportSubType, setReportSubType] = useState<string>("");
+  const [intent, setIntent] = useState<number>(0);
 
   // Reset stage when chat opens
   useEffect(() => {
@@ -63,11 +64,14 @@ export const ChatWindow = ({ isOpen, onClose }: ChatWindowProps) => {
       setReportType("");
       setChatMode("normal");
       setReportSubType("");
+      setIntent(0)
     }
   }, [isOpen]);
 
-  const handleOptionSelect = (optionId: string, type: "chat" | "report") => {
+  const handleOptionSelect = (optionId: string, type: "chat" | "report", intent: number) => {
     setSelectedOption(optionId);
+
+    setIntent(intent)
 
     if (type === "report") {
       setReportType(optionId as keyof typeof REPORT_OPTIONS);
@@ -78,7 +82,7 @@ export const ChatWindow = ({ isOpen, onClose }: ChatWindowProps) => {
     }
   };
 
-  const handleReportSubmit = (reportSubType: string) => {
+  const handleReportSubmit = (reportSubType: string, intent: number) => {
     // Instead of closing, proceed to chat with the appropriate mode
     setReportSubType(reportSubType);
     const mode = getChatModeForReportType(
@@ -86,13 +90,14 @@ export const ChatWindow = ({ isOpen, onClose }: ChatWindowProps) => {
     );
     setChatMode(mode);
     setCurrentStage("chat");
-
+    setIntent(intent)
+    
     // Log the report submission for future use
-    console.log("Report submitted:", {
-      reportType,
-      reportSubType,
-      chatMode: mode,
-    });
+    // console.log("Report submitted:", {
+    //   reportType,
+    //   reportSubType,
+    //   chatMode: mode,
+    // });
   };
 
   const handleBackToWelcome = () => {
@@ -174,6 +179,7 @@ export const ChatWindow = ({ isOpen, onClose }: ChatWindowProps) => {
             reportContext={
               reportType ? { reportType, reportSubType } : undefined
             }
+            intent={intent}
           />
         );
       default:

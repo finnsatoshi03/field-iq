@@ -56,50 +56,56 @@ export const CHAT_MODES = {
 // Role-specific options for chat stages
 export const CHAT_OPTIONS = {
   sales_rep: [
-    { id: "get-info", label: "Get Info", emoji: "ℹ️", type: "chat" as const },
     {
       id: "ask-question",
       label: "Ask Question",
       emoji: "❓",
       type: "chat" as const,
+      intent: 0,
     },
     {
       id: "report-issue",
       label: "Report Issue",
       emoji: "📝",
       type: "report" as const,
+      intent: null
     },
     {
       id: "report-sales",
-      label: "Report Sales Activity",
+      label: "Log Performance",
       emoji: "📊",
       type: "report" as const,
+      intent: null
     },
   ],
   farmer: [
-    {
-      id: "get-guides",
-      label: "Get Guides",
-      emoji: "📖",
-      type: "chat" as const,
-    },
-    {
-      id: "report-issue",
-      label: "Report Issue",
-      emoji: "📝",
-      type: "report" as const,
-    },
     {
       id: "ask-question",
       label: "Ask Question",
       emoji: "🤖",
       type: "chat" as const,
+      intent: 0,
     },
     {
-      id: "log-performance",
-      label: "Log Performance",
+      id: "report-issue",
+      label: "Report Health Issues",
+      emoji: "📝",
+      type: "chat" as const,
+      intent: 2,
+    },
+    {
+      id: "get-info",
+      label: "Ask if Safe",
+      emoji: "📝",
+      type: "chat" as const,
+      intent: 3,
+    },
+    {
+      id: "report-sales",
+      label: "Log Farm Performance",
       emoji: "✍️",
-      type: "report" as const,
+      type: "chat" as const,
+      intent: 7,
     },
   ],
 } as const;
@@ -107,30 +113,25 @@ export const CHAT_OPTIONS = {
 // Report/Log selector options
 export const REPORT_OPTIONS = {
   "report-sales": [
-    { id: "daily-sales", label: "Daily Sales Report", emoji: "📅" },
-    { id: "weekly-sales", label: "Weekly Sales Summary", emoji: "📊" },
-    { id: "client-visit", label: "Client Visit Report", emoji: "🤝" },
-    { id: "territory-update", label: "Territory Update", emoji: "🗺️" },
-    { id: "other-sales", label: "Other Sales Report", emoji: "📝" },
+    { id: "daily-sales", intent: 7, label: "Sales Report", emoji: "📅" },
+    { id: "farm-visit", intent: 8, label: "Farm Visit", emoji: "🤝" },
   ],
   "report-issue": [
-    { id: "health-issue", label: "Health Issue", emoji: "🏥" },
-    { id: "feed-issue", label: "Feed Issue", emoji: "🌾" },
-    { id: "equipment-issue", label: "Equipment Issue", emoji: "🔧" },
-    { id: "other-issue", label: "Other Issue", emoji: "🤖" },
+    { id: "dealer-issue", intent: 2, label: "Dealer Issue", emoji: "🏥" },
+    { id: "farm-issue", intent: 3, label: "Farm Issue", emoji: "🌾" }
   ],
   "report-problem": [
-    { id: "flock-health", label: "Flock Health Issue", emoji: "🏥" },
-    { id: "feed-problem", label: "Feed Problem", emoji: "🌾" },
-    { id: "equipment-issue", label: "Equipment Issue", emoji: "⚙️" },
-    { id: "other-problem", label: "Other Problem", emoji: "🤖" },
+    { id: "flock-health", intent: null, label: "Flock Health Issue", emoji: "🏥" },
+    { id: "feed-problem", intent: null, label: "Feed Problem", emoji: "🌾" },
+    { id: "equipment-issue", intent: null, label: "Equipment Issue", emoji: "⚙️" },
+    { id: "other-problem", intent: null, label: "Other Problem", emoji: "🤖" },
   ],
   "log-performance": [
-    { id: "egg-production", label: "Egg Production", emoji: "🥚" },
-    { id: "feed-consumption", label: "Feed Consumption", emoji: "📊" },
-    { id: "flock-mortality", label: "Flock Mortality", emoji: "📋" },
-    { id: "growth-metrics", label: "Growth Metrics", emoji: "📈" },
-    { id: "other-performance", label: "Other Performance", emoji: "🤖" },
+    { id: "egg-production", intent: null, label: "Egg Production", emoji: "🥚" },
+    { id: "feed-consumption", intent: null, label: "Feed Consumption", emoji: "📊" },
+    { id: "flock-mortality", intent: null, label: "Flock Mortality", emoji: "📋" },
+    { id: "growth-metrics", intent: null, label: "Growth Metrics", emoji: "📈" },
+    { id: "other-performance", intent: null, label: "Other Performance", emoji: "🤖" },
   ],
 } as const;
 
