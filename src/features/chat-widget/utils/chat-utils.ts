@@ -52,7 +52,7 @@ export const getAIResponse = async (userMessage: string, intent: number): Promis
   // }
 
   try {      
-    const response = await fetch("http://127.0.0.1:8000/farmer/chat", {
+    const response = await fetch("http://127.0.0.1:8000/salesrep/chat", {
       method: "POST",
       headers: {
         "Accept": "application/json",
@@ -60,19 +60,19 @@ export const getAIResponse = async (userMessage: string, intent: number): Promis
       },
       body: JSON.stringify({
         prompt: userMessage,
-        user_id: 1,
-        chat_id: 8,
-        intent: intent
+        user_id: 3,
+        chat_id: 18,
+        intent_id: intent
       }),
     });
 
     const data = await response.json();
-
+    
     return data.data.response || "Received a response, but it was not in the expected format.";
   } catch (error) {
     console.error("Error fetching AI response:", error);
     return "Sorry I can't answer your question right now. Can you please try again later.";
   }
 
-  return "I understand your concern. Let me help you with that. Could you provide more details so I can give you the most accurate assistance?";
+  // return "I understand your concern. Let me help you with that. Could you provide more details so I can give you the most accurate assistance?";
 };
