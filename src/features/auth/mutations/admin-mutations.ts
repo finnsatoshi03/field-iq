@@ -16,12 +16,12 @@ export const adminQueryKeys = {
 
 // Get users query
 export const useGetUsers = () => {
-  const { isDev, isAdmin } = useUser();
+  const { isDev, isAdmin, isSalesRep } = useUser();
 
   return useQuery({
     queryKey: adminQueryKeys.users,
     queryFn: () => {
-      if (!isDev && !isAdmin) {
+      if (!isDev && !isAdmin && !isSalesRep) {
         throw new Error("Access denied. Dev role required.");
       }
       if (isAdmin) {
@@ -35,10 +35,22 @@ export const useGetUsers = () => {
             ),
           );
       }
+      if (isSalesRep) {
+        return adminService
+          .getUsers()
+          .then((users) =>
+            users.filter(
+              (user) =>
+                user.user_metadata.role !== "sales_rep" &&
+                user.user_metadata.role !== "admin" &&
+                user.user_metadata.role !== "dev",
+            ),
+          );
+      }
       return adminService.getUsers();
     },
     staleTime: 1000 * 60 * 5, // 5 minutes
-    enabled: isDev || isAdmin, // Only enable query if user has dev role
+    enabled: isDev || isAdmin || isSalesRep, // Only enable query if user has dev role
   });
 };
 
@@ -54,7 +66,7 @@ export const useGetUser = (userId: string) => {
 // Create user mutation
 export const useCreateUser = () => {
   const queryClient = useQueryClient();
-  const { isDev, isAdmin } = useUser();
+  const { isDev, isAdmin, isSalesRep } = useUser();
 
   return useMutation({
     mutationFn: (params: {
@@ -63,7 +75,7 @@ export const useCreateUser = () => {
       user_metadata?: Record<string, any>;
       email_confirm?: boolean;
     }) => {
-      if (!isDev && !isAdmin) {
+      if (!isDev && !isAdmin && !isSalesRep) {
         throw new Error("Access denied. Dev role required.");
       }
       return adminService.createUser(params);
@@ -85,11 +97,11 @@ export const useCreateUser = () => {
 // Delete user mutation
 export const useDeleteUser = () => {
   const queryClient = useQueryClient();
-  const { isDev, isAdmin } = useUser();
+  const { isDev, isAdmin, isSalesRep } = useUser();
 
   return useMutation({
     mutationFn: (userId: string) => {
-      if (!isDev && !isAdmin) {
+      if (!isDev && !isAdmin && !isSalesRep) {
         throw new Error("Access denied. Dev role required.");
       }
       return adminService.deleteUser(userId);
@@ -111,7 +123,7 @@ export const useDeleteUser = () => {
 // Update user mutation
 export const useUpdateUser = () => {
   const queryClient = useQueryClient();
-  const { isDev, isAdmin } = useUser();
+  const { isDev, isAdmin, isSalesRep } = useUser();
 
   return useMutation({
     mutationFn: ({
@@ -125,7 +137,7 @@ export const useUpdateUser = () => {
         app_metadata?: Record<string, any>;
       };
     }) => {
-      if (!isDev && !isAdmin) {
+      if (!isDev && !isAdmin && !isSalesRep) {
         throw new Error("Access denied. Dev role required.");
       }
       return adminService.updateUser(userId, updates);
@@ -149,11 +161,11 @@ export const useUpdateUser = () => {
 
 // Generate email link mutation
 export const useGenerateEmailLink = () => {
-  const { isDev, isAdmin } = useUser();
+  const { isDev, isAdmin, isSalesRep } = useUser();
 
   return useMutation({
     mutationFn: (params: GenerateEmailLinkParams) => {
-      if (!isDev && !isAdmin) {
+      if (!isDev && !isAdmin && !isSalesRep) {
         throw new Error("Access denied. Dev role required.");
       }
       return adminService.generateEmailLink(params);

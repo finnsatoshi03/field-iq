@@ -1,10 +1,11 @@
 import { createFileRoute } from "@tanstack/react-router";
 
 import {
-  MonthlySalesChart,
   DealerAlertLog,
-  VisitSchedule,
+  FarmerManager,
+  MonthlySalesChart,
   TrainingTracker,
+  VisitSchedule,
 } from "@/features/sales-rep/components";
 
 export const Route = createFileRoute("/_authenticated/sales/")({
@@ -34,6 +35,7 @@ function SalesDashboard() {
             </div>
           </div>
           <div className="lg:col-span-1 xl:col-span-1 space-y-6">
+            <FarmerManager />
             <DealerAlertLog />
             <TrainingTracker />
           </div>
