@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import { BiSolidMessageSquareDots } from "react-icons/bi";
 
 import { useUser } from "@/hooks/use-user";
+import { useChatWidgetStore } from "@/store";
 import { ROLE_BASED_MESSAGES } from "./const";
 
 import type { UserRole } from "@/lib/types";
@@ -31,7 +32,9 @@ export const ChatWidget = () => {
   const { user } = useUser();
   const [showPopup, setShowPopup] = useState(false);
   const [currentMessage, setCurrentMessage] = useState("");
-  const [isChatOpen, setIsChatOpen] = useState(false);
+
+  // Use store for chat state
+  const { isOpen: isChatOpen, openChat, closeChat } = useChatWidgetStore();
 
   // Get messages for current user role
   const getRoleMessages = (): string[] => {
@@ -75,8 +78,10 @@ export const ChatWidget = () => {
   }, [user, isChatOpen]); // Add isChatOpen to dependency array
 
   const handleWidgetClick = () => {
-    setIsChatOpen(!isChatOpen); // Toggle chat window
-    if (!isChatOpen) {
+    if (isChatOpen) {
+      closeChat();
+    } else {
+      openChat();
       setShowPopup(false); // Hide popup when opening chat
     }
   };
@@ -86,7 +91,7 @@ export const ChatWidget = () => {
   };
 
   const handleCloseChat = () => {
-    setIsChatOpen(false);
+    closeChat();
   };
 
   // if (user?.role !== "sales_rep" && user?.role !== "farmer") return null;

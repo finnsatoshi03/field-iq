@@ -1,16 +1,5 @@
-import React, { useState, useEffect } from "react";
-import { MapContainer, TileLayer, Marker, Popup } from "react-leaflet";
-import L from "leaflet";
-import {
-  Navigation,
-  ExternalLink,
-  MapPin,
-  Phone,
-  Loader2,
-  MapPinIcon,
-} from "lucide-react";
-import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import {
   Dialog,
   DialogContent,
@@ -18,14 +7,25 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
+import { cn } from "@/lib/utils";
+import L from "leaflet";
+import {
+  ExternalLink,
+  Loader2,
+  MapPin,
+  MapPinIcon,
+  Navigation,
+  Phone,
+} from "lucide-react";
+import React, { useEffect, useState } from "react";
+import { MapContainer, Marker, Popup, TileLayer } from "react-leaflet";
 import { type Visit } from "../constants";
 import {
-  getDirectionsOptions,
-  hasGpsCoordinates,
   formatVisitDate,
+  getDirectionsOptions,
   getPriorityBadgeColor,
+  hasGpsCoordinates,
 } from "../utils";
-import { cn } from "@/lib/utils";
 
 // Fix for default markers in react-leaflet
 delete (L.Icon.Default.prototype as any)._getIconUrl;
@@ -106,7 +106,7 @@ const DirectionsModal: React.FC<DirectionsModalProps> = ({
         enableHighAccuracy: true,
         timeout: 10000,
         maximumAge: 300000, // 5 minutes
-      }
+      },
     );
   };
 
@@ -157,14 +157,14 @@ const DirectionsModal: React.FC<DirectionsModalProps> = ({
               <div className="bg-muted/50 rounded-lg p-3 lg:p-4">
                 <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-2 mb-3">
                   <div className="min-w-0 flex-1">
-                    <h3 className="font-display font-semibold text-base lg:text-lg tracking-tight truncate">
+                    <h3 className="font-display font-medium text-base lg:text-lg tracking-tight truncate">
                       {visit.farmName}
                     </h3>
                     <div className="flex flex-wrap items-center gap-2 mt-1">
                       <Badge
                         className={cn(
                           "text-xs",
-                          getPriorityBadgeColor(visit.priority)
+                          getPriorityBadgeColor(visit.priority),
                         )}
                       >
                         {visit.priority.toUpperCase()}
@@ -182,7 +182,7 @@ const DirectionsModal: React.FC<DirectionsModalProps> = ({
                   </div>
                 </div>
 
-                <div className="space-y-2 text-sm">
+                <div className="space-y-1 text-sm">
                   <div className="flex items-center gap-2">
                     <MapPin className="h-4 w-4 text-muted-foreground shrink-0" />
                     <span className="truncate">{visit.location}</span>
@@ -216,7 +216,7 @@ const DirectionsModal: React.FC<DirectionsModalProps> = ({
 
               {/* Current Location Status */}
               <div className="bg-muted/30 rounded-lg p-3 lg:p-4">
-                <h4 className="font-medium text-sm mb-2 flex items-center gap-2">
+                <h4 className="font-medium font-display text-sm mb-2 flex items-center gap-2">
                   <MapPinIcon className="h-4 w-4" />
                   Your Current Location
                 </h4>
@@ -269,19 +269,19 @@ const DirectionsModal: React.FC<DirectionsModalProps> = ({
                         variant="outline"
                         className={cn(
                           "justify-start h-auto p-3 lg:p-4",
-                          isDisabled && "opacity-50 cursor-not-allowed"
+                          isDisabled && "opacity-50 cursor-not-allowed",
                         )}
                         onClick={() =>
                           !isDisabled && handleDirectionOption(option)
                         }
                         disabled={isDisabled}
                       >
-                        <div className="flex items-center gap-3 w-full min-w-0">
+                        <div className="flex gap-3 w-full min-w-0">
                           <span className="text-xl lg:text-2xl shrink-0">
                             {option.icon}
                           </span>
                           <div className="flex-1 text-left min-w-0">
-                            <div className="font-medium text-sm lg:text-base">
+                            <div className="font-medium font-display text-sm lg:text-base">
                               {option.name}
                             </div>
                             <div className="text-xs text-muted-foreground line-clamp-1 lg:line-clamp-none">

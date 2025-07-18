@@ -1,5 +1,3 @@
-import React from "react";
-import { Plus, MapPin } from "lucide-react";
 import {
   Dialog,
   DialogContent,
@@ -7,6 +5,8 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
+import { MapPin, Plus } from "lucide-react";
+import React from "react";
 import { AlertItem, FarmItem, MoreButton } from "./components";
 import { mockAlerts, mockFarms } from "./constants";
 import { getAddedFarmsCount, getVisitedFarmsCount } from "./utils";
@@ -52,7 +52,7 @@ const DealerAlertLog: React.FC = () => {
       </div>
 
       <div className="px-4 bg-muted/20 py-4 space-y-4">
-        <div className="flex items-end justify-between">
+        <div className="flex flex-col gap-1">
           <h4 className="text-foreground font-display font-medium text-sm tracking-tight">
             New Accounts - Farms Added + Visited
           </h4>

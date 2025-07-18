@@ -1,5 +1,5 @@
+import { Calendar, ChevronRight, Info, Settings } from "lucide-react";
 import { useState } from "react";
-import { Calendar, Settings, Info, ChevronRight } from "lucide-react";
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -12,8 +12,8 @@ import {
 } from "@/components/ui/dialog";
 import { Separator } from "@/components/ui/separator";
 import {
-  MOCK_CURRENT_FEED,
   FEED_TYPE_COLORS,
+  MOCK_CURRENT_FEED,
   type FeedInfo,
 } from "./constants";
 
@@ -166,7 +166,7 @@ export const CurrentFeedInUse = () => {
                   <p className="font-medium">
                     {formatAgeRange(
                       feedInfo.ageRangeStart,
-                      feedInfo.ageRangeEnd
+                      feedInfo.ageRangeEnd,
                     )}
                   </p>
                 </div>

@@ -1,15 +1,6 @@
-import { useState } from "react";
-import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -18,23 +9,32 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import {
-  Edit,
-  Trash2,
-  Eye,
-  MoreHorizontal,
-  ArrowUpDown,
-  ArrowUp,
-  ArrowDown,
-  MessageCircle,
-} from "lucide-react";
-import { cn } from "@/lib/utils";
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
 import { useIsMobile } from "@/lib/hooks/useIsMobile";
+import { cn } from "@/lib/utils";
+import {
+  ArrowDown,
+  ArrowUp,
+  ArrowUpDown,
+  Edit,
+  Eye,
+  MessageCircle,
+  MoreHorizontal,
+  Trash2,
+} from "lucide-react";
+import { useState } from "react";
 import type { FaqItem } from "../constants";
 import {
   formatDate,
   formatNumber,
-  getStatusColor,
   getCategoryColor,
+  getStatusColor,
   truncateText,
 } from "../utils";
 
@@ -168,7 +168,7 @@ const FaqList = ({
                     <h4 className="font-medium font-display text-sm leading-5">
                       {truncateText(faq.question, 80)}
                     </h4>
-                    <p className="text-xs text-muted-foreground mt-1">
+                    <p className="text-xs text-muted-foreground">
                       {truncateText(faq.answer, 100)}
                     </p>
                   </div>

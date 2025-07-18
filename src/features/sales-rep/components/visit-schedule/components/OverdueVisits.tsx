@@ -1,5 +1,3 @@
-import React from "react";
-import { AlertTriangle, MapPin, Phone } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import {
   Dialog,
@@ -8,13 +6,15 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
+import { cn } from "@/lib/utils";
+import { AlertTriangle, MapPin, Phone } from "lucide-react";
+import React from "react";
 import { type Visit } from "../constants";
 import {
-  getOverdueVisits,
   formatVisitDate,
+  getOverdueVisits,
   getPriorityBadgeColor,
 } from "../utils";
-import { cn } from "@/lib/utils";
 import DirectionsButton from "./DirectionsButton";
 
 interface OverdueVisitsProps {
@@ -41,7 +41,7 @@ const VisitItem: React.FC<{ visit: Visit }> = ({ visit }) => {
                 <Badge
                   className={cn(
                     "text-[10px] px-2 mt-0.5 h-fit py-0 rounded-sm",
-                    getPriorityBadgeColor(visit.priority)
+                    getPriorityBadgeColor(visit.priority),
                   )}
                 >
                   {visit.priority}
@@ -125,17 +125,19 @@ const OverdueVisits: React.FC<OverdueVisitsProps> = ({ visits, className }) => {
       className={cn("bg-card rounded-lg border border-border p-4", className)}
     >
       <div className="mb-4">
-        <div className="flex items-center justify-between">
-          <h3 className="text-foreground font-display font-semibold text-base tracking-tight">
-            Overdue Follow-ups
-          </h3>
-          <Badge className="bg-red-600 text-red-50 text-xs">
+        <div className="flex flex-wrap gap-2 justify-between">
+          <div className="leading-none">
+            <h3 className="text-foreground font-display font-semibold text-base tracking-tight">
+              Overdue Follow-ups
+            </h3>
+            <p className="text-xs text-muted-foreground">
+              Visits that need immediate attention
+            </p>
+          </div>
+          <Badge className="bg-red-600 text-red-50 text-xs h-fit">
             {overdueVisits.length} overdue
           </Badge>
         </div>
-        <p className="text-xs text-muted-foreground mt-1">
-          Visits that need immediate attention
-        </p>
       </div>
 
       <div className="space-y-3">
