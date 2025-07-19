@@ -188,7 +188,11 @@ const MonthlySalesChart: React.FC = () => {
   );
 
   return (
-    <ExpandableCard title="My Monthly Sales Influence" summary={summaryContent}>
+    <ExpandableCard
+      title="My Monthly Sales Influence"
+      summary={summaryContent}
+      className="sm:h-fit"
+    >
       {chartContent}
     </ExpandableCard>
   );

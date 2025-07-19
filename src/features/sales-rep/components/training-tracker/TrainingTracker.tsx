@@ -7,6 +7,7 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import ExpandableCard from "@/components/ui/expandable-card";
+import { cn } from "@/lib/utils";
 import {
   Book,
   ChevronRight,
@@ -196,7 +197,7 @@ const TrainingTracker: React.FC<{ className?: string }> = ({ className }) => {
     <ExpandableCard
       title="Training Progress"
       summary={summaryContent}
-      className={className}
+      className={cn("sm:h-fit", className)}
     >
       {fullContent}
     </ExpandableCard>

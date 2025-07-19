@@ -89,7 +89,11 @@ const VisitSchedule: React.FC<VisitScheduleProps> = ({ className }) => {
   );
 
   return (
-    <ExpandableCard title="My Visit Schedule" summary={summaryContent}>
+    <ExpandableCard
+      title="My Visit Schedule"
+      summary={summaryContent}
+      className="sm:h-fit"
+    >
       {fullContent}
     </ExpandableCard>
   );
