@@ -7,6 +7,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import ExpandableCard from "@/components/ui/expandable-card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Progress } from "@/components/ui/progress";
@@ -18,12 +19,11 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Separator } from "@/components/ui/separator";
-import { AlertTriangle, Package, Settings, Wheat } from "lucide-react";
+import { AlertTriangle, Package, Wheat } from "lucide-react";
 import { useEffect, useState } from "react";
 import {
   ALERT_COLORS,
   ALERT_MESSAGES,
-  BAG_SIZE_OPTIONS,
   FEED_FREQUENCY_OPTIONS,
   MOCK_CALCULATOR_INPUTS,
   type CalculatorInputs,
@@ -31,7 +31,6 @@ import {
 } from "./constants";
 import {
   calculateFeedUsage,
-  formatBags,
   formatCurrency,
   formatDays,
   formatWeight,
@@ -47,6 +46,7 @@ export const FeedUsageCalculator = () => {
   );
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [errors, setErrors] = useState<string[]>([]);
+  const [isExpanded, setIsExpanded] = useState(false);
 
   useEffect(() => {
     const validationErrors = validateInputs(inputs);
@@ -81,23 +81,41 @@ export const FeedUsageCalculator = () => {
     return Math.min((calculation.reorderPoint / maxDays) * 100, 100);
   };
 
-  return (
-    <div className="bg-card rounded-lg border border-border py-4 space-y-4">
-      <div className="flex items-center justify-between px-4">
-        <div>
-          <h3 className="text-foreground font-display font-medium text-base tracking-tight">
-            Feed Usage Calculator
-          </h3>
-          <p className="text-sm text-muted-foreground font-medium">
-            Calculate your feed usage and reorder point
-          </p>
+  // Summary content - show key calculation results
+  const summaryContent = (
+    <div className="flex items-center justify-between">
+      <div className="flex items-center gap-4">
+        <div className="flex items-center gap-2">
+          <Wheat className="h-4 w-4 text-blue-600" />
+          <span className="text-sm font-medium text-foreground">
+            {calculation
+              ? `${calculation.bagsNeededPerWeek} bags/week`
+              : "No data"}
+          </span>
         </div>
-        <Button onClick={() => setIsDialogOpen(true)} variant="native">
-          <Settings className="h-4 w-4" />
-        </Button>
+        <div className="flex items-center gap-2">
+          <Package className="h-4 w-4 text-muted-foreground" />
+          <span className="text-xs text-muted-foreground">
+            {inputs.currentStock} bags in stock
+          </span>
+        </div>
       </div>
+      {/* Only show badge when collapsed */}
+      {!isExpanded && calculation && (
+        <Badge className={ALERT_COLORS[calculation.alertLevel]}>
+          {ALERT_MESSAGES[calculation.alertLevel]}
+        </Badge>
+      )}
+    </div>
+  );
 
-      <div className="space-y-4 px-4">
+  return (
+    <ExpandableCard
+      title="Feed Usage Calculator"
+      summary={summaryContent}
+      onToggle={(expanded: boolean) => setIsExpanded(expanded)}
+    >
+      <div className="space-y-4">
         {/* Quick Stats Display */}
         {calculation && (
           <>
@@ -265,84 +283,19 @@ export const FeedUsageCalculator = () => {
 
             <Separator />
 
-            {/* Feed & Stock Details */}
+            {/* Feed Details */}
             <div>
-              <h4 className="font-display font-medium mb-3">
-                Feed & Stock Details
-              </h4>
-              <div className="space-y-4">
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="space-y-1">
-                    <Label htmlFor="bagSize">Bag Size</Label>
-                    <Select
-                      value={inputs.bagSize.toString()}
-                      onValueChange={(value) =>
-                        handleInputChange("bagSize", parseInt(value))
-                      }
-                    >
-                      <SelectTrigger className="w-full">
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {BAG_SIZE_OPTIONS.map((option) => (
-                          <SelectItem
-                            key={option.value}
-                            value={option.value.toString()}
-                          >
-                            {option.label}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
-                  <div className="space-y-1">
-                    <Label htmlFor="currentStock">Current Stock (bags)</Label>
-                    <Input
-                      id="currentStock"
-                      type="number"
-                      value={inputs.currentStock}
-                      onChange={(e) =>
-                        handleInputChange(
-                          "currentStock",
-                          parseInt(e.target.value) || 0,
-                        )
-                      }
-                      placeholder="e.g., 8"
-                    />
-                  </div>
-                </div>
-                <div className="space-y-1">
-                  <Label htmlFor="bagCost">Cost per Bag (PHP)</Label>
-                  <Input
-                    id="bagCost"
-                    type="number"
-                    value={inputs.bagCost}
-                    onChange={(e) =>
-                      handleInputChange(
-                        "bagCost",
-                        parseInt(e.target.value) || 0,
-                      )
-                    }
-                    placeholder="e.g., 2800"
-                  />
-                </div>
-              </div>
-            </div>
-
-            <Separator />
-
-            {/* Animal Type & Stage */}
-            <div>
-              <h4 className="font-display font-medium mb-3">
-                Animal Type & Feed Stage
-              </h4>
+              <h4 className="font-display font-medium mb-3">Feed Details</h4>
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-1">
                   <Label htmlFor="animalType">Animal Type</Label>
                   <Select
                     value={inputs.animalType}
                     onValueChange={(value) =>
-                      handleInputChange("animalType", value)
+                      handleInputChange(
+                        "animalType",
+                        value as "broiler" | "layer",
+                      )
                     }
                   >
                     <SelectTrigger className="w-full">
@@ -359,7 +312,10 @@ export const FeedUsageCalculator = () => {
                   <Select
                     value={inputs.feedStage}
                     onValueChange={(value) =>
-                      handleInputChange("feedStage", value)
+                      handleInputChange(
+                        "feedStage",
+                        value as "starter" | "grower" | "finisher" | "layer",
+                      )
                     }
                   >
                     <SelectTrigger className="w-full">
@@ -384,55 +340,89 @@ export const FeedUsageCalculator = () => {
               </div>
             </div>
 
-            <Button className="w-full">Save</Button>
+            <Separator />
 
-            {/* Calculation Summary */}
+            {/* Cost Details */}
+            <div>
+              <h4 className="font-display font-medium mb-3">Cost Details</h4>
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-1">
+                  <Label htmlFor="cost">Cost per Bag (₱)</Label>
+                  <Input
+                    id="cost"
+                    type="number"
+                    step="0.01"
+                    value={inputs.bagCost}
+                    onChange={(e) =>
+                      handleInputChange(
+                        "bagCost",
+                        parseFloat(e.target.value) || 0,
+                      )
+                    }
+                    placeholder="e.g., 1250.00"
+                  />
+                </div>
+                <div className="space-y-1">
+                  <Label htmlFor="stock">Current Stock (bags)</Label>
+                  <Input
+                    id="stock"
+                    type="number"
+                    value={inputs.currentStock}
+                    onChange={(e) =>
+                      handleInputChange(
+                        "currentStock",
+                        parseInt(e.target.value) || 0,
+                      )
+                    }
+                    placeholder="e.g., 50"
+                  />
+                </div>
+              </div>
+            </div>
+
+            <Separator />
+
+            {/* Results Preview */}
             {calculation && (
-              <>
-                <div className="px-6 py-4 bg-muted/50 -mx-6">
-                  <h4 className="font-display font-medium mb-3 flex items-center gap-2">
-                    Calculation Summary
-                  </h4>
-                  <div className="grid grid-cols-2 gap-4 text-sm">
-                    <div>
-                      <p className="text-muted-foreground font-medium text-xs">
-                        Daily consumption:
-                      </p>
-                      <p className="font-medium font-display">
-                        {formatWeight(calculation.dailyConsumption)}
-                      </p>
-                    </div>
-                    <div>
-                      <p className="text-muted-foreground font-medium text-xs">
-                        Weekly consumption:
-                      </p>
-                      <p className="font-medium font-display">
-                        {formatWeight(calculation.weeklyConsumption)}
-                      </p>
-                    </div>
-                    <div>
-                      <p className="text-muted-foreground font-medium text-xs">
-                        Bags per week:
-                      </p>
-                      <p className="font-medium font-display">
-                        {formatBags(calculation.bagsNeededPerWeek)}
-                      </p>
-                    </div>
-                    <div>
-                      <p className="text-muted-foreground font-medium text-xs">
-                        Weekly cost:
-                      </p>
-                      <p className="font-medium font-display">
-                        {formatCurrency(calculation.costPerWeek)}
-                      </p>
-                    </div>
+              <div>
+                <h4 className="font-display font-medium mb-3">
+                  Calculation Results
+                </h4>
+                <div className="grid grid-cols-2 gap-4 p-4 bg-muted/30 rounded-lg">
+                  <div>
+                    <p className="text-sm text-muted-foreground">Weekly Need</p>
+                    <p className="text-lg font-display font-medium">
+                      {calculation.bagsNeededPerWeek} bags
+                    </p>
+                  </div>
+                  <div>
+                    <p className="text-sm text-muted-foreground">Weekly Cost</p>
+                    <p className="text-lg font-display font-medium">
+                      {formatCurrency(calculation.costPerWeek)}
+                    </p>
+                  </div>
+                  <div>
+                    <p className="text-sm text-muted-foreground">
+                      Reorder Point
+                    </p>
+                    <p className="text-lg font-display font-medium">
+                      {formatDays(calculation.reorderPoint)}
+                    </p>
+                  </div>
+                  <div>
+                    <p className="text-sm text-muted-foreground">
+                      Stock Status
+                    </p>
+                    <Badge className={ALERT_COLORS[calculation.alertLevel]}>
+                      {ALERT_MESSAGES[calculation.alertLevel]}
+                    </Badge>
                   </div>
                 </div>
-              </>
+              </div>
             )}
           </div>
         </DialogContent>
       </Dialog>
-    </div>
+    </ExpandableCard>
   );
 };

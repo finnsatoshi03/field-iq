@@ -9,6 +9,7 @@ interface ExpandableCardProps {
   className?: string;
   defaultExpanded?: boolean;
   showExpandButton?: boolean;
+  onToggle?: (expanded: boolean) => void;
 }
 
 const ExpandableCard: React.FC<ExpandableCardProps> = ({
@@ -18,11 +19,14 @@ const ExpandableCard: React.FC<ExpandableCardProps> = ({
   className,
   defaultExpanded = false,
   showExpandButton = true,
+  onToggle,
 }) => {
   const [isExpanded, setIsExpanded] = useState(defaultExpanded);
 
   const handleToggle = () => {
-    setIsExpanded(!isExpanded);
+    const newExpandedState = !isExpanded;
+    setIsExpanded(newExpandedState);
+    onToggle?.(newExpandedState);
   };
 
   return (

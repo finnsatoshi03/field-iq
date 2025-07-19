@@ -2,7 +2,6 @@ import {
   Calendar,
   ChevronRight,
   CircleFadingArrowUp,
-  Info,
   Settings,
   Wheat,
 } from "lucide-react";
@@ -17,6 +16,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import ExpandableCard from "@/components/ui/expandable-card";
 import {
   FEED_TYPE_COLORS,
   MOCK_CURRENT_FEED,
@@ -45,28 +45,33 @@ export const CurrentFeedInUse = () => {
 
   const feedTypeColorClass = FEED_TYPE_COLORS[feedInfo.type];
 
-  return (
-    <div className="bg-card rounded-lg border border-border py-4 space-y-4 h-fit">
-      <div className="flex items-center justify-between px-4">
-        <div className="leading-none">
-          <h3 className="font-display font-medium text-base tracking-tight">
-            My Current Feed in Use
-          </h3>
-          <p className="text-sm text-muted-foreground">
-            The feed that your farm is currently using
-          </p>
+  // Summary content - show feed name and status
+  const summaryContent = (
+    <div className="flex items-center justify-between">
+      <div className="flex items-center gap-4">
+        <div className="flex items-center gap-2">
+          <Wheat className="h-4 w-4 text-green-600" />
+          <span className="text-sm font-medium text-foreground">
+            {feedInfo.name}
+          </span>
         </div>
-        <Button
-          variant="ghost"
-          size="sm"
-          className="h-8 w-8 p-0"
-          onClick={() => setIsDetailsOpen(true)}
+        <Badge
+          variant="outline"
+          className={`${feedTypeColorClass} font-medium capitalize text-xs`}
         >
-          <Info className="h-4 w-4" />
-        </Button>
+          {feedInfo.type}
+        </Badge>
       </div>
+      <div className="flex items-center gap-2">
+        <div className="w-2 h-2 rounded-full bg-green-500" />
+        <span className="text-xs text-muted-foreground">Active Program</span>
+      </div>
+    </div>
+  );
 
-      <div className="space-y-4 px-4">
+  return (
+    <ExpandableCard title="My Current Feed in Use" summary={summaryContent}>
+      <div className="space-y-4">
         {/* Main Feed Tile */}
         <div className="rounded-lg p-4 border">
           <div className="flex items-start justify-between mb-3">
@@ -248,14 +253,14 @@ export const CurrentFeedInUse = () => {
               <Button
                 variant="outline"
                 size="sm"
-                className="font-medium text-xs"
+                onClick={() => setIsDetailsOpen(false)}
               >
-                Download Guide
+                Close
               </Button>
             </div>
           </div>
         </DialogContent>
       </Dialog>
-    </div>
+    </ExpandableCard>
   );
 };
