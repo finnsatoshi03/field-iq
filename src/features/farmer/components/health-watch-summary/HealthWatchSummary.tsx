@@ -2,27 +2,12 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { useChatWidgetStore } from "@/store/chat-widget-store";
 import { Plus } from "lucide-react";
-import {
-  AddIssueDialog,
-  IssueList,
-  IssueSummary,
-  SmileyMeter,
-} from "./components";
+import { IssueList, IssueSummary, SmileyMeter } from "./components";
 import { TIME_PERIODS } from "./constants";
 import { useHealthWatch } from "./hooks";
 
 export const HealthWatchSummary = () => {
-  const {
-    timePeriod,
-    setTimePeriod,
-    issues,
-    summary,
-    isAddDialogOpen,
-    setIsAddDialogOpen,
-    newIssue,
-    handleNewIssueChange,
-    handleAddIssue,
-  } = useHealthWatch();
+  const { timePeriod, setTimePeriod, issues, summary } = useHealthWatch();
 
   const { openFlockMortalityReport } = useChatWidgetStore();
 
@@ -96,15 +81,6 @@ export const HealthWatchSummary = () => {
         </div>
         <IssueList issues={issues} maxItems={5} />
       </div>
-
-      {/* Add Issue Dialog */}
-      <AddIssueDialog
-        isOpen={isAddDialogOpen}
-        onOpenChange={setIsAddDialogOpen}
-        newIssue={newIssue}
-        onNewIssueChange={handleNewIssueChange}
-        onAddIssue={handleAddIssue}
-      />
     </div>
   );
 };
