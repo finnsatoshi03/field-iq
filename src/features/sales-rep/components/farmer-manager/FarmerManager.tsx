@@ -1,13 +1,11 @@
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   Dialog,
   DialogContent,
   DialogDescription,
   DialogHeader,
   DialogTitle,
-  DialogTrigger,
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -22,7 +20,6 @@ import {
   CheckCircle,
   Clock,
   Mail,
-  Maximize2,
   Send,
   Shield,
   UserPlus,
@@ -31,6 +28,7 @@ import {
 } from "lucide-react";
 import { useMemo, useState } from "react";
 
+import ExpandableCard from "@/components/ui/expandable-card";
 import {
   useCreateUser,
   useGenerateEmailLink,
@@ -189,9 +187,38 @@ export const FarmerManager = ({ className }: FarmerManagerProps) => {
     return "bg-orange-50 text-orange-800 border-orange-200 dark:bg-orange-900/20 dark:text-orange-400 dark:border-orange-800";
   };
 
-  const renderCompactView = () => {
-    if (isLoading) {
-      return (
+  // Summary content - show invite button and farmer count
+  const summaryContent = (
+    <div className="flex items-center justify-between">
+      <div className="flex items-center gap-4">
+        <div className="flex items-center gap-2">
+          <Users className="h-4 w-4 text-muted-foreground" />
+          <span className="text-sm font-medium text-foreground">
+            {metrics.total} farmer{metrics.total !== 1 ? "s" : ""}
+          </span>
+        </div>
+        <div className="flex items-center gap-2">
+          <CheckCircle className="h-3 w-3 text-green-600" />
+          <span className="text-xs text-muted-foreground">
+            {metrics.active} active
+          </span>
+        </div>
+      </div>
+      <Button
+        onClick={() => setIsInviteDialogOpen(true)}
+        size="sm"
+        className="h-8"
+      >
+        <UserPlus className="h-4 w-4 mr-2" />
+        Invite New Farmer
+      </Button>
+    </div>
+  );
+
+  // Full content
+  const fullContent = (
+    <div className="space-y-4">
+      {isLoading ? (
         <div className="space-y-4">
           <div className="grid grid-cols-3 gap-3">
             {[...Array(3)].map((_, i) => (
@@ -213,331 +240,117 @@ export const FarmerManager = ({ className }: FarmerManagerProps) => {
             </div>
           </div>
         </div>
-      );
-    }
-
-    if (error) {
-      return (
+      ) : error ? (
         <div className="text-center py-8">
           <UserX className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
           <h3 className="text-lg font-medium">Unable to load farmers</h3>
           <p className="text-muted-foreground">Please try again later.</p>
         </div>
-      );
-    }
-
-    return (
-      <div className="space-y-4">
-        {/* Stats Grid */}
-        <div className="grid grid-cols-3 gap-3">
-          <div className="text-center p-3 rounded-lg border border-border bg-background">
-            <div className="text-2xl font-semibold text-foreground">
-              {metrics.total}
-            </div>
-            <div className="text-xs text-muted-foreground font-medium">
-              Total Farmers
-            </div>
-          </div>
-          <div className="text-center p-3 rounded-lg border border-border bg-background">
-            <div className="text-2xl font-semibold text-green-600">
-              {metrics.active}
-            </div>
-            <div className="text-xs text-muted-foreground font-medium">
-              Active
-            </div>
-          </div>
-          <div className="text-center p-3 rounded-lg border border-border bg-background">
-            <div className="text-2xl font-semibold text-orange-600">
-              {metrics.pending}
-            </div>
-            <div className="text-xs text-muted-foreground font-medium">
-              Pending
-            </div>
-          </div>
-        </div>
-
-        {/* Recent Farmers */}
-        <div>
-          <div className="flex items-center justify-between mb-4">
-            <h4 className="font-medium text-foreground">Recent Farmers</h4>
-            <Badge
-              variant="outline"
-              className="font-medium rounded-full border-border bg-background text-foreground text-xs"
-            >
-              {metrics.total} Total
-            </Badge>
-          </div>
-
-          {/* Mini User Previews */}
-          <div className="space-y-3">
-            {recentFarmers.length > 0 ? (
-              recentFarmers.map((user) => (
-                <div
-                  key={user.id}
-                  className="bg-background rounded-lg p-3 border border-border hover:bg-muted/30 transition-colors"
-                >
-                  <div className="flex items-start justify-between mb-2">
-                    <div className="flex items-center gap-2">
-                      <div className="w-6 h-6 bg-green-100 dark:bg-green-900/20 rounded-full flex items-center justify-center flex-shrink-0">
-                        <Shield className="h-3 w-3 text-green-600" />
-                      </div>
-                      <div>
-                        <p className="text-sm font-medium text-foreground">
-                          {user.email}
-                        </p>
-                        <p className="text-xs text-muted-foreground">Farmer</p>
-                      </div>
-                    </div>
-                    <Badge
-                      variant="outline"
-                      className={`text-xs ${getUserStatusColor(user.last_sign_in_at)}`}
-                    >
-                      {getUserStatusIcon(user.last_sign_in_at)}
-                      <span className="ml-1">
-                        {user.last_sign_in_at ? "Active" : "Pending"}
-                      </span>
-                    </Badge>
-                  </div>
-                  <div className="text-xs text-muted-foreground">
-                    Joined: {formatDate(user.created_at)}
-                  </div>
-                </div>
-              ))
-            ) : (
-              <div className="text-center py-6 text-muted-foreground">
-                <Shield className="h-8 w-8 mx-auto mb-2 opacity-50" />
-                <p className="text-sm">No farmers registered yet</p>
-                <p className="text-xs">Start by inviting your first farmer</p>
+      ) : (
+        <>
+          {/* Stats Grid */}
+          <div className="grid grid-cols-3 gap-3">
+            <div className="text-center p-3 rounded-lg border border-border bg-background">
+              <div className="text-2xl font-semibold text-foreground">
+                {metrics.total}
               </div>
-            )}
+              <div className="text-xs text-muted-foreground font-medium">
+                Total Farmers
+              </div>
+            </div>
+            <div className="text-center p-3 rounded-lg border border-border bg-background">
+              <div className="text-2xl font-semibold text-green-600">
+                {metrics.active}
+              </div>
+              <div className="text-xs text-muted-foreground font-medium">
+                Active
+              </div>
+            </div>
+            <div className="text-center p-3 rounded-lg border border-border bg-background">
+              <div className="text-2xl font-semibold text-orange-600">
+                {metrics.pending}
+              </div>
+              <div className="text-xs text-muted-foreground font-medium">
+                Pending
+              </div>
+            </div>
           </div>
 
-          <div className="flex items-center gap-2 mt-4 pt-3 border-t border-border">
-            <Users className="size-4 text-muted-foreground" />
-            <span className="text-sm text-muted-foreground font-medium">
-              Farmer management and onboarding
-            </span>
+          {/* Recent Farmers */}
+          <div>
+            <div className="flex items-center justify-between mb-4">
+              <h4 className="font-medium text-foreground">Recent Farmers</h4>
+              <Badge
+                variant="outline"
+                className="font-medium rounded-full border-border bg-background text-foreground text-xs"
+              >
+                {metrics.total} Total
+              </Badge>
+            </div>
+
+            {/* Mini User Previews */}
+            <div className="space-y-3">
+              {recentFarmers.length > 0 ? (
+                recentFarmers.map((user) => (
+                  <div
+                    key={user.id}
+                    className="bg-background rounded-lg p-3 border border-border hover:bg-muted/30 transition-colors"
+                  >
+                    <div className="flex items-start justify-between mb-2">
+                      <div className="flex items-center gap-2">
+                        <div className="w-6 h-6 bg-green-100 dark:bg-green-900/20 rounded-full flex items-center justify-center flex-shrink-0">
+                          <Shield className="h-3 w-3 text-green-600" />
+                        </div>
+                        <div>
+                          <p className="text-sm font-medium text-foreground">
+                            {user.email}
+                          </p>
+                          <p className="text-xs text-muted-foreground">
+                            Farmer
+                          </p>
+                        </div>
+                      </div>
+                      <Badge
+                        variant="outline"
+                        className={`text-xs ${getUserStatusColor(user.last_sign_in_at)}`}
+                      >
+                        {getUserStatusIcon(user.last_sign_in_at)}
+                        <span className="ml-1">
+                          {user.last_sign_in_at ? "Active" : "Pending"}
+                        </span>
+                      </Badge>
+                    </div>
+                    <div className="text-xs text-muted-foreground">
+                      Joined: {formatDate(user.created_at)}
+                    </div>
+                  </div>
+                ))
+              ) : (
+                <div className="text-center py-6 text-muted-foreground">
+                  <Shield className="h-8 w-8 mx-auto mb-2 opacity-50" />
+                  <p className="text-sm">No farmers registered yet</p>
+                  <p className="text-xs">Start by inviting your first farmer</p>
+                </div>
+              )}
+            </div>
+
+            <div className="flex items-center gap-2 mt-4 pt-3 border-t border-border">
+              <Users className="size-4 text-muted-foreground" />
+              <span className="text-sm text-muted-foreground font-medium">
+                Farmer management and onboarding
+              </span>
+            </div>
           </div>
-        </div>
-      </div>
-    );
-  };
+        </>
+      )}
+    </div>
+  );
 
   return (
-    <div
-      className={cn(
-        "bg-background rounded-lg border border-border pt-4 space-y-4",
-        className,
-      )}
-    >
-      {/* Header */}
-      <div className="flex items-center justify-between px-4">
-        <div>
-          <h3 className="text-foreground font-medium text-base tracking-tight">
-            Farmer Manager
-          </h3>
-          <p className="text-muted-foreground text-xs">
-            Invite and manage farmers in your territory
-          </p>
-        </div>
-        <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-          <DialogTrigger asChild>
-            <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
-              <Maximize2 className="h-4 w-4" />
-            </Button>
-          </DialogTrigger>
-          <DialogContent className="max-w-4xl max-h-[80vh] overflow-y-auto">
-            <DialogHeader className="gap-0 space-y-0">
-              <DialogTitle className="font-semibold text-lg">
-                Farmer Management Dashboard
-              </DialogTitle>
-              <DialogDescription>
-                Invite and manage farmers in your sales territory
-              </DialogDescription>
-            </DialogHeader>
-
-            <div className="space-y-4 flex-1 flex flex-col min-h-0">
-              {/* Quick Actions */}
-              <div className="-mx-6 px-6 py-4 bg-muted/30">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <Button
-                    onClick={() => {
-                      setLinkType("invite");
-                      setIsInviteDialogOpen(true);
-                    }}
-                    className="h-auto p-4 flex flex-col items-center gap-2 bg-background hover:bg-muted/50 text-foreground border-border"
-                  >
-                    <Shield className="h-6 w-6" />
-                    <span className="font-medium">Invite Farmer</span>
-                    <span className="text-xs text-muted-foreground">
-                      Send invitation email
-                    </span>
-                  </Button>
-
-                  <Button
-                    onClick={() => {
-                      setLinkType("signup");
-                      setIsInviteDialogOpen(true);
-                    }}
-                    variant="outline"
-                    className="h-auto p-4 flex flex-col items-center gap-2 border-border text-foreground hover:bg-muted/50"
-                  >
-                    <UserPlus className="h-6 w-6" />
-                    <span className="font-medium">Create Account</span>
-                    <span className="text-xs text-muted-foreground">
-                      Generate signup link
-                    </span>
-                  </Button>
-                </div>
-              </div>
-
-              {/* Main Content */}
-              <div className="flex-1 min-h-0">
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                  {/* Farmer List */}
-                  <Card className="border-border bg-background">
-                    <CardHeader>
-                      <CardTitle className="text-base flex items-center gap-2">
-                        <Users className="h-4 w-4" />
-                        Recent Farmers
-                      </CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                      {isLoading ? (
-                        <div className="space-y-3">
-                          {[...Array(5)].map((_, i) => (
-                            <div
-                              key={i}
-                              className="flex items-center gap-3 p-3 rounded-lg border border-border animate-pulse"
-                            >
-                              <div className="w-8 h-8 bg-muted rounded-full"></div>
-                              <div className="flex-1 space-y-2">
-                                <div className="h-4 bg-muted rounded w-3/4"></div>
-                                <div className="h-3 bg-muted rounded w-1/2"></div>
-                              </div>
-                            </div>
-                          ))}
-                        </div>
-                      ) : (
-                        <div className="space-y-3">
-                          {recentFarmers.length > 0 ? (
-                            recentFarmers.map((user) => (
-                              <div
-                                key={user.id}
-                                className="flex items-center justify-between p-3 rounded-lg border border-border hover:bg-muted/30 transition-colors"
-                              >
-                                <div className="flex items-center gap-3">
-                                  <div className="w-8 h-8 bg-green-100 dark:bg-green-900/20 rounded-full flex items-center justify-center">
-                                    <Shield className="h-4 w-4 text-green-600" />
-                                  </div>
-                                  <div>
-                                    <p className="text-sm font-medium text-foreground">
-                                      {user.email}
-                                    </p>
-                                    <p className="text-xs text-muted-foreground">
-                                      Farmer
-                                    </p>
-                                  </div>
-                                </div>
-                                <Badge
-                                  variant="outline"
-                                  className={getUserStatusColor(
-                                    user.last_sign_in_at,
-                                  )}
-                                >
-                                  {getUserStatusIcon(user.last_sign_in_at)}
-                                  <span className="ml-1">
-                                    {user.last_sign_in_at
-                                      ? "Active"
-                                      : "Pending"}
-                                  </span>
-                                </Badge>
-                              </div>
-                            ))
-                          ) : (
-                            <div className="text-center py-8 text-muted-foreground">
-                              <Shield className="h-12 w-12 mx-auto mb-4 opacity-50" />
-                              <p className="text-sm">
-                                No farmers registered yet
-                              </p>
-                              <p className="text-xs">
-                                Start by inviting your first farmer
-                              </p>
-                            </div>
-                          )}
-                        </div>
-                      )}
-                    </CardContent>
-                  </Card>
-
-                  {/* Farmer Statistics */}
-                  <Card className="border-border bg-background">
-                    <CardHeader>
-                      <CardTitle className="text-base flex items-center gap-2">
-                        <Shield className="h-4 w-4" />
-                        Farmer Statistics
-                      </CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                      <div className="space-y-4">
-                        <div className="grid grid-cols-1 gap-4">
-                          <div className="text-center p-4 rounded-lg bg-background border border-border">
-                            <div className="text-3xl font-bold text-foreground">
-                              {metrics.total}
-                            </div>
-                            <div className="text-sm text-muted-foreground">
-                              Total Farmers
-                            </div>
-                          </div>
-                        </div>
-                        <div className="space-y-3">
-                          <div className="flex items-center justify-between p-3 rounded bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800">
-                            <div className="flex items-center gap-2">
-                              <CheckCircle className="h-4 w-4 text-green-600" />
-                              <span className="text-sm text-green-800 dark:text-green-400">
-                                Active Farmers
-                              </span>
-                            </div>
-                            <span className="font-medium text-green-800 dark:text-green-400">
-                              {metrics.active}
-                            </span>
-                          </div>
-                          <div className="flex items-center justify-between p-3 rounded bg-orange-50 dark:bg-orange-900/20 border border-orange-200 dark:border-orange-800">
-                            <div className="flex items-center gap-2">
-                              <Clock className="h-4 w-4 text-orange-600" />
-                              <span className="text-sm text-orange-800 dark:text-orange-400">
-                                Pending Activation
-                              </span>
-                            </div>
-                            <span className="font-medium text-orange-800 dark:text-orange-400">
-                              {metrics.pending}
-                            </span>
-                          </div>
-                        </div>
-                      </div>
-                    </CardContent>
-                  </Card>
-                </div>
-              </div>
-            </div>
-          </DialogContent>
-        </Dialog>
-      </div>
-
-      {/* Compact View Content */}
-      <div className="px-4">{renderCompactView()}</div>
-
-      {/* Footer */}
-      <div className="px-4 bg-muted/20 py-4 rounded-b-lg">
-        <Button
-          onClick={() => setIsInviteDialogOpen(true)}
-          size="sm"
-          className="w-full"
-        >
-          <UserPlus className="h-4 w-4 mr-2" />
-          Invite New Farmer
-        </Button>
-      </div>
+    <div className={cn("space-y-4", className)}>
+      <ExpandableCard title="Farmer Manager" summary={summaryContent}>
+        {fullContent}
+      </ExpandableCard>
 
       {/* Email Link Generator Dialog */}
       <Dialog open={isInviteDialogOpen} onOpenChange={setIsInviteDialogOpen}>

@@ -1,3 +1,4 @@
+import { Badge } from "@/components/ui/badge";
 import {
   Dialog,
   DialogContent,
@@ -5,27 +6,54 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
+import ExpandableCard from "@/components/ui/expandable-card";
+import { cn } from "@/lib/utils";
 import { MapPin, Plus } from "lucide-react";
 import React from "react";
 import { AlertItem, FarmItem, MoreButton } from "./components";
 import { mockAlerts, mockFarms } from "./constants";
 import { getAddedFarmsCount, getVisitedFarmsCount } from "./utils";
 
-const DealerAlertLog: React.FC = () => {
+const DealerAlertLog: React.FC<{ className?: string }> = ({ className }) => {
   const visibleAlerts = mockAlerts.slice(0, 3);
   const remainingAlerts = mockAlerts.slice(3);
   const visibleFarms = mockFarms.slice(0, 3);
   const remainingFarms = mockFarms.slice(3);
 
-  return (
-    <div className="bg-card rounded-lg border border-border pt-4 space-y-6">
-      <div className="px-4">
-        <h3 className="text-foreground font-display font-medium text-base tracking-tight">
-          Dealer Alert Log
-        </h3>
+  // Summary content - show alert count and farm stats
+  const summaryContent = (
+    <div className="flex items-center justify-between">
+      <div className="flex items-center gap-4">
+        <div className="flex items-center gap-2">
+          <span className="text-sm font-medium text-foreground">
+            {mockAlerts.length} alert{mockAlerts.length !== 1 ? "s" : ""}
+          </span>
+        </div>
+        <div className="flex items-center gap-2">
+          <Plus className="h-3 w-3 text-blue-600 dark:text-blue-400" />
+          <span className="text-xs text-muted-foreground">
+            {getAddedFarmsCount(mockFarms)} added
+          </span>
+        </div>
+        <div className="flex items-center gap-2">
+          <MapPin className="h-3 w-3 text-emerald-600 dark:text-emerald-400" />
+          <span className="text-xs text-muted-foreground">
+            {getVisitedFarmsCount(mockFarms)} visited
+          </span>
+        </div>
       </div>
+      {mockAlerts.length > 0 && (
+        <Badge variant="outline" className="text-xs">
+          {visibleAlerts.length} shown
+        </Badge>
+      )}
+    </div>
+  );
 
-      <div className="space-y-3 px-4">
+  // Full content
+  const fullContent = (
+    <div className="space-y-6">
+      <div className="space-y-3">
         {visibleAlerts.map((alert) => (
           <AlertItem key={alert.id} alert={alert} />
         ))}
@@ -51,7 +79,7 @@ const DealerAlertLog: React.FC = () => {
         )}
       </div>
 
-      <div className="px-4 bg-muted/20 py-4 space-y-4">
+      <div className="bg-muted/20 py-4 space-y-4">
         <div className="flex flex-col gap-1">
           <h4 className="text-foreground font-display font-medium text-sm tracking-tight">
             New Accounts - Farms Added + Visited
@@ -121,6 +149,16 @@ const DealerAlertLog: React.FC = () => {
         </div>
       </div>
     </div>
+  );
+
+  return (
+    <ExpandableCard
+      title="Dealer Alert Log"
+      summary={summaryContent}
+      className={cn("sm:h-fit", className)}
+    >
+      {fullContent}
+    </ExpandableCard>
   );
 };
 

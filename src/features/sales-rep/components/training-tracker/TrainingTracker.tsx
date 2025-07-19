@@ -1,11 +1,3 @@
-import React, { useState } from "react";
-import {
-  GraduationCap,
-  Trophy,
-  ChevronRight,
-  Book,
-  Target,
-} from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import {
   Dialog,
@@ -14,15 +6,24 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import { ModuleItem, BadgeItem, QuickStats } from "./components";
+import ExpandableCard from "@/components/ui/expandable-card";
 import {
-  mockTrainingModules,
+  Book,
+  ChevronRight,
+  GraduationCap,
+  Target,
+  Trophy,
+} from "lucide-react";
+import React, { useState } from "react";
+import { BadgeItem, ModuleItem, QuickStats } from "./components";
+import {
   mockTrainingBadges,
+  mockTrainingModules,
   mockUserProgress,
 } from "./constants";
 import { getInProgressModules, getOverdueModules } from "./utils";
 
-const TrainingTracker: React.FC = () => {
+const TrainingTracker: React.FC<{ className?: string }> = ({ className }) => {
   const [modules] = useState(mockTrainingModules);
   const [badges] = useState(mockTrainingBadges);
 
@@ -31,27 +32,42 @@ const TrainingTracker: React.FC = () => {
   const recentModules = [...inProgressModules, ...overdueModules].slice(0, 3);
   const earnedBadges = badges.filter((badge) => badge.earned);
 
-  return (
-    <div className="bg-card rounded-lg border border-border pt-4 space-y-6">
-      <div className="px-4">
-        <div className="flex items-center justify-between mb-2">
-          <h3 className="text-foreground font-display font-medium text-base tracking-tight">
-            Training Progress
-          </h3>
-          <div className="flex items-center gap-2">
-            <GraduationCap className="h-4 w-4 text-muted-foreground" />
-            <Badge variant="outline" className="text-xs">
-              {mockUserProgress.overallProgress}% Complete
-            </Badge>
-          </div>
+  // Summary content - show progress and badge count
+  const summaryContent = (
+    <div className="flex items-center justify-between">
+      <div className="flex items-center gap-4">
+        <div className="flex items-center gap-2">
+          <GraduationCap className="h-4 w-4 text-muted-foreground" />
+          <span className="text-sm font-medium text-foreground">
+            {mockUserProgress.overallProgress}% Complete
+          </span>
         </div>
+        <div className="flex items-center gap-2">
+          <Trophy className="h-4 w-4 text-yellow-600 dark:text-yellow-400" />
+          <span className="text-xs text-muted-foreground">
+            {earnedBadges.length}/{badges.length} badges
+          </span>
+        </div>
+      </div>
+      {recentModules.length > 0 && (
+        <Badge variant="outline" className="text-xs">
+          {recentModules.length} active
+        </Badge>
+      )}
+    </div>
+  );
+
+  // Full content
+  const fullContent = (
+    <div className="space-y-6">
+      <div>
         <p className="text-xs text-muted-foreground">
           Track your learning journey and earn badges
         </p>
       </div>
 
       {/* Achievement Badges Section */}
-      <div className="px-4 bg-muted/20 py-4 space-y-4">
+      <div className="bg-muted/20 py-4 space-y-4">
         <div className="flex items-center justify-between">
           <h4 className="text-foreground font-display font-medium text-sm tracking-tight">
             Achievement Badges
@@ -110,12 +126,12 @@ const TrainingTracker: React.FC = () => {
       </div>
 
       {/* Quick Stats */}
-      <div className="px-4">
+      <div>
         <QuickStats progress={mockUserProgress} />
       </div>
 
       {/* Current Training Modules */}
-      <div className="space-y-3 px-4">
+      <div className="space-y-3">
         <div className="flex items-center justify-between">
           <h4 className="font-display font-medium text-sm tracking-tight">
             Current Training
@@ -174,6 +190,16 @@ const TrainingTracker: React.FC = () => {
         )}
       </div>
     </div>
+  );
+
+  return (
+    <ExpandableCard
+      title="Training Progress"
+      summary={summaryContent}
+      className={className}
+    >
+      {fullContent}
+    </ExpandableCard>
   );
 };
 
