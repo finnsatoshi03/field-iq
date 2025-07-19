@@ -117,7 +117,8 @@ const DealerIssueTracker: React.FC<DealerIssueTrackerProps> = ({
 
       <div className={cn("space-y-4", className)}>
         {/* Responsive Grid Layout */}
-        <div className="grid grid-cols-1 lg:grid-cols-[1fr_0.4fr] gap-4">
+        {/* lg:grid-cols-[1fr_0.4fr] */}
+        <div className="grid grid-cols-1  gap-4">
           {/* Left Column - Map/List View */}
           <div className="space-y-4">
             {/* Main Map/List View */}
@@ -196,8 +197,8 @@ const DealerIssueTracker: React.FC<DealerIssueTrackerProps> = ({
           </div>
 
           {/* Right Column - Filters and Summary */}
-          <div className="space-y-4">
-            {/* Summary Metrics */}
+          {/* <div className="space-y-4">
+            Summary Metrics
             <div className="bg-card rounded-lg border border-border p-2">
               <div className="mb-2">
                 <h3 className="text-foreground font-display font-semibold text-base tracking-tight">
@@ -247,7 +248,7 @@ const DealerIssueTracker: React.FC<DealerIssueTrackerProps> = ({
               </div>
             </div>
 
-            {/* Supply Chain Health */}
+            Supply Chain Health
             <div className="bg-card rounded-lg border border-border p-2">
               <div className="mb-2">
                 <h3 className="text-foreground font-display font-semibold text-base tracking-tight">
@@ -285,7 +286,7 @@ const DealerIssueTracker: React.FC<DealerIssueTrackerProps> = ({
                 </div>
               </div>
             </div>
-          </div>
+          </div> */}
         </div>
 
         {/* Mobile-optimized stacked view on smaller screens */}

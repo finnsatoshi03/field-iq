@@ -108,7 +108,7 @@ const DealerItem = ({ dealer, onSelect }: DealerItemProps) => {
       </div>
 
       <div className="flex items-center justify-between mb-3">
-        <div className="flex items-center gap-4">
+        {/* <div className="flex items-center gap-4">
           <span className="text-sm text-foreground font-sans">
             <span className="font-medium">{dealer.issues.length}</span> total
             issues
@@ -124,7 +124,7 @@ const DealerItem = ({ dealer, onSelect }: DealerItemProps) => {
               resolved
             </span>
           )}
-        </div>
+        </div> */}
 
         <div className="flex items-center gap-2">
           <span className="text-xs text-muted-foreground font-sans">

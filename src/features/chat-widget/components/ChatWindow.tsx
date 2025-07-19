@@ -163,7 +163,7 @@ export const ChatWindow = ({ isOpen, onClose }: ChatWindowProps) => {
       case "welcome":
         return (
           <WelcomeStage
-            userRole={user?.role ?? "sales_rep"}
+            userRole={user?.role ?? "farmer"}
             onOptionSelect={handleOptionSelect}
           />
         );

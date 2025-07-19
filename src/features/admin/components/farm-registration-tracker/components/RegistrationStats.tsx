@@ -168,20 +168,20 @@ const RegistrationStats: React.FC<RegistrationStatsProps> = ({
           icon={Building2}
           trend={trends.newAccounts}
         />
-        <StatCard
+        {/* <StatCard
           title="Expansions"
           value={formatNumber(metrics.expansions)}
           description="Existing farm growth"
           icon={TrendingUp}
           trend={trends.expansions}
-        />
-        <StatCard
+        /> */}
+        {/* <StatCard
           title="Conversions"
           value={formatNumber(metrics.conversions)}
           description="Converted from traditional"
           icon={RefreshCw}
           trend={trends.conversions}
-        />
+        /> */}
       </div>
 
       {/* Secondary Stats Grid */}
@@ -206,12 +206,12 @@ const RegistrationStats: React.FC<RegistrationStatsProps> = ({
           icon={DollarSign}
           trend={trends.revenue}
         />
-        <StatCard
+        {/* <StatCard
           title="Penetration Rate"
           value={formatPercentage(metrics.penetrationRate)}
           description="Market penetration"
           icon={Target}
-        />
+        /> */}
       </div>
 
       {/* Detailed Analytics */}

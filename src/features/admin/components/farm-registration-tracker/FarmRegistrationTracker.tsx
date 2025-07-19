@@ -32,7 +32,7 @@ import {
 } from "./utils";
 
 const FarmRegistrationTracker: React.FC = () => {
-  const [currentView, setCurrentView] = useState<ViewMode>("chart");
+  const [currentView, setCurrentView] = useState<ViewMode>("map");
   const [chartType, setChartType] = useState<ChartType>("registrations");
   const [timePeriod, setTimePeriod] = useState<TimePeriod>("month");
   const [filters, setFilters] = useState<FilterOptions>({});
@@ -102,14 +102,14 @@ const FarmRegistrationTracker: React.FC = () => {
                   New
                 </div>
               </div>
-              <div className="text-center p-2 bg-accent rounded">
+              {/* <div className="text-center p-2 bg-accent rounded">
                 <div className="text-lg sm:text-xl lg:text-2xl font-bold font-display text-blue-600">
                   {formatNumber(metrics.expansions)}
                 </div>
                 <div className="text-xs text-muted-foreground font-semibold">
                   Expansions
                 </div>
-              </div>
+              </div> */}
             </div>
             <div className="grid grid-cols-2 gap-2">
               <div className="text-center p-2 bg-accent rounded">
@@ -155,7 +155,7 @@ const FarmRegistrationTracker: React.FC = () => {
               Farm Registration Tracker
             </h3>
             <p className="text-muted-foreground text-xs font-sans">
-              Track farm registrations and expansions
+              Track farm registrations
             </p>
           </div>
           <div className="flex items-center gap-1">
@@ -189,70 +189,7 @@ const FarmRegistrationTracker: React.FC = () => {
       <div className="px-4">{renderCompactView()}</div>
 
       {/* Expanded View Dialog */}
-      <div className="px-4 bg-muted/20 py-4 space-y-2">
-        <div className="flex items-center gap-2 flex-wrap justify-between">
-          <h4 className="text-foreground font-display font-medium tracking-tight">
-            Penetration & Expansion Tracking
-          </h4>
-          <div className="flex items-center gap-4 text-xs">
-            <div className="flex items-center gap-1.5">
-              <TrendingUp className="h-3 w-3 text-green-600 dark:text-green-400" />
-              <span className="text-muted-foreground font-sans">Growth</span>
-              <span className="font-medium text-foreground font-sans">
-                {formatNumber(metrics.newAccounts + metrics.expansions)}
-              </span>
-            </div>
-            <div className="flex items-center gap-1.5">
-              <MapPin className="h-3 w-3 text-blue-600 dark:text-blue-400" />
-              <span className="text-muted-foreground font-sans">Coverage</span>
-              <span className="font-medium text-foreground font-sans">
-                {metrics.penetrationRate}%
-              </span>
-            </div>
-          </div>
-        </div>
-
-        <Dialog>
-          <DialogTrigger asChild>
-            <div className="flex items-center cursor-pointer hover:bg-muted/30 rounded transition-colors">
-              <div className="flex flex-col items-center mr-3 relative">
-                <div className="size-8 rounded-full flex-shrink-0 z-10 flex items-center justify-center border-2 border-dashed border-muted-foreground/30 bg-background">
-                  <Plus className="size-4 text-muted-foreground" />
-                </div>
-              </div>
-              <div className="flex-1 py-2">
-                <span className="text-sm text-muted-foreground font-sans">
-                  View detailed analytics and full dashboard
-                </span>
-              </div>
-            </div>
-          </DialogTrigger>
-          <DialogContent className="max-w-[95vw] sm:max-w-[90vw] lg:max-w-4xl xl:max-w-6xl max-h-[90vh] overflow-y-auto">
-            <DialogHeader className="gap-0 space-y-0">
-              <DialogTitle className="font-semibold font-display text-lg">
-                Farm Registration Analytics
-              </DialogTitle>
-              <DialogDescription>
-                View detailed analytics and full dashboard
-              </DialogDescription>
-            </DialogHeader>
-            <div className="space-y-2">
-              {/* Filters in expanded view */}
-              <div className="-mx-10 px-4">
-                <div className="bg-accent p-4">
-                  <FilterControls
-                    filters={filters}
-                    onFiltersChange={setFilters}
-                  />
-                </div>
-              </div>
-
-              {/* Expanded Content */}
-              {renderExpandedView()}
-            </div>
-          </DialogContent>
-        </Dialog>
-      </div>
+   
     </div>
   );
 };

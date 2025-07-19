@@ -196,7 +196,7 @@ const FarmMap: React.FC<FarmMapProps> = ({ filters = {}, className = "" }) => {
                   {farms.filter((f) => f.registrationType === "new").length}
                 </div>
               </div>
-              <div className="w-fit">
+              {/* <div className="w-fit">
                 <div className="flex items-center gap-1">
                   <div className="w-2 h-2 sm:w-3 sm:h-3 rounded-full bg-blue-500"></div>
                   <span className="text-muted-foreground">Expansion</span>
@@ -207,8 +207,8 @@ const FarmMap: React.FC<FarmMapProps> = ({ filters = {}, className = "" }) => {
                       .length
                   }
                 </div>
-              </div>
-              <div className="w-fit">
+              </div> */}
+              {/* <div className="w-fit">
                 <div className="flex items-center gap-1">
                   <div className="w-2 h-2 sm:w-3 sm:h-3 rounded-full bg-purple-500"></div>
                   <span className="text-muted-foreground">Conversion</span>
@@ -219,7 +219,7 @@ const FarmMap: React.FC<FarmMapProps> = ({ filters = {}, className = "" }) => {
                       .length
                   }
                 </div>
-              </div>
+              </div> */}
             </div>
           </div>
 

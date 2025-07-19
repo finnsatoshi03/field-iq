@@ -5,7 +5,7 @@ import type { ViewMode } from "./constants";
 import { calculateSalesMetrics, getChartData, sortChartData } from "./utils";
 
 const SalesActivitySummary = () => {
-  const [viewMode, setViewMode] = useState<ViewMode>(VIEW_MODES.REGION);
+  const [viewMode, setViewMode] = useState<ViewMode>(VIEW_MODES.REP);
 
   const salesMetrics = calculateSalesMetrics(MOCK_SALES_DATA);
   const chartData = sortChartData(getChartData(MOCK_SALES_DATA, viewMode));
@@ -36,11 +36,11 @@ const SalesActivitySummary = () => {
               <div className="flex items-center gap-2">
                 <div className="w-2 h-2 rounded-full bg-chart-1" />
                 <span className="text-xs font-semibold text-muted-foreground font-sans">
-                  Total Influenced Volume
+                  Total Target Sales 
                 </span>
               </div>
               <span className="text-2xl font-bold text-foreground font-sans">
-                ₱{salesMetrics.totalInfluencedVolume.toLocaleString()}
+                ₱{salesMetrics.totalTargetInfluence.toLocaleString()}
               </span>
             </div>
             <div className="flex flex-col">
@@ -57,7 +57,7 @@ const SalesActivitySummary = () => {
           </div>
           {/* Additional Metrics */}
           <div className="flex items-center gap-3">
-            <div className="text-center">
+            {/* <div className="text-center">
               <div className="flex items-center gap-2 justify-center mb-1">
                 <div className="w-2 h-2 rounded-full bg-chart-3" />
                 <span className="text-xs font-semibold text-muted-foreground font-sans">
@@ -67,7 +67,7 @@ const SalesActivitySummary = () => {
               <span className="text-2xl font-bold text-foreground font-sans">
                 {(
                   (salesMetrics.totalClosedSales /
-                    salesMetrics.totalInfluencedVolume) *
+                    salesMetrics.totalTargetInfluence) *
                   100
                 ).toFixed(1)}
                 %
@@ -83,7 +83,7 @@ const SalesActivitySummary = () => {
               <span className="text-2xl font-bold text-foreground font-sans">
                 {salesMetrics.averageGrowthRate.toFixed(1)}%
               </span>
-            </div>
+            </div> */}
             <div className="text-center">
               <div className="flex items-center gap-2 justify-center mb-1">
                 <div className="w-2 h-2 rounded-full bg-chart-5" />

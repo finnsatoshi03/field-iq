@@ -18,7 +18,7 @@ interface SalesChartProps {
 const SalesChart = ({ data }: SalesChartProps) => {
   // Calculate averages for opacity effect
   const avgInfluenced =
-    data.reduce((sum, item) => sum + item.influencedVolume, 0) / data.length;
+    data.reduce((sum, item) => sum + item.targetInfluence, 0) / data.length;
   const avgClosed =
     data.reduce((sum, item) => sum + item.closedSales, 0) / data.length;
 
@@ -97,8 +97,8 @@ const SalesChart = ({ data }: SalesChartProps) => {
         />
 
         <Bar
-          dataKey="influencedVolume"
-          name="Influenced Volume"
+          dataKey="targetInfluence"
+          name="Total Target "
           fill="var(--chart-1)"
           radius={[3, 3, 0, 0]}
           maxBarSize={32}
@@ -106,7 +106,7 @@ const SalesChart = ({ data }: SalesChartProps) => {
           {data.map((entry, index) => (
             <Cell
               key={`influenced-${index}`}
-              fillOpacity={entry.influencedVolume >= avgInfluenced ? 1 : 0.4}
+              fillOpacity={entry.targetInfluence >= avgInfluenced ? 1 : 0.4}
             />
           ))}
         </Bar>

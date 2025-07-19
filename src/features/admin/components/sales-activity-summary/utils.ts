@@ -30,8 +30,8 @@ export const formatPercentage = (percentage: number): string => {
 };
 
 export const calculateSalesMetrics = (salesData: SalesData[]): SalesMetrics => {
-  const totalInfluencedVolume = salesData.reduce(
-    (sum, data) => sum + data.influencedVolume,
+  const totalTargetInfluence = salesData.reduce(
+    (sum, data) => sum + data.targetInfluence,
     0
   );
   const totalClosedSales = salesData.reduce(
@@ -48,7 +48,7 @@ export const calculateSalesMetrics = (salesData: SalesData[]): SalesMetrics => {
       if (!acc[data.region]) {
         acc[data.region] = { influenced: 0, closed: 0 };
       }
-      acc[data.region].influenced += data.influencedVolume;
+      acc[data.region].influenced += data.targetInfluence;
       acc[data.region].closed += data.closedSales;
       return acc;
     },
@@ -65,7 +65,7 @@ export const calculateSalesMetrics = (salesData: SalesData[]): SalesMetrics => {
     salesData.sort((a, b) => b.closedSales - a.closedSales)[0]?.rep || "";
 
   return {
-    totalInfluencedVolume,
+    totalTargetInfluence,
     totalClosedSales,
     averageGrowthRate,
     topPerformingRegion,
@@ -79,7 +79,7 @@ export const groupDataByRegion = (salesData: SalesData[]): ChartDataPoint[] => {
       if (!acc[data.region]) {
         acc[data.region] = { influenced: 0, closed: 0 };
       }
-      acc[data.region].influenced += data.influencedVolume;
+      acc[data.region].influenced += data.targetInfluence;
       acc[data.region].closed += data.closedSales;
       return acc;
     },
@@ -88,7 +88,7 @@ export const groupDataByRegion = (salesData: SalesData[]): ChartDataPoint[] => {
 
   return Object.entries(grouped).map(([region, totals]) => ({
     name: region,
-    influencedVolume: totals.influenced,
+    targetInfluence: totals.influenced,
     closedSales: totals.closed,
     type: "region" as const,
   }));
@@ -97,7 +97,7 @@ export const groupDataByRegion = (salesData: SalesData[]): ChartDataPoint[] => {
 export const groupDataByRep = (salesData: SalesData[]): ChartDataPoint[] => {
   return salesData.map((data) => ({
     name: data.rep,
-    influencedVolume: data.influencedVolume,
+    targetInfluence: data.targetInfluence,
     closedSales: data.closedSales,
     type: "rep" as const,
   }));
@@ -113,10 +113,10 @@ export const getChartData = (
 };
 
 export const getConversionRate = (
-  influencedVolume: number,
+  targetInfluence: number,
   closedSales: number
 ): number => {
-  return influencedVolume > 0 ? (closedSales / influencedVolume) * 100 : 0;
+  return targetInfluence > 0 ? (closedSales / targetInfluence) * 100 : 0;
 };
 
 export const sortChartData = (
@@ -125,7 +125,7 @@ export const sortChartData = (
 ): ChartDataPoint[] => {
   return [...data].sort((a, b) => {
     return sortBy === "influenced"
-      ? b.influencedVolume - a.influencedVolume
+      ? b.targetInfluence - a.targetInfluence
       : b.closedSales - a.closedSales;
   });
 };

@@ -14,7 +14,7 @@ const ViewToggle = ({
 }: ViewToggleProps) => {
   return (
     <div className={`flex gap-1 bg-muted rounded-lg p-1 ${className}`}>
-      <button
+      {/* <button
         onClick={() => onViewChange(VIEW_MODES.REGION)}
         className={`px-3 py-1.5 text-xs font-medium rounded-md transition-colors ${
           currentView === VIEW_MODES.REGION
@@ -23,7 +23,7 @@ const ViewToggle = ({
         }`}
       >
         By Region
-      </button>
+      </button> */}
       <button
         onClick={() => onViewChange(VIEW_MODES.REP)}
         className={`px-3 py-1.5 text-xs font-medium rounded-md transition-colors ${

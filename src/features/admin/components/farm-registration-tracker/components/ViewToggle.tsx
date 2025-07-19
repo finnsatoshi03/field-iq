@@ -14,24 +14,24 @@ const ViewToggle: React.FC<ViewToggleProps> = ({
   className = "",
 }) => {
   const views = [
-    {
-      id: "chart" as ViewMode,
-      label: "Chart",
-      icon: BarChart3,
-      description: "Line graphs and analytics",
-    },
+    // {
+    //   id: "chart" as ViewMode,
+    //   label: "Chart",
+    //   icon: BarChart3,
+    //   description: "Line graphs and analytics",
+    // },
     {
       id: "map" as ViewMode,
       label: "Map",
       icon: Map,
       description: "Geographic distribution",
     },
-    {
-      id: "stats" as ViewMode,
-      label: "Stats",
-      icon: TrendingUp,
-      description: "Detailed metrics",
-    },
+    // {
+    //   id: "stats" as ViewMode,
+    //   label: "Stats",
+    //   icon: TrendingUp,
+    //   description: "Detailed metrics",
+    // },
   ];
 
   return (

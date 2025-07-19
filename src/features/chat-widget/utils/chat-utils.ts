@@ -52,7 +52,7 @@ export const getAIResponse = async (userMessage: string, intent: number): Promis
   // }
 
   try {      
-    const response = await fetch("http://127.0.0.1:8000/salesrep/chat", {
+    const response = await fetch("http://127.0.0.1:8000/farmer/chat", {
       method: "POST",
       headers: {
         "Accept": "application/json",

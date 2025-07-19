@@ -98,8 +98,8 @@ const FilterControls: React.FC<FilterControlsProps> = ({
             <SelectContent>
               <SelectItem value="all">All Types</SelectItem>
               <SelectItem value="new">New Account</SelectItem>
-              <SelectItem value="expansion">Expansion</SelectItem>
-              <SelectItem value="conversion">Conversion</SelectItem>
+              {/* <SelectItem value="expansion">Expansion</SelectItem>
+              <SelectItem value="conversion">Conversion</SelectItem> */}
             </SelectContent>
           </Select>
         </div>
