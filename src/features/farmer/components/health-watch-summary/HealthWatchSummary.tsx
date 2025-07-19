@@ -39,7 +39,11 @@ export const HealthWatchSummary = () => {
   );
 
   return (
-    <ExpandableCard title="Health Watch Summary" summary={summaryContent}>
+    <ExpandableCard
+      title="Health Watch Summary"
+      summary={summaryContent}
+      className="h-fit"
+    >
       <div className="space-y-4">
         {/* Header with add button */}
         <div className="flex items-center justify-between">

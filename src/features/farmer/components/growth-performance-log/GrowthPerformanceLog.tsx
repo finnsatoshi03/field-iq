@@ -64,7 +64,11 @@ export const GrowthPerformanceLog = () => {
   );
 
   return (
-    <ExpandableCard title="Growth Performance Log" summary={summaryContent}>
+    <ExpandableCard
+      title="Growth Performance Log"
+      summary={summaryContent}
+      className="h-fit"
+    >
       <div className="space-y-4">
         {/* Header with animal type selector */}
         <div className="flex items-center justify-between">

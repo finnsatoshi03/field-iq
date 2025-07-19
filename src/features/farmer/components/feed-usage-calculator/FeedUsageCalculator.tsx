@@ -114,6 +114,7 @@ export const FeedUsageCalculator = () => {
       title="Feed Usage Calculator"
       summary={summaryContent}
       onToggle={(expanded: boolean) => setIsExpanded(expanded)}
+      className="h-fit"
     >
       <div className="space-y-4">
         {/* Quick Stats Display */}

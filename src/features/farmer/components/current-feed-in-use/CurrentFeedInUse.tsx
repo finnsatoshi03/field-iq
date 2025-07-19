@@ -70,7 +70,11 @@ export const CurrentFeedInUse = () => {
   );
 
   return (
-    <ExpandableCard title="My Current Feed in Use" summary={summaryContent}>
+    <ExpandableCard
+      title="My Current Feed in Use"
+      summary={summaryContent}
+      className="h-fit"
+    >
       <div className="space-y-4">
         {/* Main Feed Tile */}
         <div className="rounded-lg p-4 border">

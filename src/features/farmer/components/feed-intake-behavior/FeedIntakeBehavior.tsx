@@ -37,7 +37,11 @@ export const FeedIntakeBehavior = () => {
   );
 
   return (
-    <ExpandableCard title="Feed Intake Behavior" summary={summaryContent}>
+    <ExpandableCard
+      title="Feed Intake Behavior"
+      summary={summaryContent}
+      className="h-fit"
+    >
       <div className="space-y-4">
         {/* Header */}
         <div className="flex justify-between gap-4">
