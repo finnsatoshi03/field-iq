@@ -18,6 +18,9 @@ interface ChatWidgetActions {
   openChat: () => void;
   closeChat: () => void;
   openDailySalesReport: () => void;
+  openGrowthMetricsReport: () => void;
+  openFeedConsumptionReport: () => void;
+  openFlockMortalityReport: () => void;
   openChatWithReportContext: (
     reportType: keyof typeof REPORT_OPTIONS,
     reportSubType: string,
@@ -60,6 +63,39 @@ export const useChatWidgetStore = create<ChatWidgetStore>((set, get) => ({
       selectedOption: "report-sales",
       reportType: "report-sales",
       reportSubType: "daily-sales",
+      chatMode: "report",
+    });
+  },
+
+  openGrowthMetricsReport: () => {
+    set({
+      isOpen: true,
+      currentStage: "chat",
+      selectedOption: "log-performance",
+      reportType: "log-performance",
+      reportSubType: "growth-metrics",
+      chatMode: "report",
+    });
+  },
+
+  openFeedConsumptionReport: () => {
+    set({
+      isOpen: true,
+      currentStage: "chat",
+      selectedOption: "log-performance",
+      reportType: "log-performance",
+      reportSubType: "feed-consumption",
+      chatMode: "report",
+    });
+  },
+
+  openFlockMortalityReport: () => {
+    set({
+      isOpen: true,
+      currentStage: "chat",
+      selectedOption: "log-performance",
+      reportType: "log-performance",
+      reportSubType: "flock-mortality",
       chatMode: "report",
     });
   },

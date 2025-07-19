@@ -1,14 +1,15 @@
-import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Plus, Calendar, TrendingUp } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { useChatWidgetStore } from "@/store/chat-widget-store";
+import { Plus } from "lucide-react";
+import {
+  AddIssueDialog,
+  IssueList,
+  IssueSummary,
+  SmileyMeter,
+} from "./components";
 import { TIME_PERIODS } from "./constants";
 import { useHealthWatch } from "./hooks";
-import {
-  SmileyMeter,
-  IssueSummary,
-  IssueList,
-  AddIssueDialog,
-} from "./components";
 
 export const HealthWatchSummary = () => {
   const {
@@ -23,31 +24,33 @@ export const HealthWatchSummary = () => {
     handleAddIssue,
   } = useHealthWatch();
 
+  const { openFlockMortalityReport } = useChatWidgetStore();
+
+  const handleAddIssueClick = () => {
+    openFlockMortalityReport();
+  };
+
   return (
-    <div className="bg-card rounded-lg border border-border pt-4 space-y-6">
+    <div className="bg-card rounded-lg border border-border pt-4 space-y-4">
       {/* Header */}
-      <div className="px-4">
-        <h3 className="text-foreground font-display font-medium text-base tracking-tight">
-          Health Watch Summary
-        </h3>
-        <p className="text-sm text-muted-foreground mb-2">
-          Monitor health issues and mortality patterns
-        </p>
-        <Button
-          onClick={() => setIsAddDialogOpen(true)}
-          size="sm"
-          className="flex items-center gap-2"
-        >
+      <div className="px-4 flex justify-between gap-4">
+        <div>
+          <h3 className="text-foreground font-display font-medium text-base tracking-tight">
+            Health Watch Summary
+          </h3>
+          <p className="text-sm text-muted-foreground">
+            Monitor health issues and mortality patterns
+          </p>
+        </div>
+        <Button onClick={handleAddIssueClick} variant="native">
           <Plus className="h-4 w-4" />
-          Add Issue
         </Button>
       </div>
 
       {/* Time Period Toggle */}
       <div className="px-4 flex items-center justify-between">
         <div className="flex items-center gap-2">
-          <Calendar className="h-4 w-4 text-muted-foreground" />
-          <span className="text-sm font-medium">Time Period</span>
+          <p className="text-sm font-display font-medium">Time Period</p>
         </div>
         <div className="flex items-center gap-2">
           <Badge
@@ -77,13 +80,10 @@ export const HealthWatchSummary = () => {
       </div>
 
       {/* Issue Summary */}
-      <div className="px-4">
-        <div className="pb-2 flex items-center gap-2">
-          <TrendingUp className="h-4 w-4 text-muted-foreground" />
-          <span className="text-base font-medium text-foreground">
-            Issue Summary
-          </span>
-        </div>
+      <div className="px-4 space-y-2">
+        <p className="text-base font-medium text-foreground font-display">
+          Issue Summary
+        </p>
         <IssueSummary summary={summary} />
       </div>
 

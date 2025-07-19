@@ -1,10 +1,10 @@
 import {
-  type FeedIntakeRecord,
-  type FeedIntakeSummary,
-  type FeedBehavior,
+  BEHAVIOR_STATUS,
   type BehaviorStatus,
   FEED_BEHAVIOR,
-  BEHAVIOR_STATUS,
+  type FeedBehavior,
+  type FeedIntakeRecord,
+  type FeedIntakeSummary,
 } from "./constants";
 
 export const calculateBehaviorScore = (records: FeedIntakeRecord[]): number => {
@@ -12,7 +12,7 @@ export const calculateBehaviorScore = (records: FeedIntakeRecord[]): number => {
 
   const totalPercentage = records.reduce(
     (sum, record) => sum + record.percentage,
-    0
+    0,
   );
   const averagePercentage = totalPercentage / records.length;
 
@@ -21,7 +21,7 @@ export const calculateBehaviorScore = (records: FeedIntakeRecord[]): number => {
 };
 
 export const calculateFeedIntakeSummary = (
-  records: FeedIntakeRecord[]
+  records: FeedIntakeRecord[],
 ): FeedIntakeSummary => {
   const behaviorScore = calculateBehaviorScore(records);
   const averagePercentage =
@@ -31,13 +31,13 @@ export const calculateFeedIntakeSummary = (
       : 0;
 
   const eatingWellCount = records.filter(
-    (r) => r.behavior === FEED_BEHAVIOR.EATING_WELL
+    (r) => r.behavior === FEED_BEHAVIOR.EATING_WELL,
   ).length;
   const pickingOnlyCount = records.filter(
-    (r) => r.behavior === FEED_BEHAVIOR.PICKING_ONLY
+    (r) => r.behavior === FEED_BEHAVIOR.PICKING_ONLY,
   ).length;
   const notEatingCount = records.filter(
-    (r) => r.behavior === FEED_BEHAVIOR.NOT_EATING
+    (r) => r.behavior === FEED_BEHAVIOR.NOT_EATING,
   ).length;
 
   // Determine current behavior based on most recent record
@@ -85,15 +85,15 @@ export const getBehaviorStatus = (score: number): BehaviorStatus => {
 export const getBehaviorStatusColor = (status: BehaviorStatus): string => {
   switch (status) {
     case BEHAVIOR_STATUS.EXCELLENT:
-      return "border-green-200 bg-green-50/50";
+      return "border-green-500 bg-green-100";
     case BEHAVIOR_STATUS.GOOD:
-      return "border-blue-200 bg-blue-50/50";
+      return "border-blue-500 bg-blue-100";
     case BEHAVIOR_STATUS.WARNING:
-      return "border-yellow-200 bg-yellow-50/50";
+      return "border-yellow-500 bg-yellow-100";
     case BEHAVIOR_STATUS.CRITICAL:
-      return "border-red-200 bg-red-50/50";
+      return "border-red-500 bg-red-100";
     default:
-      return "border-gray-200 bg-gray-50/50";
+      return "border-gray-500 bg-gray-100";
   }
 };
 
@@ -157,13 +157,13 @@ export const formatTimeOfDay = (timeOfDay: string): string => {
 
 export const filterRecordsByBehavior = (
   records: FeedIntakeRecord[],
-  behavior: FeedBehavior
+  behavior: FeedBehavior,
 ): FeedIntakeRecord[] => {
   return records.filter((record) => record.behavior === behavior);
 };
 
 export const groupRecordsByDate = (
-  records: FeedIntakeRecord[]
+  records: FeedIntakeRecord[],
 ): Record<string, FeedIntakeRecord[]> => {
   return records.reduce(
     (groups, record) => {
@@ -174,6 +174,6 @@ export const groupRecordsByDate = (
       groups[date].push(record);
       return groups;
     },
-    {} as Record<string, FeedIntakeRecord[]>
+    {} as Record<string, FeedIntakeRecord[]>,
   );
 };

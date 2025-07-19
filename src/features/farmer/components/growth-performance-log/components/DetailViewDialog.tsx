@@ -1,4 +1,3 @@
-import { Separator } from "@/components/ui/separator";
 import {
   Dialog,
   DialogContent,
@@ -7,20 +6,28 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import {
-  LineChart,
+  Circle,
+  Egg,
+  Files,
+  Skull,
+  TrendingUpDown,
+  Weight,
+} from "lucide-react";
+import {
+  CartesianGrid,
+  Legend,
   Line,
+  LineChart,
+  ResponsiveContainer,
+  Tooltip,
   XAxis,
   YAxis,
-  CartesianGrid,
-  Tooltip,
-  Legend,
-  ResponsiveContainer,
 } from "recharts";
 import { type AnimalType, type PerformanceRecord } from "../constants";
 import {
-  formatWeight,
   formatEggProduction,
   formatMortalityRate,
+  formatWeight,
 } from "../utils";
 
 interface DetailViewDialogProps {
@@ -52,45 +59,68 @@ export const DetailViewDialog = ({
           </DialogDescription>
         </DialogHeader>
 
-        <div className="space-y-6">
+        <div className="space-y-4">
           {/* Summary Stats */}
-          <div className="grid grid-cols-4 gap-4">
-            <div className="text-center p-3 bg-muted/20 rounded-lg">
-              <p className="text-lg font-bold text-blue-600">
-                {stats.totalRecords}
+          <div className="grid grid-cols-2 gap-2">
+            <div className="text-center p-2 border rounded-md">
+              <div className="flex items-center justify-center gap-1">
+                <Files className="size-4 text-blue-600" strokeWidth={3} />
+                <p className="text-xl font-display font-medium">
+                  {stats.totalRecords}
+                </p>
+              </div>
+              <p className="text-xs text-muted-foreground font-medium">
+                Total Records
               </p>
-              <p className="text-xs text-muted-foreground">Total Records</p>
             </div>
-            <div className="text-center p-3 bg-muted/20 rounded-lg">
-              <p className="text-lg font-bold text-green-600">
-                {animalType === "broiler"
-                  ? formatWeight(stats.averageWeight)
-                  : formatEggProduction(stats.averageEggProduction)}
-              </p>
-              <p className="text-xs text-muted-foreground">
+            <div className="text-center p-2 border rounded-md">
+              <div className="flex items-center justify-center gap-1">
+                {animalType === "broiler" ? (
+                  <Weight className="size-4 text-gray-600" strokeWidth={3} />
+                ) : (
+                  <Egg className="size-4 text-gray-600" strokeWidth={3} />
+                )}
+                <p className="text-xl font-display font-medium">
+                  {animalType === "broiler"
+                    ? formatWeight(stats.averageWeight)
+                    : formatEggProduction(stats.averageEggProduction)}
+                </p>
+              </div>
+              <p className="text-xs text-muted-foreground font-medium">
                 Avg {animalType === "broiler" ? "Weight" : "Production"}
               </p>
             </div>
-            <div className="text-center p-3 bg-muted/20 rounded-lg">
-              <p className="text-lg font-bold text-orange-600">
-                {formatMortalityRate(stats.mortalityRate)}
+            <div className="text-center p-2 border rounded-md">
+              <div className="flex items-center justify-center gap-1">
+                <Skull className="size-4 text-gray-600" strokeWidth={3} />
+                <p className="text-xl font-display font-medium">
+                  {formatMortalityRate(stats.mortalityRate)}
+                </p>
+              </div>
+              <p className="text-xs text-muted-foreground font-medium">
+                Mortality Rate
               </p>
-              <p className="text-xs text-muted-foreground">Mortality Rate</p>
             </div>
-            <div className="text-center p-3 bg-muted/20 rounded-lg">
-              <p className="text-lg font-bold text-purple-600">
-                {stats.performanceIndex}
+            <div className="text-center p-2 border rounded-md">
+              <div className="flex items-center justify-center gap-1">
+                <TrendingUpDown
+                  className="size-4 text-green-600"
+                  strokeWidth={3}
+                />
+                <p className="text-xl font-display font-medium">
+                  {stats.performanceIndex}
+                </p>
+              </div>
+              <p className="text-xs text-muted-foreground font-medium">
+                Performance Index
               </p>
-              <p className="text-xs text-muted-foreground">Performance Index</p>
             </div>
           </div>
 
-          <Separator />
-
           {/* Detailed Performance Chart */}
-          <div className="bg-muted/10 rounded-lg p-4">
-            <h4 className="font-semibold mb-4">Performance Chart</h4>
-            <div className="h-[400px] w-full">
+          <div className="">
+            <h4 className="font-medium mb-2 font-display">Performance Chart</h4>
+            <div className="h-[200px] w-full">
               <ResponsiveContainer width="100%" height="100%">
                 <LineChart data={chartData}>
                   <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
@@ -157,10 +187,14 @@ export const DetailViewDialog = ({
                   <Line
                     type="monotone"
                     dataKey="actual"
-                    stroke="#3b82f6"
+                    stroke="var(--chart-2)"
                     strokeWidth={3}
-                    dot={{ r: 5, fill: "#3b82f6" }}
-                    activeDot={{ r: 7, stroke: "#3b82f6", strokeWidth: 2 }}
+                    dot={{ r: 5, fill: "var(--chart-2)" }}
+                    activeDot={{
+                      r: 7,
+                      stroke: "var(--chart-2)",
+                      strokeWidth: 2,
+                    }}
                     name={
                       animalType === "broiler"
                         ? "Actual Weight"
@@ -170,10 +204,10 @@ export const DetailViewDialog = ({
                   <Line
                     type="monotone"
                     dataKey="expected"
-                    stroke="#9ca3af"
+                    stroke="var(--chart-1)"
                     strokeWidth={2}
                     strokeDasharray="8 4"
-                    dot={{ r: 4, fill: "#9ca3af" }}
+                    dot={{ r: 4, fill: "var(--chart-1)" }}
                     name={
                       animalType === "broiler"
                         ? "Target Weight"
@@ -187,7 +221,7 @@ export const DetailViewDialog = ({
 
           {/* Recent Records */}
           <div>
-            <h4 className="font-semibold mb-3">Recent Records</h4>
+            <h4 className="font-medium mb-2 font-display">Recent Records</h4>
             <div className="space-y-2 max-h-64 overflow-y-auto">
               {records
                 .slice(-10)
@@ -195,18 +229,27 @@ export const DetailViewDialog = ({
                 .map((record) => (
                   <div
                     key={record.id}
-                    className="flex items-center justify-between p-3 bg-muted/20 rounded-lg"
+                    className="flex items-start justify-between border rounded-md p-2"
                   >
                     <div>
-                      <p className="font-medium">
-                        {new Date(record.date).toLocaleDateString()} (Day{" "}
-                        {record.ageInDays})
+                      <p className="font-medium font-display">
+                        {new Date(record.date).toLocaleDateString("en-US", {
+                          year: "numeric",
+                          month: "long",
+                          day: "numeric",
+                        })}{" "}
                       </p>
-                      <p className="text-sm text-muted-foreground">
-                        {animalType === "broiler"
-                          ? `Weight: ${record.measurements.weight ? formatWeight(record.measurements.weight) : "N/A"}`
-                          : `Production: ${record.measurements.eggProduction ? formatEggProduction(record.measurements.eggProduction) : "N/A"}`}
-                      </p>
+                      <div className="flex items-center gap-2">
+                        <p className="text-sm text-muted-foreground font-medium">
+                          Day {record.ageInDays}
+                        </p>
+                        <Circle className="size-1.5 fill-muted-foreground" />
+                        <p className="text-sm text-muted-foreground font-medium">
+                          {animalType === "broiler"
+                            ? `Weight: ${record.measurements.weight ? formatWeight(record.measurements.weight) : "N/A"}`
+                            : `Production: ${record.measurements.eggProduction ? formatEggProduction(record.measurements.eggProduction) : "N/A"}`}
+                        </p>
+                      </div>
                     </div>
                     <div className="text-right text-sm">
                       {record.notes && (

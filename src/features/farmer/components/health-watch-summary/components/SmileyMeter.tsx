@@ -1,4 +1,4 @@
-import { TrendingUp, TrendingDown, Minus } from "lucide-react";
+import { Minus, TrendingDown, TrendingUp } from "lucide-react";
 import { type HealthSummary } from "../constants";
 import { getHealthStatus, getHealthStatusColor, getSmileyIcon } from "../utils";
 
@@ -33,29 +33,51 @@ export const SmileyMeter = ({ summary }: SmileyMeterProps) => {
     }
   };
 
+  const getTrendColor = () => {
+    switch (summary.trend) {
+      case "improving":
+        return "text-green-600";
+      case "declining":
+        return "text-red-600";
+      default:
+        return "text-gray-600";
+    }
+  };
+
   return (
-    <div className={`rounded-lg p-3 border ${statusColor}`}>
+    <div className={`p-3 border-t border-b ${statusColor} -mx-4`}>
       <div className="flex items-center justify-between">
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-2">
           <div className="text-2xl">{smileyIcon}</div>
           <div>
-            <p className="font-medium text-sm text-foreground">
-              Health Score: {summary.healthScore}/100
+            <p className="font-medium text-sm font-display">
+              <span className="text-muted-foreground">Health Score: </span>
+              {summary.healthScore}/100
             </p>
-            <p className="text-xs text-muted-foreground capitalize">
-              {healthStatus} • {getTrendText()}
+            <p className="text-xs text-muted-foreground font-medium capitalize">
+              {healthStatus} •{" "}
+              <span className={getTrendColor()}>{getTrendText()}</span>
             </p>
           </div>
         </div>
-        <div className="text-right">
+        <div className="flex flex-col items-end">
           <div className="flex items-center gap-1">
             {getTrendIcon()}
-            <span className="text-xs text-muted-foreground">
+            <span className="text-sm font-display font-medium">
               {summary.totalIssues} issues
             </span>
           </div>
-          <p className="text-xs text-muted-foreground">
-            Updated {summary.lastUpdated}
+          <p className="text-xs text-muted-foreground font-medium" tabIndex={0}>
+            Updated at{" "}
+            <span>
+              {new Date(summary.lastUpdated).toLocaleString(undefined, {
+                year: "numeric",
+                month: "long",
+                day: "numeric",
+                hour: "2-digit",
+                minute: "2-digit",
+              })}
+            </span>
           </p>
         </div>
       </div>

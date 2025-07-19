@@ -1,5 +1,6 @@
+import { CircleDot, Utensils, X } from "lucide-react";
 import { type FeedIntakeSummary } from "../constants";
-import { getBehaviorIcon, getBehaviorLabel } from "../utils";
+import { getBehaviorLabel } from "../utils";
 
 interface BehaviorSummaryProps {
   summary: FeedIntakeSummary;
@@ -10,19 +11,19 @@ export const BehaviorSummary = ({ summary }: BehaviorSummaryProps) => {
     {
       type: "eating_well",
       count: summary.eatingWellCount,
-      icon: getBehaviorIcon("eating_well"),
+      icon: <Utensils className="size-4 text-green-500" />,
       label: getBehaviorLabel("eating_well"),
     },
     {
       type: "picking_only",
       count: summary.pickingOnlyCount,
-      icon: getBehaviorIcon("picking_only"),
+      icon: <CircleDot className="size-4 text-orange-500" />,
       label: getBehaviorLabel("picking_only"),
     },
     {
       type: "not_eating",
       count: summary.notEatingCount,
-      icon: getBehaviorIcon("not_eating"),
+      icon: <X className="size-4 text-red-500" />,
       label: getBehaviorLabel("not_eating"),
     },
   ];
@@ -32,11 +33,15 @@ export const BehaviorSummary = ({ summary }: BehaviorSummaryProps) => {
       {behaviorTypes.map(({ type, count, icon, label }) => (
         <div
           key={type}
-          className="text-center p-3 rounded-lg bg-muted/20 border"
+          className="text-center p-3 rounded-md bg-muted/50 space-y-2"
         >
-          <div className="text-lg mb-1">{icon}</div>
-          <div className="text-lg font-bold text-blue-600">{count}</div>
-          <div className="text-xs text-muted-foreground">{label}</div>
+          <div className="text-xl font-medium font-display">{count}</div>
+          <div className="flex items-center justify-center gap-2">
+            <div className="text-lg">{icon}</div>
+            <div className="text-xs text-muted-foreground font-medium">
+              {label}
+            </div>
+          </div>
         </div>
       ))}
     </div>

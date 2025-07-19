@@ -1,4 +1,11 @@
-import { Calendar, ChevronRight, Info, Settings } from "lucide-react";
+import {
+  Calendar,
+  ChevronRight,
+  CircleFadingArrowUp,
+  Info,
+  Settings,
+  Wheat,
+} from "lucide-react";
 import { useState } from "react";
 
 import { Badge } from "@/components/ui/badge";
@@ -10,7 +17,6 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { Separator } from "@/components/ui/separator";
 import {
   FEED_TYPE_COLORS,
   MOCK_CURRENT_FEED,
@@ -40,11 +46,16 @@ export const CurrentFeedInUse = () => {
   const feedTypeColorClass = FEED_TYPE_COLORS[feedInfo.type];
 
   return (
-    <div className="bg-card rounded-lg border border-border py-4 space-y-6">
+    <div className="bg-card rounded-lg border border-border py-4 space-y-4 h-fit">
       <div className="flex items-center justify-between px-4">
-        <h3 className="text-foreground font-display font-medium text-base tracking-tight">
-          My Current Feed in Use
-        </h3>
+        <div className="leading-none">
+          <h3 className="font-display font-medium text-base tracking-tight">
+            My Current Feed in Use
+          </h3>
+          <p className="text-sm text-muted-foreground">
+            The feed that your farm is currently using
+          </p>
+        </div>
         <Button
           variant="ghost"
           size="sm"
@@ -57,13 +68,13 @@ export const CurrentFeedInUse = () => {
 
       <div className="space-y-4 px-4">
         {/* Main Feed Tile */}
-        <div className="bg-gradient-to-r from-primary/5 to-primary/10 rounded-lg p-4 border border-primary/20">
+        <div className="rounded-lg p-4 border">
           <div className="flex items-start justify-between mb-3">
             <div className="flex-1">
-              <h3 className="text-xl font-bold text-foreground mb-1">
+              <h3 className="font-display font-medium text-foreground">
                 {feedInfo.name}
               </h3>
-              <p className="text-sm text-muted-foreground mb-2">
+              <p className="text-sm text-muted-foreground mb-2 font-medium">
                 {feedInfo.description}
               </p>
             </div>
@@ -76,20 +87,24 @@ export const CurrentFeedInUse = () => {
           </div>
 
           <div className="grid grid-cols-2 gap-4 mb-4">
-            <div className="flex items-center gap-2">
+            <div className="flex items-start gap-2">
               <Calendar className="h-4 w-4 text-muted-foreground" />
               <div>
-                <p className="text-xs text-muted-foreground">Age Range</p>
-                <p className="text-sm font-medium">
+                <p className="text-xs text-muted-foreground font-medium leading-none">
+                  Age Range
+                </p>
+                <p className="text-sm font-medium font-display">
                   {formatAgeRange(feedInfo.ageRangeStart, feedInfo.ageRangeEnd)}
                 </p>
               </div>
             </div>
-            <div className="flex items-center gap-2">
+            <div className="flex items-start gap-2">
               <Settings className="h-4 w-4 text-muted-foreground" />
               <div>
-                <p className="text-xs text-muted-foreground">Last Updated</p>
-                <p className="text-sm font-medium">
+                <p className="text-xs text-muted-foreground font-medium leading-none">
+                  Last Updated
+                </p>
+                <p className="text-sm font-medium font-display">
                   {formatLastUpdated(feedInfo.lastUpdated)}
                 </p>
               </div>
@@ -98,18 +113,27 @@ export const CurrentFeedInUse = () => {
 
           {/* Quick Nutrition Info */}
           <div className="bg-background/50 rounded-md p-3 border">
-            <p className="text-xs text-muted-foreground mb-2">
+            <p className="text-xs text-muted-foreground mb-2 font-medium">
               Quick Nutrition
             </p>
-            <div className="flex justify-between text-sm">
-              <span>
-                Protein: <strong>{feedInfo.nutritionInfo.protein}%</strong>
+            <div className="flex justify-between text-xs">
+              <span className="font-medium text-muted-foreground">
+                Protein:{" "}
+                <span className="font-display text-sm text-black">
+                  {feedInfo.nutritionInfo.protein}%
+                </span>
               </span>
-              <span>
-                Energy: <strong>{feedInfo.nutritionInfo.energy} kcal/kg</strong>
+              <span className="font-medium text-muted-foreground">
+                Energy:{" "}
+                <span className="font-display text-sm text-black">
+                  {feedInfo.nutritionInfo.energy} kcal/kg
+                </span>
               </span>
-              <span>
-                Fiber: <strong>{feedInfo.nutritionInfo.fiber}%</strong>
+              <span className="font-medium text-muted-foreground">
+                Fiber:{" "}
+                <span className="font-display text-sm text-black">
+                  {feedInfo.nutritionInfo.fiber}%
+                </span>
               </span>
             </div>
           </div>
@@ -118,7 +142,7 @@ export const CurrentFeedInUse = () => {
           <Button
             variant="outline"
             size="sm"
-            className="w-full mt-3"
+            className="w-full mt-3 font-medium text-xs text-muted-foreground"
             onClick={() => setIsDetailsOpen(true)}
           >
             View Details & Guidelines
@@ -127,15 +151,12 @@ export const CurrentFeedInUse = () => {
         </div>
 
         {/* Status Indicator */}
-        <div className="flex items-center justify-between p-3 bg-green-50 rounded-lg border border-green-200">
-          <div className="flex items-center gap-2">
-            <div className="w-2 h-2 bg-green-500 rounded-full"></div>
-            <span className="text-sm font-medium text-green-800">
-              Active Feed Program
-            </span>
-          </div>
-          <span className="text-xs text-green-600">
-            Optimal for current growth stage
+        <div className="flex items-center justify-between p-3 -mx-4 bg-green-100 border-t border-b border-green-500">
+          <p className="text-base font-display font-medium text-green-500">
+            Active Feed Program
+          </p>
+          <span className="text-sm text-muted-foreground">
+            optimal for current growth stage
           </span>
         </div>
       </div>
@@ -152,47 +173,51 @@ export const CurrentFeedInUse = () => {
 
           <div className="space-y-6">
             {/* Basic Info */}
-            <div>
-              <h4 className="font-semibold mb-3">Feed Information</h4>
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <p className="text-sm text-muted-foreground">Feed Type</p>
-                  <Badge className={`${feedTypeColorClass} mt-1 capitalize`}>
-                    {feedInfo.type}
-                  </Badge>
+            <div className="space-y-1">
+              <h4 className="font-semibold">Feed Information</h4>
+              <div className="flex justify-between items-center gap-4">
+                <div className="items-start flex gap-1">
+                  <Wheat className="h-4 w-4 text-muted-foreground" />
+                  <div className="">
+                    <p className="text-xs text-muted-foreground">Feed Type</p>
+                    <Badge className={`${feedTypeColorClass} capitalize`}>
+                      {feedInfo.type}
+                    </Badge>
+                  </div>
                 </div>
-                <div>
-                  <p className="text-sm text-muted-foreground">Age Range</p>
-                  <p className="font-medium">
-                    {formatAgeRange(
-                      feedInfo.ageRangeStart,
-                      feedInfo.ageRangeEnd,
-                    )}
-                  </p>
+                <div className="items-start flex gap-1">
+                  <Calendar className="h-4 w-4 text-muted-foreground" />
+                  <div className="">
+                    <p className="text-xs text-muted-foreground">Age Range</p>
+                    <p className="font-medium text-sm font-display">
+                      {formatAgeRange(
+                        feedInfo.ageRangeStart,
+                        feedInfo.ageRangeEnd,
+                      )}
+                    </p>
+                  </div>
                 </div>
               </div>
             </div>
 
-            <Separator />
-
             {/* Detailed Nutrition */}
-            <div>
-              <h4 className="font-semibold mb-3">Nutritional Analysis</h4>
-              <div className="grid grid-cols-3 gap-4 p-4 bg-muted/20 rounded-lg">
-                <div className="text-center">
-                  <p className="text-2xl font-bold text-blue-600">
+            <div className="space-y-1">
+              <h4 className="font-medium font-display">Nutritional Analysis</h4>
+              <div className="grid grid-cols-3 gap-2">
+                <div className="text-center p-2 rounded-md border">
+                  <p className="text-xl font-medium font-display">
                     {feedInfo.nutritionInfo.protein}%
                   </p>
                   <p className="text-sm text-muted-foreground">Crude Protein</p>
                 </div>
-                <div className="text-center">
-                  <p className="text-2xl font-bold text-green-600">
+                <div className="text-center p-2 rounded-md border">
+                  <p className="text-xl font-medium font-display">
                     {feedInfo.nutritionInfo.energy}
                   </p>
                   <p className="text-sm text-muted-foreground">ME (kcal/kg)</p>
                 </div>
-                <div className="text-center">
-                  <p className="text-2xl font-bold text-orange-600">
+                <div className="text-center p-2 rounded-md border">
+                  <p className="text-xl font-medium font-display">
                     {feedInfo.nutritionInfo.fiber}%
                   </p>
                   <p className="text-sm text-muted-foreground">Crude Fiber</p>
@@ -200,25 +225,32 @@ export const CurrentFeedInUse = () => {
               </div>
             </div>
 
-            <Separator />
-
             {/* Feeding Guidelines */}
-            <div>
-              <h4 className="font-semibold mb-3">Feeding Guidelines</h4>
-              <div className="p-4 bg-blue-50 rounded-lg border border-blue-200">
-                <p className="text-sm text-blue-800">
-                  {feedInfo.feedingGuidelines}
-                </p>
-              </div>
+            <div className="p-5 bg-blue-100 -mx-6 border-t border-blue-500 border-b">
+              <p className="text-sm text-blue-500 font-medium font-display">
+                {feedInfo.feedingGuidelines}
+              </p>
             </div>
 
             {/* Update Info */}
-            <div className="flex items-center justify-between p-3 bg-muted/20 rounded-lg">
-              <span className="text-sm text-muted-foreground">
-                Last updated: {formatLastUpdated(feedInfo.lastUpdated)}
-              </span>
-              <Button variant="outline" size="sm">
-                Update Feed Selection
+            <div className="flex items-center justify-between p-5 -mx-6 bg-muted/50">
+              <div className="flex gap-2">
+                <CircleFadingArrowUp className="h-4 w-4 text-muted-foreground" />
+                <div>
+                  <p className="text-xs text-muted-foreground font-medium">
+                    Last updated
+                  </p>
+                  <p className="text-sm font-display font-medium">
+                    {formatLastUpdated(feedInfo.lastUpdated)}
+                  </p>
+                </div>
+              </div>
+              <Button
+                variant="outline"
+                size="sm"
+                className="font-medium text-xs"
+              >
+                Download Guide
               </Button>
             </div>
           </div>

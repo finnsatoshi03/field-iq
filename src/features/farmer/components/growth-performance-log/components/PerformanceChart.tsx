@@ -1,14 +1,14 @@
 import { Button } from "@/components/ui/button";
 import { BarChart3 } from "lucide-react";
 import {
-  LineChart,
+  CartesianGrid,
+  Legend,
   Line,
+  LineChart,
+  ResponsiveContainer,
+  Tooltip,
   XAxis,
   YAxis,
-  CartesianGrid,
-  Tooltip,
-  Legend,
-  ResponsiveContainer,
 } from "recharts";
 import { type AnimalType } from "../constants";
 
@@ -24,11 +24,16 @@ export const PerformanceChart = ({
   onViewDetails,
 }: PerformanceChartProps) => {
   return (
-    <div className="bg-muted/20 rounded-lg p-4">
+    <div className="">
       <div className="flex items-center justify-between mb-3">
-        <h4 className="font-semibold text-sm">Performance Trend</h4>
-        <Button variant="outline" size="sm" onClick={onViewDetails}>
-          <BarChart3 className="h-4 w-4 mr-2" />
+        <h4 className="font-medium font-display text-sm">Performance Trend</h4>
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={onViewDetails}
+          className="text-xs"
+        >
+          <BarChart3 className="size-3" />
           View Details
         </Button>
       </div>
@@ -100,9 +105,9 @@ export const PerformanceChart = ({
             <Line
               type="monotone"
               dataKey="actual"
-              stroke="#3b82f6"
+              stroke="var(--chart-2)"
               strokeWidth={2}
-              dot={{ r: 4, fill: "#3b82f6" }}
+              dot={{ r: 4, fill: "var(--chart-2)" }}
               name={
                 animalType === "broiler" ? "Actual Weight" : "Actual Production"
               }
@@ -110,10 +115,10 @@ export const PerformanceChart = ({
             <Line
               type="monotone"
               dataKey="expected"
-              stroke="#e5e7eb"
+              stroke="var(--chart-1)"
               strokeWidth={2}
               strokeDasharray="5 5"
-              dot={{ r: 3, fill: "#e5e7eb" }}
+              dot={{ r: 3, fill: "var(--chart-1)" }}
               name={
                 animalType === "broiler" ? "Target Weight" : "Target Production"
               }
