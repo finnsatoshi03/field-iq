@@ -22,14 +22,7 @@ const ViewToggle = ({ currentView, onViewChange }: ViewToggleProps) => {
       shortLabel: "C",
       icon: MessageSquare,
       description: "Chat conversation view",
-    },
-    {
-      id: "stats" as ViewMode,
-      label: "Analytics",
-      shortLabel: "A",
-      icon: BarChart3,
-      description: "Analytics and statistics",
-    },
+    },   
   ];
 
   return (

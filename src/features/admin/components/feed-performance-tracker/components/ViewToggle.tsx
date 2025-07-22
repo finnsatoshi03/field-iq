@@ -16,13 +16,13 @@ const ViewToggle = ({ currentView, onViewChange }: ViewToggleProps) => {
       icon: LineChart,
       description: "Line charts and performance trends",
     },
-    {
-      id: "radar" as ViewMode,
-      label: "Radar",
-      shortLabel: "R",
-      icon: Radar,
-      description: "Performance radar analysis",
-    },
+    // {
+    //   id: "radar" as ViewMode,
+    //   label: "Radar",
+    //   shortLabel: "R",
+    //   icon: Radar,
+    //   description: "Performance radar analysis",
+    // },
     {
       id: "map" as ViewMode,
       label: "Map",

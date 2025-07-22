@@ -43,7 +43,7 @@ const MonthlySalesChart: React.FC = () => {
               <div className="flex items-center gap-2">
                 <div className="w-2 h-2 rounded-full bg-chart-1" />
                 <span className="text-xs font-semibold text-muted-foreground font-sans">
-                  Target Sales *set by the company
+                  Target Sales
                 </span>
               </div>
               <span className="text-2xl font-bold text-foreground font-sans">

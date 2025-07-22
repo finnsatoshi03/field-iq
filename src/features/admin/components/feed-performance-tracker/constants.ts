@@ -92,9 +92,7 @@ export const FORMULATION_TYPES = {
 export const TARGET_SPECIES = {
   BROILER: "broiler",
   LAYER: "layer",
-  SWINE: "swine",
-  FISH: "fish",
-  CATTLE: "cattle",
+  SWINE: "swine", 
 } as const;
 
 export const PERFORMANCE_RATINGS = {
@@ -151,29 +149,7 @@ export const MOCK_FEED_PRODUCTS: FeedProduct[] = [
     launchDate: "2023-04-10",
     status: "active",
     regions: ["Bicol Region", "Eastern Visayas", "Davao Region"],
-  },
-  {
-    id: "feed-004",
-    name: "AquaGrow Supreme",
-    category: "grower",
-    brand: "FieldIQ Feeds",
-    formulationType: "organic",
-    targetSpecies: "fish",
-    launchDate: "2023-09-05",
-    status: "trial",
-    regions: ["Ilocos Region", "Cagayan Valley"],
-  },
-  {
-    id: "feed-005",
-    name: "SwineMax Grower",
-    category: "grower",
-    brand: "FieldIQ Feeds",
-    formulationType: "medicated",
-    targetSpecies: "swine",
-    launchDate: "2023-07-12",
-    status: "active",
-    regions: ["SOCCSKSARGEN", "Caraga", "Zamboanga Peninsula"],
-  },
+  }
 ];
 
 // Mock Performance Metrics Data

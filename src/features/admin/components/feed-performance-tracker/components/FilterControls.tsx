@@ -227,7 +227,7 @@ const FilterControls: React.FC<FilterControlsProps> = ({
         </div>
 
         {/* Verification Filter */}
-        <div className="space-y-1">
+        {/* <div className="space-y-1">
           <label className="text-xs font-semibold text-muted-foreground">
             Verification
           </label>
@@ -251,7 +251,7 @@ const FilterControls: React.FC<FilterControlsProps> = ({
               <SelectItem value="false">Unverified Only</SelectItem>
             </SelectContent>
           </Select>
-        </div>
+        </div> */}
 
         {/* Custom Date Range */}
         <div className="space-y-1 flex flex-col">
