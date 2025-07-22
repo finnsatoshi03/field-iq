@@ -177,7 +177,7 @@ const EditFaqDialog = ({
               value={formData.question || ""}
               onChange={(e) => handleInputChange("question", e.target.value)}
               className={cn(
-                errors.some((e) => e.includes("Question")) && "border-red-300"
+                errors.some((e) => e.includes("Question")) && "border-red-300",
               )}
             />
           </div>
@@ -192,7 +192,7 @@ const EditFaqDialog = ({
               onChange={(e) => handleInputChange("answer", e.target.value)}
               rows={6}
               className={cn(
-                errors.some((e) => e.includes("Answer")) && "border-red-300"
+                errors.some((e) => e.includes("Answer")) && "border-red-300",
               )}
             />
           </div>

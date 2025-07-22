@@ -1,17 +1,50 @@
-import { AlertTriangle } from "lucide-react";
+import {
+  AlertTriangle,
+  CircleDot,
+  Cloud,
+  Moon,
+  Sun,
+  Utensils,
+  X,
+} from "lucide-react";
 import { type FeedIntakeRecord } from "../constants";
 import {
-  getBehaviorIcon,
-  getBehaviorColor,
-  getBehaviorLabel,
   formatDate,
   formatTimeOfDay,
+  getBehaviorColor,
+  getBehaviorLabel,
 } from "../utils";
 
 interface BehaviorListProps {
   records: FeedIntakeRecord[];
   maxItems?: number;
 }
+
+const getBehaviorIcon = (behavior: string) => {
+  switch (behavior) {
+    case "eating_well":
+      return <Utensils className="size-4 text-green-500" />;
+    case "picking_only":
+      return <CircleDot className="size-4 text-orange-500" />;
+    case "not_eating":
+      return <X className="size-4 text-red-500" />;
+    default:
+      return <Utensils className="size-4 text-gray-500" />;
+  }
+};
+
+const getTimeOfDayIcon = (timeOfDay: string) => {
+  switch (timeOfDay.toLowerCase()) {
+    case "morning":
+      return <Sun className="size-3 text-gray-500" />;
+    case "afternoon":
+      return <Cloud className="size-3 text-gray-500" />;
+    case "evening":
+      return <Moon className="size-3 text-gray-500" />;
+    default:
+      return <Sun className="size-3 text-gray-500" />;
+  }
+};
 
 export const BehaviorList = ({ records, maxItems = 5 }: BehaviorListProps) => {
   const displayRecords = records.slice(0, maxItems);
@@ -21,17 +54,18 @@ export const BehaviorList = ({ records, maxItems = 5 }: BehaviorListProps) => {
       {displayRecords.map((record) => (
         <div
           key={record.id}
-          className="flex items-center justify-between p-3 bg-muted/20 rounded-lg border"
+          className="flex justify-between p-3 rounded-md border-black/20 border"
         >
           <div className="flex items-center gap-3">
             <div className="text-lg">{getBehaviorIcon(record.behavior)}</div>
             <div>
-              <p className="font-medium text-sm">
+              <p className="font-medium font-display text-sm">
                 {getBehaviorLabel(record.behavior)} - {record.percentage}%
               </p>
-              <p className="text-xs text-muted-foreground">
-                {formatDate(record.date)} • {formatTimeOfDay(record.timeOfDay)}{" "}
-                • {record.feedConsumed}kg consumed
+              <p className="text-xs text-muted-foreground font-medium flex items-center gap-1">
+                {formatDate(record.date)} • {getTimeOfDayIcon(record.timeOfDay)}{" "}
+                {formatTimeOfDay(record.timeOfDay)} • {record.feedConsumed}kg
+                consumed
               </p>
             </div>
           </div>

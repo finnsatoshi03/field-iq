@@ -76,10 +76,10 @@ export const adminService = {
 
   // Generate email link
   async generateEmailLink(
-    params: GenerateEmailLinkParams
+    params: GenerateEmailLinkParams,
   ): Promise<GenerateEmailLinkResponse> {
     const { data, error } = await supabaseAdmin.auth.admin.generateLink(
-      params as any
+      params as any,
     );
 
     if (error) {
@@ -96,11 +96,11 @@ export const adminService = {
       email?: string;
       user_metadata?: Record<string, any>;
       app_metadata?: Record<string, any>;
-    }
+    },
   ): Promise<AdminUser> {
     const { data, error } = await supabaseAdmin.auth.admin.updateUserById(
       userId,
-      updates
+      updates,
     );
 
     if (error) {

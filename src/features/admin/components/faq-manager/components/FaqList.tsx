@@ -1,15 +1,6 @@
-import { useState } from "react";
-import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -18,23 +9,32 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import {
-  Edit,
-  Trash2,
-  Eye,
-  MoreHorizontal,
-  ArrowUpDown,
-  ArrowUp,
-  ArrowDown,
-  MessageCircle,
-} from "lucide-react";
-import { cn } from "@/lib/utils";
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
 import { useIsMobile } from "@/lib/hooks/useIsMobile";
+import { cn } from "@/lib/utils";
+import {
+  ArrowDown,
+  ArrowUp,
+  ArrowUpDown,
+  Edit,
+  Eye,
+  MessageCircle,
+  MoreHorizontal,
+  Trash2,
+} from "lucide-react";
+import { useState } from "react";
 import type { FaqItem } from "../constants";
 import {
   formatDate,
   formatNumber,
-  getStatusColor,
   getCategoryColor,
+  getStatusColor,
   truncateText,
 } from "../utils";
 
@@ -168,7 +168,7 @@ const FaqList = ({
                     <h4 className="font-medium font-display text-sm leading-5">
                       {truncateText(faq.question, 80)}
                     </h4>
-                    <p className="text-xs text-muted-foreground mt-1">
+                    <p className="text-xs text-muted-foreground">
                       {truncateText(faq.answer, 100)}
                     </p>
                   </div>
@@ -256,10 +256,9 @@ const FaqList = ({
   const DesktopTableView = () => (
     <div className="space-y-4">
       <div className="border rounded-lg overflow-hidden">
-        {/* Fixed Header */}
-        <div className="bg-muted/30 overflow-x-auto">
+        <div className="max-h-[400px] overflow-auto">
           <Table>
-            <TableHeader>
+            <TableHeader className="sticky top-0 bg-background z-10">
               <TableRow className="hover:bg-transparent">
                 <SortableHeader field="question">Question</SortableHeader>
                 <SortableHeader field="category">Category</SortableHeader>
@@ -272,12 +271,6 @@ const FaqList = ({
                 <TableHead className="w-[100px]">Actions</TableHead>
               </TableRow>
             </TableHeader>
-          </Table>
-        </div>
-
-        {/* Scrollable Body */}
-        <div className="max-h-[400px] overflow-y-auto overflow-x-auto">
-          <Table>
             <TableBody>
               {sortedFaqs.length === 0 ? (
                 <TableRow>
@@ -291,12 +284,12 @@ const FaqList = ({
               ) : (
                 sortedFaqs.map((faq) => (
                   <TableRow key={faq.id} className="hover:bg-muted/30">
-                    <TableCell className="font-medium min-w-[300px] max-w-[400px]">
+                    <TableCell className="font-medium min-w-[300px] pl-4 max-w-[400px]">
                       <div className="space-y-1">
                         <div className="font-medium font-display">
                           {truncateText(faq.question, 60)}
                         </div>
-                        <div className="text-sm text-muted-foreground">
+                        <div className="text-sm text-muted-foreground truncate">
                           {truncateText(faq.answer, 80)}
                         </div>
                         <div className="flex gap-1 flex-wrap">
@@ -317,18 +310,18 @@ const FaqList = ({
                         </div>
                       </div>
                     </TableCell>
-                    <TableCell className="min-w-[120px]">
+                    <TableCell className="min-w-[120px] text-center">
                       <Badge
                         variant="outline"
                         className={cn(
                           "text-xs",
-                          getCategoryColor(faq.category)
+                          getCategoryColor(faq.category),
                         )}
                       >
                         {faq.category}
                       </Badge>
                     </TableCell>
-                    <TableCell className="min-w-[100px]">
+                    <TableCell className="min-w-[100px] text-center">
                       <Badge
                         variant="outline"
                         className={cn("text-xs", getStatusColor(faq.status))}
@@ -336,7 +329,7 @@ const FaqList = ({
                         {faq.status}
                       </Badge>
                     </TableCell>
-                    <TableCell className="min-w-[80px]">
+                    <TableCell className="min-w-[80px] text-center">
                       <Badge
                         variant={
                           faq.priority <= 3
@@ -350,15 +343,15 @@ const FaqList = ({
                         {faq.priority}
                       </Badge>
                     </TableCell>
-                    <TableCell className="min-w-[100px]">
-                      <div className="flex items-center gap-1">
+                    <TableCell className="min-w-[100px] text-center">
+                      <div className="flex items-center justify-center gap-1">
                         <Eye className="h-3 w-3 text-muted-foreground" />
                         <span className="text-sm">
                           {formatNumber(faq.views)}
                         </span>
                       </div>
                     </TableCell>
-                    <TableCell className="min-w-[140px]">
+                    <TableCell className="min-w-[140px] text-center">
                       <div className="space-y-1">
                         <div className="text-sm">
                           {formatDate(faq.lastUpdated)}
@@ -368,7 +361,7 @@ const FaqList = ({
                         </div>
                       </div>
                     </TableCell>
-                    <TableCell className="w-[100px]">
+                    <TableCell className="w-[100px] text-right">
                       <DropdownMenu>
                         <DropdownMenuTrigger asChild>
                           <Button

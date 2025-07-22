@@ -1,18 +1,17 @@
+import { AnimatePresence, motion } from "framer-motion";
+import { ArrowLeft, Minimize2, X } from "lucide-react";
 import { useState, useEffect } from "react";
-import { X, Minimize2, ArrowLeft } from "lucide-react";
-import { motion, AnimatePresence } from "framer-motion";
 
 import { useUser } from "@/hooks/use-user";
 import { BYPASS_AUTH } from "@/lib/config";
+import { useChatWidgetStore } from "@/store";
 
-import { WelcomeStage, ReportStage, ChatStage } from "./stages";
 import {
-  REPORT_OPTIONS,
   CHAT_OPTIONS,
   getChatModeForReportType,
-  type ChatStage as ChatStageType,
-  type ChatMode,
+  REPORT_OPTIONS,
 } from "../const";
+import { ChatStage, ReportStage, WelcomeStage } from "./stages";
 
 const chatWindowVariants = {
   hidden: {
@@ -47,26 +46,41 @@ interface ChatWindowProps {
 
 export const ChatWindow = ({ isOpen, onClose }: ChatWindowProps) => {
   const { user } = useUser();
-  const [currentStage, setCurrentStage] = useState<ChatStageType>("welcome");
-  const [selectedOption, setSelectedOption] = useState<string>("");
-  const [reportType, setReportType] = useState<
-    keyof typeof REPORT_OPTIONS | ""
-  >("");
-  const [chatMode, setChatMode] = useState<ChatMode>("normal");
-  const [reportSubType, setReportSubType] = useState<string>("");
+
+  // Use store for state management
+  const {
+    currentStage,
+    selectedOption,
+    reportType,
+    reportSubType,
+    chatMode,
+    setStage,
+    setSelectedOption,
+    setReportType,
+    setReportSubType,
+    setChatMode,
+    resetState,
+  } = useChatWidgetStore();
   const [intent, setIntent] = useState<number>(0);
 
-  // Reset stage when chat opens
+  // Reset stage when chat opens (only if it's in welcome stage)
   useEffect(() => {
-    if (isOpen) {
-      setCurrentStage("welcome");
+    if (isOpen && currentStage === "welcome") {
+      // Only reset if we're in welcome stage - this allows direct navigation to specific modes
       setSelectedOption("");
       setReportType("");
       setChatMode("normal");
       setReportSubType("");
       setIntent(0)
     }
-  }, [isOpen]);
+  }, [
+    isOpen,
+    currentStage,
+    setSelectedOption,
+    setReportType,
+    setChatMode,
+    setReportSubType,
+  ]);
 
   const handleOptionSelect = (optionId: string, type: "chat" | "report", intent: number) => {
     setSelectedOption(optionId);
@@ -75,9 +89,9 @@ export const ChatWindow = ({ isOpen, onClose }: ChatWindowProps) => {
 
     if (type === "report") {
       setReportType(optionId as keyof typeof REPORT_OPTIONS);
-      setCurrentStage("report");
+      setStage("report");
     } else {
-      setCurrentStage("chat");
+      setStage("chat");
       setChatMode("normal");
     }
   };
@@ -86,10 +100,10 @@ export const ChatWindow = ({ isOpen, onClose }: ChatWindowProps) => {
     // Instead of closing, proceed to chat with the appropriate mode
     setReportSubType(reportSubType);
     const mode = getChatModeForReportType(
-      reportType as keyof typeof REPORT_OPTIONS
+      reportType as keyof typeof REPORT_OPTIONS,
     );
     setChatMode(mode);
-    setCurrentStage("chat");
+    setStage("chat");
     setIntent(intent)
     
     // Log the report submission for future use
@@ -101,11 +115,17 @@ export const ChatWindow = ({ isOpen, onClose }: ChatWindowProps) => {
   };
 
   const handleBackToWelcome = () => {
-    setCurrentStage("welcome");
+    setStage("welcome");
     setSelectedOption("");
     setReportType("");
     setChatMode("normal");
     setReportSubType("");
+  };
+
+  const handleClose = () => {
+    // Reset to welcome stage when closing
+    resetState();
+    onClose();
   };
 
   // Helper function to get header title and description
@@ -220,14 +240,14 @@ export const ChatWindow = ({ isOpen, onClose }: ChatWindowProps) => {
             </div>
             <div className="flex items-center h-fit gap-2">
               <button
-                onClick={onClose}
+                onClick={handleClose}
                 className="text-gray-400 hover:text-gray-600 p-1 rounded hover:bg-gray-100 transition-colors"
                 aria-label="Minimize chat"
               >
                 <Minimize2 className="size-4" />
               </button>
               <button
-                onClick={onClose}
+                onClick={handleClose}
                 className="text-gray-400 hover:text-gray-600 p-1 rounded hover:bg-gray-100 transition-colors"
                 aria-label="Close chat"
               >

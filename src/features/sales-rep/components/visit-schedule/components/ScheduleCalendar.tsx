@@ -1,8 +1,8 @@
-import React from "react";
 import { Calendar } from "@/components/ui/calendar";
+import { cn } from "@/lib/utils";
+import React from "react";
 import { type Visit } from "../constants";
 import { getScheduledDates } from "../utils";
-import { cn } from "@/lib/utils";
 
 interface ScheduleCalendarProps {
   visits: Visit[];
@@ -47,7 +47,7 @@ const ScheduleCalendar: React.FC<ScheduleCalendarProps> = ({
         <h3 className="text-foreground font-display font-semibold text-base tracking-tight">
           Visit Calendar
         </h3>
-        <p className="text-xs text-muted-foreground mt-1">
+        <p className="text-xs text-muted-foreground">
           Blue dots indicate scheduled visits
         </p>
       </div>

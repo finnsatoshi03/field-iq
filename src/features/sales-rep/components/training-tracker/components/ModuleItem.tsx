@@ -1,14 +1,14 @@
-import React from "react";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
+import React from "react";
 import type { TrainingModule } from "../constants";
 import {
-  getStatusBadgeColor,
-  getDifficultyBadgeColor,
   formatCategoryName,
-  formatStatusName,
-  formatDuration,
   formatDateRelative,
+  formatDuration,
+  formatStatusName,
+  getDifficultyBadgeColor,
+  getStatusBadgeColor,
   isModuleOverdue,
 } from "../utils";
 
@@ -24,7 +24,7 @@ const ModuleItem: React.FC<ModuleItemProps> = ({ module }) => {
       <div className="flex items-start gap-3">
         <div className="flex-shrink-0 mt-0.5 text-lg">{module.badgeIcon}</div>
         <div className="flex-1 min-w-0">
-          <div className="flex items-start justify-between gap-2">
+          <div className="flex items-start flex-wrap justify-between gap-2">
             <div className="flex-1">
               <div className="flex gap-2 mb-1">
                 <h4 className="font-display font-medium text-sm tracking-tight">
@@ -49,7 +49,7 @@ const ModuleItem: React.FC<ModuleItemProps> = ({ module }) => {
                   variant="outline"
                   className={cn(
                     "text-[10px] px-1.5 py-0",
-                    getDifficultyBadgeColor(module.difficulty)
+                    getDifficultyBadgeColor(module.difficulty),
                   )}
                 >
                   {formatCategoryName(module.difficulty)}
@@ -80,11 +80,11 @@ const ModuleItem: React.FC<ModuleItemProps> = ({ module }) => {
                 </div>
               )}
             </div>
-            <div className="text-right flex-shrink-0">
+            <div className="flex flex-col sm:items-end flex-shrink-0">
               <Badge
                 className={cn(
                   "text-[10px] px-2 h-fit py-0 rounded-sm mb-1",
-                  getStatusBadgeColor(module.status)
+                  getStatusBadgeColor(module.status),
                 )}
               >
                 {formatStatusName(module.status)}
@@ -100,7 +100,7 @@ const ModuleItem: React.FC<ModuleItemProps> = ({ module }) => {
                     "text-xs",
                     isOverdue
                       ? "text-red-600 dark:text-red-400"
-                      : "text-muted-foreground"
+                      : "text-muted-foreground",
                   )}
                 >
                   Due: {formatDateRelative(module.dueDate)}

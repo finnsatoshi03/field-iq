@@ -20,7 +20,6 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { Plus, Maximize2, HelpCircle, Eye } from "lucide-react";
-import { cn } from "@/lib/utils";
 import {
   ViewToggle,
   FilterControls,
@@ -114,7 +113,7 @@ const FaqManager = () => {
       setFaqData((prev) => [...prev, faq]);
     } else {
       setFaqData((prev) =>
-        prev.map((item) => (item.id === faq.id ? faq : item))
+        prev.map((item) => (item.id === faq.id ? faq : item)),
       );
     }
     setEditDialogOpen(false);
@@ -249,7 +248,7 @@ const FaqManager = () => {
 
           {/* Mini Chat Previews */}
           <div className="space-y-3">
-            {recentFaqs.map((faq, index) => (
+            {recentFaqs.map((faq) => (
               <div
                 key={faq.id}
                 className="bg-white rounded-lg p-3 border border-blue-100 shadow-sm"
@@ -311,7 +310,7 @@ const FaqManager = () => {
               <Maximize2 className="h-4 w-4" />
             </Button>
           </DialogTrigger>
-          <DialogContent className="max-w-[95vw] sm:max-w-[90vw] lg:max-w-4xl xl:max-w-6xl max-h-[90vh] overflow-y-auto">
+          <DialogContent className="max-w-[95vw] sm:max-w-[90vw] flex flex-col lg:max-w-4xl xl:max-w-6xl max-h-[90vh] overflow-y-auto">
             <DialogHeader className="gap-0 space-y-0">
               <DialogTitle className="font-semibold font-display text-lg">
                 FAQ Management Analytics
@@ -321,7 +320,7 @@ const FaqManager = () => {
               </DialogDescription>
             </DialogHeader>
 
-            <div className="space-y-4">
+            <div className="space-y-4 flex-1 flex flex-col min-h-0">
               {/* Filter Controls */}
               <div className="-mx-6 px-6 py-4 bg-accent">
                 <FilterControls
@@ -337,7 +336,7 @@ const FaqManager = () => {
               />
 
               {/* Current View */}
-              <div className="space-y-2">
+              <div className="space-y-2 flex-1 min-h-0 overflow-y-auto">
                 {/* Title */}
                 <div className="flex items-center justify-between">
                   <h4 className="font-medium font-display">

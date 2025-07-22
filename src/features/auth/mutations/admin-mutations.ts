@@ -1,12 +1,12 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 
+import { useUser } from "@/hooks";
 import {
   adminService,
   type AdminUser,
   type GenerateEmailLinkParams,
 } from "@/services/admin-service";
-import { useUser } from "@/hooks";
 
 // Query keys
 export const adminQueryKeys = {
@@ -16,18 +16,41 @@ export const adminQueryKeys = {
 
 // Get users query
 export const useGetUsers = () => {
-  const { isDev } = useUser();
+  const { isDev, isAdmin, isSalesRep } = useUser();
 
   return useQuery({
     queryKey: adminQueryKeys.users,
     queryFn: () => {
-      if (!isDev) {
+      if (!isDev && !isAdmin && !isSalesRep) {
         throw new Error("Access denied. Dev role required.");
+      }
+      if (isAdmin) {
+        return adminService
+          .getUsers()
+          .then((users) =>
+            users.filter(
+              (user) =>
+                user.user_metadata.role !== "admin" &&
+                user.user_metadata.role !== "dev",
+            ),
+          );
+      }
+      if (isSalesRep) {
+        return adminService
+          .getUsers()
+          .then((users) =>
+            users.filter(
+              (user) =>
+                user.user_metadata.role !== "sales_rep" &&
+                user.user_metadata.role !== "admin" &&
+                user.user_metadata.role !== "dev",
+            ),
+          );
       }
       return adminService.getUsers();
     },
     staleTime: 1000 * 60 * 5, // 5 minutes
-    enabled: isDev, // Only enable query if user has dev role
+    enabled: isDev || isAdmin || isSalesRep, // Only enable query if user has dev role
   });
 };
 
@@ -43,7 +66,7 @@ export const useGetUser = (userId: string) => {
 // Create user mutation
 export const useCreateUser = () => {
   const queryClient = useQueryClient();
-  const { isDev } = useUser();
+  const { isDev, isAdmin, isSalesRep } = useUser();
 
   return useMutation({
     mutationFn: (params: {
@@ -52,7 +75,7 @@ export const useCreateUser = () => {
       user_metadata?: Record<string, any>;
       email_confirm?: boolean;
     }) => {
-      if (!isDev) {
+      if (!isDev && !isAdmin && !isSalesRep) {
         throw new Error("Access denied. Dev role required.");
       }
       return adminService.createUser(params);
@@ -60,7 +83,7 @@ export const useCreateUser = () => {
     onSuccess: (newUser) => {
       // Update users cache
       queryClient.setQueryData<AdminUser[]>(adminQueryKeys.users, (old) =>
-        old ? [...old, newUser] : [newUser]
+        old ? [...old, newUser] : [newUser],
       );
 
       toast.success(`User ${newUser.email} created successfully`);
@@ -74,11 +97,11 @@ export const useCreateUser = () => {
 // Delete user mutation
 export const useDeleteUser = () => {
   const queryClient = useQueryClient();
-  const { isDev } = useUser();
+  const { isDev, isAdmin, isSalesRep } = useUser();
 
   return useMutation({
     mutationFn: (userId: string) => {
-      if (!isDev) {
+      if (!isDev && !isAdmin && !isSalesRep) {
         throw new Error("Access denied. Dev role required.");
       }
       return adminService.deleteUser(userId);
@@ -86,7 +109,7 @@ export const useDeleteUser = () => {
     onSuccess: (_, userId) => {
       // Remove user from cache
       queryClient.setQueryData<AdminUser[]>(adminQueryKeys.users, (old) =>
-        old ? old.filter((user) => user.id !== userId) : []
+        old ? old.filter((user) => user.id !== userId) : [],
       );
 
       toast.success("User deleted successfully");
@@ -100,7 +123,7 @@ export const useDeleteUser = () => {
 // Update user mutation
 export const useUpdateUser = () => {
   const queryClient = useQueryClient();
-  const { isDev } = useUser();
+  const { isDev, isAdmin, isSalesRep } = useUser();
 
   return useMutation({
     mutationFn: ({
@@ -114,7 +137,7 @@ export const useUpdateUser = () => {
         app_metadata?: Record<string, any>;
       };
     }) => {
-      if (!isDev) {
+      if (!isDev && !isAdmin && !isSalesRep) {
         throw new Error("Access denied. Dev role required.");
       }
       return adminService.updateUser(userId, updates);
@@ -122,7 +145,7 @@ export const useUpdateUser = () => {
     onSuccess: (updatedUser, { userId }) => {
       // Update user in cache
       queryClient.setQueryData<AdminUser[]>(adminQueryKeys.users, (old) =>
-        old ? old.map((user) => (user.id === userId ? updatedUser : user)) : []
+        old ? old.map((user) => (user.id === userId ? updatedUser : user)) : [],
       );
 
       // Update individual user cache
@@ -138,11 +161,11 @@ export const useUpdateUser = () => {
 
 // Generate email link mutation
 export const useGenerateEmailLink = () => {
-  const { isDev } = useUser();
+  const { isDev, isAdmin, isSalesRep } = useUser();
 
   return useMutation({
     mutationFn: (params: GenerateEmailLinkParams) => {
-      if (!isDev) {
+      if (!isDev && !isAdmin && !isSalesRep) {
         throw new Error("Access denied. Dev role required.");
       }
       return adminService.generateEmailLink(params);

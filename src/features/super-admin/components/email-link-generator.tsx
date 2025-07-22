@@ -1,7 +1,15 @@
-import { useState } from "react";
 import { Mail, Send } from "lucide-react";
+import { useState } from "react";
+import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import {
@@ -11,20 +19,16 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
 
-import { useGenerateEmailLink } from "@/features/auth/mutations/admin-mutations";
+import {
+  useCreateUser,
+  useGenerateEmailLink,
+} from "@/features/auth/mutations/admin-mutations";
+import type { UserRole } from "@/lib/types";
 import type {
   EmailLinkType,
   GenerateEmailLinkParams,
 } from "@/services/admin-service";
-import type { UserRole } from "@/lib/types";
 
 const EMAIL_LINK_TYPES = [
   {
@@ -113,6 +117,7 @@ export const EmailLinkGenerator = ({
   const [selectedRole, setSelectedRole] = useState<UserRole>("farmer");
 
   const generateEmailLinkMutation = useGenerateEmailLink();
+  const createUserMutation = useCreateUser();
   const selectedType = EMAIL_LINK_TYPES.find((type) => type.value === linkType);
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -120,6 +125,27 @@ export const EmailLinkGenerator = ({
 
     if (!email) return;
 
+    // For signup, use createUser mutation
+    if (linkType === "signup") {
+      if (!password) {
+        toast.error("Password is required for signup");
+        return;
+      }
+
+      const userParams = {
+        email,
+        password,
+        user_metadata: selectedType?.supportsRole
+          ? { role: selectedRole }
+          : undefined,
+        email_confirm: true,
+      };
+
+      createUserMutation.mutate(userParams);
+      return;
+    }
+
+    // For other link types, use generateEmailLink mutation
     const params: GenerateEmailLinkParams = {
       type: linkType,
       email,
@@ -156,6 +182,10 @@ export const EmailLinkGenerator = ({
     setLinkType("invite");
     setSelectedRole("farmer");
   };
+
+  // Check if any mutation is pending
+  const isPending =
+    generateEmailLinkMutation.isPending || createUserMutation.isPending;
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -282,13 +312,17 @@ export const EmailLinkGenerator = ({
           <div className="flex gap-2">
             <Button
               type="submit"
-              disabled={generateEmailLinkMutation.isPending || !email}
+              disabled={isPending || !email}
               className="flex-1"
             >
               <Send className="mr-2 h-4 w-4" />
-              {generateEmailLinkMutation.isPending
-                ? "Generating..."
-                : "Generate Link"}
+              {isPending
+                ? linkType === "signup"
+                  ? "Creating User..."
+                  : "Generating..."
+                : linkType === "signup"
+                  ? "Create User"
+                  : "Generate Link"}
             </Button>
             <Button type="button" variant="outline" onClick={handleReset}>
               Reset

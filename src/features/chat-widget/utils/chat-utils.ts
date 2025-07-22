@@ -1,4 +1,8 @@
-import { type ChatMode, REPORT_OPTIONS } from "../const";
+import {
+  type ChatMode,
+  REPORT_OPTIONS,
+  SUGGESTED_CHAT_TEMPLATES,
+} from "../const";
 
 export const getInitialMessage = (
   type: string,
@@ -6,7 +10,7 @@ export const getInitialMessage = (
   reportContext?: {
     reportType: keyof typeof REPORT_OPTIONS;
     reportSubType: string;
-  }
+  },
 ): string => {
   // Handle report mode with context
   if (chatMode === "report" && reportContext) {
@@ -29,6 +33,81 @@ export const getInitialMessage = (
       return "I'd be happy to help with your feed-related questions! What would you like to know about chicken feed?";
     default:
       return "Hello! How can I assist you today?";
+  }
+};
+
+// Placeholder function for API-based suggested chats
+export const getAPISuggestedChats = async (
+  conversationContext: string,
+  reportType: string,
+  reportSubType: string,
+): Promise<string[]> => {
+  // This is a placeholder for future API implementation
+  // In the future, this would call an AI service to generate contextual suggestions
+
+  try {
+    // Simulate API call delay
+    await new Promise((resolve) => setTimeout(resolve, 500));
+
+    // For now, return template suggestions based on context
+    const templates = [];
+
+    if (reportType === "report-sales") {
+      if (reportSubType === "daily-sales" || reportSubType === "weekly-sales") {
+        templates.push(...SUGGESTED_CHAT_TEMPLATES.sales_performance);
+      }
+      if (reportSubType === "client-visit") {
+        templates.push(...SUGGESTED_CHAT_TEMPLATES.client_relationship);
+      }
+      if (reportSubType === "territory-update") {
+        templates.push(...SUGGESTED_CHAT_TEMPLATES.territory_management);
+      }
+    }
+
+    if (reportType === "report-issue-sales") {
+      if (reportSubType === "product-or-field-issues") {
+        templates.push(...SUGGESTED_CHAT_TEMPLATES.product_knowledge);
+      }
+      if (reportSubType === "dealer-problems") {
+        templates.push(...SUGGESTED_CHAT_TEMPLATES.client_relationship);
+      }
+    }
+
+    // Farmer-specific templates
+    if (reportType === "report-issue") {
+      if (reportSubType === "health-issue") {
+        templates.push(...SUGGESTED_CHAT_TEMPLATES.flock_health);
+      }
+      if (reportSubType === "feed-issue") {
+        templates.push(...SUGGESTED_CHAT_TEMPLATES.feed_management);
+      }
+      if (reportSubType === "equipment-issue") {
+        templates.push(...SUGGESTED_CHAT_TEMPLATES.equipment_maintenance);
+      }
+      if (reportSubType === "other-issue") {
+        templates.push(...SUGGESTED_CHAT_TEMPLATES.environmental_monitoring);
+      }
+    }
+
+    if (reportType === "log-performance") {
+      if (
+        reportSubType === "egg-production" ||
+        reportSubType === "feed-consumption" ||
+        reportSubType === "flock-mortality" ||
+        reportSubType === "growth-metrics"
+      ) {
+        templates.push(...SUGGESTED_CHAT_TEMPLATES.performance_tracking);
+      }
+      if (reportSubType === "other-performance") {
+        templates.push(...SUGGESTED_CHAT_TEMPLATES.environmental_monitoring);
+      }
+    }
+
+    // Return a subset of templates (simulating AI selection)
+    return templates.slice(0, 3);
+  } catch (error) {
+    console.error("Error fetching API suggested chats:", error);
+    return [];
   }
 };
 

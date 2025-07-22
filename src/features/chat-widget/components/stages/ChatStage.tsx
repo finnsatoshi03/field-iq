@@ -1,12 +1,14 @@
-import { useState, useRef, useEffect } from "react";
+import { useUser } from "@/hooks/use-user";
+import { AnimatePresence, motion } from "framer-motion";
 import { Send } from "lucide-react";
-import { motion, AnimatePresence } from "framer-motion";
-import { ChatBubble } from "../ChatBubble";
-import { TypingIndicator } from "../TypingIndicator";
-import { getInitialMessage } from "../../utils/chat-utils";
-import { useChatMessages } from "../../hooks/use-chat-messages";
-import { QuickChatSelector } from "../QuickChatSelector";
+import { useEffect, useRef, useState } from "react";
 import { CHAT_MODES, type ChatMode, REPORT_OPTIONS } from "../../const";
+import { useChatMessages } from "../../hooks/use-chat-messages";
+import { getInitialMessage } from "../../utils/chat-utils";
+import { ChatBubble } from "../ChatBubble";
+import { QuickChatSelector } from "../QuickChatSelector";
+import { SuggestedChats } from "../SuggestedChats";
+import { TypingIndicator } from "../TypingIndicator";
 
 interface ChatStageProps {
   chatType: string;
@@ -24,10 +26,12 @@ export const ChatStage = ({
   reportContext,
   intent,
 }: ChatStageProps) => {
+  const { user } = useUser();
   const { messages, isTyping, addMessage, handleFeedback, sendAIResponse } =
     useChatMessages(getInitialMessage(chatType, chatMode, reportContext));
 
   const [inputMessage, setInputMessage] = useState("");
+  const [showTemplates, setShowTemplates] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
@@ -48,6 +52,17 @@ export const ChatStage = ({
       textareaRef.current.style.height = `${textareaRef.current.scrollHeight}px`;
     }
   }, [inputMessage, chatConfig.hasInput]);
+
+  // Show template suggestions after AI responds (for sales reps)
+  useEffect(() => {
+    if (user?.role === "sales_rep" && reportContext && messages.length > 1) {
+      // Show templates after the first AI response
+      const hasAIResponse = messages.some((msg) => !msg.isUser && msg.id > 1);
+      if (hasAIResponse) {
+        setShowTemplates(true);
+      }
+    }
+  }, [messages, user?.role, reportContext]);
 
   const handleSendMessage = () => {
     if (!inputMessage.trim()) return;
@@ -81,12 +96,34 @@ export const ChatStage = ({
     // sendAIResponse(`Quick selection: ${optionId} - ${optionLabel}`);
   };
 
+  const handleSuggestedChatSelect = (suggestion: string) => {
+    // Add user message from suggestion
+    addMessage({
+      id: Date.now(),
+      message: suggestion,
+      isUser: true,
+      timestamp: new Date(),
+      feedback: null,
+    });
+
+    // Send AI response based on suggestion
+    sendAIResponse(suggestion);
+  };
+
   const handleKeyPress = (e: React.KeyboardEvent) => {
     if (e.key === "Enter" && !e.shiftKey) {
       e.preventDefault();
       handleSendMessage();
     }
   };
+
+  // Check if we should show suggested chats (sales rep with report context OR farmer with specific report types)
+  const shouldShowSuggestedChats =
+    reportContext &&
+    (chatType === "report-sales" ||
+      chatType === "report-issue-sales" ||
+      chatType === "report-issue" ||
+      chatType === "log-performance");
 
   return (
     <div className="flex-1 h-full min-h-0 rounded-b-lg flex flex-col bg-white">
@@ -109,6 +146,19 @@ export const ChatStage = ({
           <div ref={messagesEndRef} />
         </div>
       </div>
+
+      {/* Suggested Chats for Sales Representatives */}
+      {shouldShowSuggestedChats && !isTyping && (
+        <div className="px-4 py-3 border-t border-gray-100 bg-gray-50/30">
+          <SuggestedChats
+            reportType={reportContext.reportType}
+            reportSubType={reportContext.reportSubType}
+            onSelect={handleSuggestedChatSelect}
+            disabled={isTyping}
+            showTemplates={showTemplates}
+          />
+        </div>
+      )}
 
       {/* Input Area - Different based on chat mode */}
       <div className="border-t border-gray-100 rounded-b-lg p-4 bg-gray-50/50">

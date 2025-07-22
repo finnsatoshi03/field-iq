@@ -1,16 +1,16 @@
 import { RefreshCw } from "lucide-react";
 
+import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
 import { Outlet, createRootRoute } from "@tanstack/react-router";
 import { TanStackRouterDevtools } from "@tanstack/react-router-devtools";
-import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
 
+import { useAuthSync } from "@/hooks/use-auth-sync";
 import { DEV_MODE } from "@/lib/config";
 import { useIsMobile } from "@/lib/hooks/useIsMobile";
-import { useAuthSync } from "@/hooks/use-auth-sync";
 
 import { Toaster } from "@/components/ui/sonner";
 import { ChatWidget } from "../features/chat-widget/ChatWidget";
-import { Error, NotFound, ComingSoon } from "../features/error";
+import { Error, NotFound } from "../features/error";
 
 const RootComponent = () => {
   const isMobile = useIsMobile();
@@ -27,7 +27,7 @@ const RootComponent = () => {
       <div className="h-screen bg-background">
         <Outlet />
         <ChatWidget />
-        <Toaster />
+        <Toaster richColors />
       </div>
       <TanStackRouterDevtools />
       <ReactQueryDevtools initialIsOpen={false} buttonPosition="bottom-left" />

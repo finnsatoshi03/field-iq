@@ -1,11 +1,24 @@
-import { AlertTriangle } from "lucide-react";
+import { AlertTriangle, FileText, Skull } from "lucide-react";
 import { type HealthIssue } from "../constants";
-import { getIssueTypeIcon, getSeverityColor, formatDate } from "../utils";
+import { formatDate, getSeverityColor } from "../utils";
 
 interface IssueListProps {
   issues: HealthIssue[];
   maxItems?: number;
 }
+
+const getIssueTypeIcon = (type: string) => {
+  switch (type) {
+    case "sick":
+      return <AlertTriangle className="size-4 text-orange-500" />;
+    case "mortality":
+      return <Skull className="size-4 text-red-500" />;
+    case "notes":
+      return <FileText className="size-4 text-blue-500" />;
+    default:
+      return <AlertTriangle className="size-4 text-gray-500" />;
+  }
+};
 
 export const IssueList = ({ issues, maxItems = 5 }: IssueListProps) => {
   const displayIssues = issues.slice(0, maxItems);
@@ -15,13 +28,15 @@ export const IssueList = ({ issues, maxItems = 5 }: IssueListProps) => {
       {displayIssues.map((issue) => (
         <div
           key={issue.id}
-          className="flex items-center justify-between p-3 bg-muted/20 rounded-lg border"
+          className="flex justify-between p-3 rounded-md border-black/20 border"
         >
           <div className="flex items-center gap-3">
             <div className="text-lg">{getIssueTypeIcon(issue.type)}</div>
             <div>
-              <p className="font-medium text-sm">{issue.description}</p>
-              <p className="text-xs text-muted-foreground">
+              <p className="font-medium font-display text-sm">
+                {issue.description}
+              </p>
+              <p className="text-xs text-muted-foreground font-medium">
                 {formatDate(issue.date)} • Count: {issue.count}
               </p>
             </div>

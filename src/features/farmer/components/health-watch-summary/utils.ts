@@ -22,14 +22,14 @@ export const calculateHealthScore = (issues: HealthIssue[]): number => {
   const maxPossibleScore = totalIssues * 3 * 10; // Assuming max count of 10 per issue
   const healthScore = Math.max(
     0,
-    100 - (weightedScore / maxPossibleScore) * 100
+    100 - (weightedScore / maxPossibleScore) * 100,
   );
 
   return Math.round(healthScore);
 };
 
 export const calculateHealthSummary = (
-  issues: HealthIssue[]
+  issues: HealthIssue[],
 ): HealthSummary => {
   const sickCount = issues
     .filter((issue) => issue.type === "sick")
@@ -78,7 +78,7 @@ export const calculateHealthSummary = (
 };
 
 export const getHealthStatus = (
-  score: number
+  score: number,
 ): "excellent" | "good" | "warning" | "critical" => {
   if (score >= 90) return "excellent";
   if (score >= 75) return "good";
@@ -87,24 +87,24 @@ export const getHealthStatus = (
 };
 
 export const getHealthStatusColor = (
-  status: "excellent" | "good" | "warning" | "critical"
+  status: "excellent" | "good" | "warning" | "critical",
 ): string => {
   switch (status) {
     case "excellent":
-      return "border-green-200 bg-green-50/50";
+      return "border-green-500 bg-green-100";
     case "good":
-      return "border-blue-200 bg-blue-50/50";
+      return "border-blue-500 bg-blue-100";
     case "warning":
-      return "border-yellow-200 bg-yellow-50/50";
+      return "border-yellow-500 bg-yellow-100";
     case "critical":
-      return "border-red-200 bg-red-50/50";
+      return "border-red-500 bg-red-100";
     default:
-      return "border-gray-200 bg-gray-50/50";
+      return "border-gray-500 bg-gray-100";
   }
 };
 
 export const getSeverityColor = (
-  severity: "low" | "medium" | "high"
+  severity: "low" | "medium" | "high",
 ): string => {
   switch (severity) {
     case "low":
@@ -148,13 +148,13 @@ export const formatDate = (dateString: string): string => {
 
 export const filterIssuesByType = (
   issues: HealthIssue[],
-  type: IssueType
+  type: IssueType,
 ): HealthIssue[] => {
   return issues.filter((issue) => issue.type === type);
 };
 
 export const groupIssuesByDate = (
-  issues: HealthIssue[]
+  issues: HealthIssue[],
 ): Record<string, HealthIssue[]> => {
   return issues.reduce(
     (groups, issue) => {
@@ -165,6 +165,6 @@ export const groupIssuesByDate = (
       groups[date].push(issue);
       return groups;
     },
-    {} as Record<string, HealthIssue[]>
+    {} as Record<string, HealthIssue[]>,
   );
 };

@@ -1,39 +1,37 @@
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
+import { cn } from "@/lib/utils";
 import {
-  HelpCircle,
-  Eye,
   CheckCircle,
   Clock,
+  Eye,
   FileText,
+  HelpCircle,
   TrendingUp,
-  Users,
-  Star,
 } from "lucide-react";
 import {
-  PieChart,
-  Pie,
+  Bar,
+  BarChart,
+  CartesianGrid,
   Cell,
+  Pie,
+  PieChart,
   ResponsiveContainer,
   Tooltip,
-  BarChart,
-  Bar,
   XAxis,
   YAxis,
-  CartesianGrid,
 } from "recharts";
-import { cn } from "@/lib/utils";
 import type { FaqItem } from "../constants";
 import {
   calculateFaqMetrics,
-  getFaqsByCategory,
-  getTopViewedFaqs,
-  getRecentlyUpdatedFaqs,
-  formatNumber,
   formatDate,
+  formatNumber,
   getCategoryColor,
+  getFaqsByCategory,
+  getRecentlyUpdatedFaqs,
   getStatusColor,
+  getTopViewedFaqs,
   truncateText,
 } from "../utils";
 
@@ -92,7 +90,7 @@ const FaqStats = ({ faqs, className }: FaqStatsProps) => {
       <CardContent>
         <div className="text-2xl font-bold">{formatNumber(Number(value))}</div>
         {description && (
-          <p className="text-xs text-muted-foreground mt-1">{description}</p>
+          <p className="text-xs text-muted-foreground">{description}</p>
         )}
       </CardContent>
     </Card>
@@ -282,7 +280,7 @@ const FaqStats = ({ faqs, className }: FaqStatsProps) => {
                         variant="outline"
                         className={cn(
                           "text-xs",
-                          getCategoryColor(faq.category)
+                          getCategoryColor(faq.category),
                         )}
                       >
                         {faq.category}
