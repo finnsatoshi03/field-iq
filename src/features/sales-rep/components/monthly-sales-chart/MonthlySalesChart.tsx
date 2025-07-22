@@ -30,43 +30,36 @@ const MonthlySalesChart: React.FC = () => {
     calculateAverageVolumeInfluenced(mockMonthlySalesData);
   const avgClosedSales = calculateAverageClosedSales(mockMonthlySalesData);
 
-  return (
-    <div className="bg-card space-y-6 rounded-lg border border-border p-4">
-      <div>
-        <h3 className="text-foreground font-display font-semibold text-base tracking-tight mb-4">
-          My Monthly Sales Influence
-        </h3>
-
-        {/* Summary moved to top */}
-        <div className="flex items-center gap-8">
-          <div className="flex items-center gap-3">
-            <div className="flex flex-col">
-              <div className="flex items-center gap-2">
-                <div className="w-2 h-2 rounded-full bg-chart-1" />
-                <span className="text-xs font-semibold text-muted-foreground font-sans">
-                  Target Sales
-                </span>
-              </div>
-              <span className="text-2xl font-bold text-foreground font-sans">
-                ₱{totalVolumeInfluenced.toLocaleString()}
-              </span>
-            </div>
+  const summaryContent = (
+    <div className="flex items-center gap-8">
+      <div className="flex items-center gap-3">
+        <div className="flex flex-col">
+          <div className="flex items-center gap-2">
+            <div className="w-2 h-2 rounded-full bg-chart-1" />
+            <span className="text-xs font-semibold text-muted-foreground font-sans">
+              Target Sales
+            </span>
           </div>
-          <div className="flex items-center gap-3">
-            <div className="flex flex-col">
-              <div className="flex items-center gap-2">
-                <div className="w-2 h-2 rounded-full bg-chart-2" />
-                <span className="text-xs font-semibold text-muted-foreground font-sans">
-                  Closed Sales
-                </span>
-              </div>
-              <span className="text-2xl font-bold text-foreground font-sans">
-                ₱{totalClosedSales.toLocaleString()}
-              </span>
-            </div>
-          </div>
+          <span className="text-2xl font-bold text-foreground font-sans">
+            ₱{totalVolumeInfluenced.toLocaleString()}
+          </span>
         </div>
       </div>
+      <div className="flex items-center gap-3">
+        <div className="flex flex-col">
+          <div className="flex items-center gap-2">
+            <div className="w-2 h-2 rounded-full bg-chart-2" />
+            <span className="text-xs font-semibold text-muted-foreground font-sans">
+              Closed Sales
+            </span>
+          </div>
+          <span className="text-2xl font-bold text-foreground font-sans">
+            ₱{totalClosedSales.toLocaleString()}
+          </span>
+        </div>
+      </div>
+    </div>
+  );
 
   // Full chart content
   const chartContent = (
