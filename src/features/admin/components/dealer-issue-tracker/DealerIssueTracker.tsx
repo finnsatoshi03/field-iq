@@ -84,6 +84,7 @@ const DealerIssueTracker: React.FC<DealerIssueTrackerProps> = ({
         return (
           <DealerMap
             dealers={filteredDealers}
+            selectedDealer={selectedDealer}
             onDealerSelect={handleDealerSelect}
           />
         );

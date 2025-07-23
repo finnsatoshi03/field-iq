@@ -1,6 +1,6 @@
-import { Calendar } from "@/components/ui/calendar";
-import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Calendar } from "@/components/ui/calendar";
 import {
   Popover,
   PopoverContent,
@@ -13,16 +13,16 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { CalendarIcon, X } from "lucide-react";
-import { format } from "date-fns";
 import { cn } from "@/lib/utils";
-import type { FilterOptions } from "../utils";
+import { format } from "date-fns";
+import { CalendarIcon, X } from "lucide-react";
 import {
   FEED_CATEGORIES,
   FORMULATION_TYPES,
-  TARGET_SPECIES,
   MOCK_FEED_PRODUCTS,
+  TARGET_SPECIES,
 } from "../constants";
+import type { FilterOptions } from "../utils";
 
 interface FilterControlsProps {
   filters: FilterOptions;
@@ -39,6 +39,7 @@ const FilterControls: React.FC<FilterControlsProps> = ({
   provinces,
   className = "",
 }) => {
+  console.log(provinces);
   const handleFilterChange = (key: keyof FilterOptions, value: any) => {
     onFiltersChange({
       ...filters,
@@ -238,7 +239,7 @@ const FilterControls: React.FC<FilterControlsProps> = ({
             onValueChange={(value) =>
               handleFilterChange(
                 "verified",
-                value === "all" ? "all" : value === "true"
+                value === "all" ? "all" : value === "true",
               )
             }
           >
@@ -266,7 +267,7 @@ const FilterControls: React.FC<FilterControlsProps> = ({
                   "text-xs justify-start w-fit text-left font-normal",
                   !filters.dateRange.start &&
                     !filters.dateRange.end &&
-                    "text-muted-foreground"
+                    "text-muted-foreground",
                 )}
               >
                 <CalendarIcon className="mr-1 h-3 w-3" />
@@ -289,7 +290,7 @@ const FilterControls: React.FC<FilterControlsProps> = ({
                       onSelect={(date) =>
                         handleDateRangeChange(
                           date || null,
-                          filters.dateRange.end
+                          filters.dateRange.end,
                         )
                       }
                       className="rounded-md border"
@@ -305,7 +306,7 @@ const FilterControls: React.FC<FilterControlsProps> = ({
                       onSelect={(date) =>
                         handleDateRangeChange(
                           filters.dateRange.start,
-                          date || null
+                          date || null,
                         )
                       }
                       className="rounded-md border"

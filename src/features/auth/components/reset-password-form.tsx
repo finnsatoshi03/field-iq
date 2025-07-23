@@ -1,8 +1,8 @@
 import { zodResolver } from "@hookform/resolvers/zod";
+import { CircleCheck, Eye, EyeOff, XCircle } from "lucide-react";
+import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
-import { useState } from "react";
-import { CircleCheck, Eye, EyeOff, XCircle } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -26,7 +26,7 @@ const formSchema = z
       .regex(/[0-9]/, "Password must contain at least one number")
       .regex(
         /[!@#$%^&*]/,
-        "Password must contain at least one special character"
+        "Password must contain at least one special character",
       ),
     confirmPassword: z.string(),
   })
@@ -73,7 +73,7 @@ export const ResetPasswordForm = ({ token }: ResetPasswordFormProps) => {
     },
   });
 
-  const passwordValue = form.watch("password");
+  const passwordValue = (form.watch("password") ?? "") as string;
 
   const handleSubmit = (values: z.infer<typeof formSchema>) => {
     console.log({ ...values, token });

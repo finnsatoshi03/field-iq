@@ -1,10 +1,4 @@
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
 import {
@@ -12,12 +6,18 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
-import { Badge } from "@/components/ui/badge";
-import { CalendarIcon, Filter, X } from "lucide-react";
-import { format } from "date-fns";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { cn } from "@/lib/utils";
+import { format } from "date-fns";
+import { CalendarIcon, X } from "lucide-react";
+import { MOCK_SALES_REPS, PHILIPPINE_REGIONS } from "../constants";
 import type { FilterOptions } from "../utils";
-import { PHILIPPINE_REGIONS, MOCK_SALES_REPS } from "../constants";
 
 interface FilterControlsProps {
   filters: FilterOptions;
@@ -181,7 +181,7 @@ const FilterControls: React.FC<FilterControlsProps> = ({
             onValueChange={(value) =>
               handleFilterChange(
                 "timePeriod",
-                value === "all" ? undefined : value
+                value === "all" ? undefined : value,
               )
             }
           >
@@ -209,7 +209,7 @@ const FilterControls: React.FC<FilterControlsProps> = ({
                 variant="outline"
                 className={cn(
                   "text-xs justify-start w-fit text-left font-normal",
-                  !filters.dateRange && "text-muted-foreground"
+                  !filters.dateRange && "text-muted-foreground",
                 )}
               >
                 <CalendarIcon className="mr-1 h-3 w-3" />

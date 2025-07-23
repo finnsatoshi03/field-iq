@@ -6,15 +6,12 @@ import { TanStackRouterDevtools } from "@tanstack/react-router-devtools";
 
 import { useAuthSync } from "@/hooks/use-auth-sync";
 import { DEV_MODE } from "@/lib/config";
-import { useIsMobile } from "@/lib/hooks/useIsMobile";
 
 import { Toaster } from "@/components/ui/sonner";
 import { ChatWidget } from "../features/chat-widget/ChatWidget";
 import { Error, NotFound } from "../features/error";
 
 const RootComponent = () => {
-  const isMobile = useIsMobile();
-
   // Sync auth state with Zustand store and React Query
   useAuthSync();
 

@@ -1,22 +1,21 @@
 import {
   format,
-  parseISO,
-  subDays,
-  subWeeks,
-  subMonths,
   isAfter,
   isBefore,
   isWithinInterval,
+  parseISO,
+  subMonths,
+  subWeeks,
 } from "date-fns";
 import type {
-  FarmRegistration,
-  SalesRep,
-  RegistrationMetrics,
-  TimeSeriesData,
-  RegistrationType,
-  RegistrationStatus,
-  TimePeriod,
   ChartType,
+  FarmRegistration,
+  RegistrationMetrics,
+  RegistrationStatus,
+  RegistrationType,
+  SalesRep,
+  TimePeriod,
+  TimeSeriesData,
 } from "./constants";
 import {
   MOCK_FARM_REGISTRATIONS,
@@ -38,7 +37,7 @@ export interface FilterOptions {
 
 export const getFilteredRegistrations = (
   registrations: FarmRegistration[] = MOCK_FARM_REGISTRATIONS,
-  filters: FilterOptions = {}
+  filters: FilterOptions = {},
 ): FarmRegistration[] => {
   return registrations.filter((registration) => {
     // Registration Type Filter
@@ -105,36 +104,36 @@ export const getFilteredRegistrations = (
 };
 
 export const calculateRegistrationMetrics = (
-  registrations: FarmRegistration[] = MOCK_FARM_REGISTRATIONS
+  registrations: FarmRegistration[] = MOCK_FARM_REGISTRATIONS,
 ): RegistrationMetrics => {
   const now = new Date();
   const oneWeekAgo = subWeeks(now, 1);
   const oneMonthAgo = subMonths(now, 1);
 
   const thisWeekRegistrations = registrations.filter((reg) =>
-    isAfter(parseISO(reg.registrationDate), oneWeekAgo)
+    isAfter(parseISO(reg.registrationDate), oneWeekAgo),
   );
 
   const thisMonthRegistrations = registrations.filter((reg) =>
-    isAfter(parseISO(reg.registrationDate), oneMonthAgo)
+    isAfter(parseISO(reg.registrationDate), oneMonthAgo),
   );
 
   const newAccounts = registrations.filter(
-    (reg) => reg.registrationType === "new"
+    (reg) => reg.registrationType === "new",
   ).length;
   const expansions = registrations.filter(
-    (reg) => reg.registrationType === "expansion"
+    (reg) => reg.registrationType === "expansion",
   ).length;
   const conversions = registrations.filter(
-    (reg) => reg.registrationType === "conversion"
+    (reg) => reg.registrationType === "conversion",
   ).length;
 
   const activeRegistrations = registrations.filter(
-    (reg) => reg.status === "active"
+    (reg) => reg.status === "active",
   );
   const totalFarmSize = activeRegistrations.reduce(
     (sum, reg) => sum + reg.farmSize,
-    0
+    0,
   );
   const averageFarmSize =
     activeRegistrations.length > 0
@@ -143,7 +142,7 @@ export const calculateRegistrationMetrics = (
 
   const totalRevenue = activeRegistrations.reduce(
     (sum, reg) => sum + reg.monthlyRevenue,
-    0
+    0,
   );
 
   // Calculate penetration rate (mock calculation based on total potential farms)
@@ -164,7 +163,7 @@ export const calculateRegistrationMetrics = (
 };
 
 export const getRegistrationsByRegion = (
-  registrations: FarmRegistration[] = MOCK_FARM_REGISTRATIONS
+  registrations: FarmRegistration[] = MOCK_FARM_REGISTRATIONS,
 ): Record<string, number> => {
   return registrations.reduce(
     (acc, registration) => {
@@ -172,13 +171,13 @@ export const getRegistrationsByRegion = (
       acc[region] = (acc[region] || 0) + 1;
       return acc;
     },
-    {} as Record<string, number>
+    {} as Record<string, number>,
   );
 };
 
 export const getRegistrationsBySalesRep = (
   registrations: FarmRegistration[] = MOCK_FARM_REGISTRATIONS,
-  salesReps: SalesRep[] = MOCK_SALES_REPS
+  salesReps: SalesRep[] = MOCK_SALES_REPS,
 ): SalesRep[] => {
   const registrationCounts = registrations.reduce(
     (acc, registration) => {
@@ -186,7 +185,7 @@ export const getRegistrationsBySalesRep = (
       acc[repId] = (acc[repId] || 0) + 1;
       return acc;
     },
-    {} as Record<string, number>
+    {} as Record<string, number>,
   );
 
   return salesReps.map((rep) => ({
@@ -198,9 +197,8 @@ export const getRegistrationsBySalesRep = (
 export const getChartData = (
   chartType: ChartType,
   timePeriod: TimePeriod = "month",
-  timeSeriesData: TimeSeriesData[] = MOCK_TIME_SERIES_DATA
+  timeSeriesData: TimeSeriesData[] = MOCK_TIME_SERIES_DATA,
 ): Array<{ date: string; value: number; formattedDate: string }> => {
-  const now = new Date();
   let filteredData = timeSeriesData;
 
   // Filter data based on time period
@@ -276,7 +274,7 @@ export const getRegistrationTypeColor = (type: RegistrationType): string => {
 };
 
 export const getRegistrationTypeBadgeVariant = (
-  type: RegistrationType
+  type: RegistrationType,
 ): "default" | "secondary" | "destructive" | "outline" => {
   const variants = {
     new: "default" as const,
@@ -297,7 +295,7 @@ export const getStatusColor = (status: RegistrationStatus): string => {
 
 export const getRegistrationTrend = (
   current: number,
-  previous: number
+  previous: number,
 ): { percentage: number; isPositive: boolean } => {
   if (previous === 0) {
     return { percentage: current > 0 ? 100 : 0, isPositive: current > 0 };
@@ -316,7 +314,7 @@ export const getMapMarkerSize = (registrationCount: number): number => {
 };
 
 export const getMapMarkerColor = (
-  registrationType: RegistrationType
+  registrationType: RegistrationType,
 ): string => {
   const colors = {
     new: "#22c55e", // green-500

@@ -1,5 +1,5 @@
-import { FAQ_STATUS, MOCK_FAQ_DATA } from "./constants";
-import type { FaqItem, FaqCategory, FaqStatus, ViewMode } from "./constants";
+import type { FaqCategory, FaqItem, FaqStatus } from "./constants";
+import { FAQ_STATUS } from "./constants";
 
 export interface FilterOptions {
   search: string;
@@ -25,7 +25,7 @@ export const getDefaultFilters = (): FilterOptions => ({
 
 export const filterFaqItems = (
   items: FaqItem[],
-  filters: FilterOptions
+  filters: FilterOptions,
 ): FaqItem[] => {
   return items.filter((item) => {
     // Search filter
@@ -74,7 +74,7 @@ export const filterFaqItems = (
 export const sortFaqItems = (
   items: FaqItem[],
   sortBy: string,
-  sortOrder: "asc" | "desc" = "asc"
+  sortOrder: "asc" | "desc" = "asc",
 ): FaqItem[] => {
   return [...items].sort((a, b) => {
     let aValue: any;
@@ -119,20 +119,20 @@ export const sortFaqItems = (
 export const calculateFaqMetrics = (items: FaqItem[]) => {
   const totalFaqs = items.length;
   const activeFaqs = items.filter(
-    (item) => item.status === FAQ_STATUS.ACTIVE
+    (item) => item.status === FAQ_STATUS.ACTIVE,
   ).length;
   const draftFaqs = items.filter(
-    (item) => item.status === FAQ_STATUS.DRAFT
+    (item) => item.status === FAQ_STATUS.DRAFT,
   ).length;
   const inactiveFaqs = items.filter(
-    (item) => item.status === FAQ_STATUS.INACTIVE
+    (item) => item.status === FAQ_STATUS.INACTIVE,
   ).length;
   const totalViews = items.reduce((sum, item) => sum + item.views, 0);
   const avgViews = totalFaqs > 0 ? Math.round(totalViews / totalFaqs) : 0;
 
   const highPriorityFaqs = items.filter((item) => item.priority <= 3).length;
   const mediumPriorityFaqs = items.filter(
-    (item) => item.priority > 3 && item.priority <= 6
+    (item) => item.priority > 3 && item.priority <= 6,
   ).length;
   const lowPriorityFaqs = items.filter((item) => item.priority > 6).length;
 
@@ -155,7 +155,7 @@ export const getFaqsByCategory = (items: FaqItem[]) => {
       acc[item.category] = (acc[item.category] || 0) + 1;
       return acc;
     },
-    {} as Record<FaqCategory, number>
+    {} as Record<FaqCategory, number>,
   );
 
   return Object.entries(categoryCounts).map(([category, count]) => ({
@@ -173,7 +173,7 @@ export const getRecentlyUpdatedFaqs = (items: FaqItem[], limit: number = 5) => {
   return [...items]
     .sort(
       (a, b) =>
-        new Date(b.lastUpdated).getTime() - new Date(a.lastUpdated).getTime()
+        new Date(b.lastUpdated).getTime() - new Date(a.lastUpdated).getTime(),
     )
     .slice(0, limit);
 };

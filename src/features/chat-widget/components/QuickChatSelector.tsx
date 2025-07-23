@@ -38,7 +38,11 @@ export const QuickChatSelector = ({
   disabled = false,
 }: QuickChatSelectorProps) => {
   // Get quick chat options based on report context
-  const getQuickChatOptions = () => {
+  const getQuickChatOptions = (): Array<{
+    id: string;
+    label: string;
+    emoji: string;
+  }> => {
     if (!reportContext) return [];
 
     const options =

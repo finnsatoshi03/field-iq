@@ -1,12 +1,12 @@
-import { useEffect, useRef, useState } from "react";
-import { MapContainer, TileLayer, Marker, Popup, useMap } from "react-leaflet";
-import L from "leaflet";
-import type { DealerIssue } from "../constants";
-import { SEVERITY_COLORS } from "../constants";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import L from "leaflet";
 import { ChevronLeft, ChevronRight } from "lucide-react";
-import { getSeverityBadgeClass, getIssueTypeLabel, formatDate } from "../utils";
+import { useEffect, useRef, useState } from "react";
+import { MapContainer, Marker, Popup, TileLayer, useMap } from "react-leaflet";
+import type { DealerIssue } from "../constants";
+import { SEVERITY_COLORS } from "../constants";
+import { formatDate, getIssueTypeLabel, getSeverityBadgeClass } from "../utils";
 
 // Fix for default markers in react-leaflet
 delete (L.Icon.Default.prototype as any)._getIconUrl;
@@ -21,6 +21,7 @@ L.Icon.Default.mergeOptions({
 
 interface DealerMapProps {
   dealers: DealerIssue[];
+  selectedDealer?: DealerIssue;
   onDealerSelect?: (dealer: DealerIssue) => void;
   className?: string;
 }
@@ -83,14 +84,14 @@ const MapUpdater = ({
         {
           animate: true,
           duration: 0.5,
-        }
+        },
       );
     } else if (dealers.length > 0) {
       // Fit bounds if there are dealers but no specific focus
       const group = new L.FeatureGroup(
         dealers.map((dealer) =>
-          L.marker([dealer.location.lat, dealer.location.lng])
-        )
+          L.marker([dealer.location.lat, dealer.location.lng]),
+        ),
       );
       map.fitBounds(group.getBounds().pad(0.1));
     }
@@ -99,9 +100,22 @@ const MapUpdater = ({
   return null;
 };
 
-const DealerMap = ({ dealers, onDealerSelect, className }: DealerMapProps) => {
+const DealerMap = ({
+  dealers,
+  selectedDealer,
+  onDealerSelect,
+  className,
+}: DealerMapProps) => {
   const mapRef = useRef<L.Map>(null);
   const [currentDealerIndex, setCurrentDealerIndex] = useState<number>(-1);
+
+  // Sync selectedDealer prop with internal state
+  useEffect(() => {
+    if (selectedDealer) {
+      const index = dealers.findIndex((d) => d.id === selectedDealer.id);
+      setCurrentDealerIndex(index);
+    }
+  }, [selectedDealer, dealers]);
 
   const handleMarkerClick = (dealer: DealerIssue) => {
     onDealerSelect?.(dealer);
@@ -186,7 +200,7 @@ const DealerMap = ({ dealers, onDealerSelect, className }: DealerMapProps) => {
             position={[dealer.location.lat, dealer.location.lng]}
             icon={createCustomIcon(
               dealer.severity,
-              index === currentDealerIndex
+              index === currentDealerIndex,
             )}
             eventHandlers={{
               click: () => handleMarkerClick(dealer),

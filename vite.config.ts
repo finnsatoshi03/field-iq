@@ -1,8 +1,9 @@
-import { defineConfig } from "vitest/config";
-import viteReact from "@vitejs/plugin-react";
-import { TanStackRouterVite } from "@tanstack/router-plugin/vite";
-import { resolve } from "node:path";
 import tailwindcss from "@tailwindcss/vite";
+import viteReact from "@vitejs/plugin-react";
+import { resolve } from "node:path";
+import { defineConfig } from "vite";
+
+import { TanStackRouterVite } from "@tanstack/router-plugin/vite";
 
 // https://vitejs.dev/config/
 export default defineConfig({
@@ -11,6 +12,7 @@ export default defineConfig({
     viteReact(),
     tailwindcss(),
   ],
+  // @ts-ignore
   test: {
     globals: true,
     environment: "jsdom",

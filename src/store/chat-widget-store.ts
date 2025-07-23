@@ -45,7 +45,7 @@ const initialState: ChatWidgetState = {
   chatMode: "normal",
 };
 
-export const useChatWidgetStore = create<ChatWidgetStore>((set, get) => ({
+export const useChatWidgetStore = create<ChatWidgetStore>((set) => ({
   ...initialState,
 
   openChat: () => {

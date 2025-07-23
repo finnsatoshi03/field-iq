@@ -592,6 +592,7 @@ export const SUGGESTED_CHAT_TEMPLATES = {
 export const getChatModeForReportType = (
   reportType: keyof typeof REPORT_OPTIONS,
 ): ChatMode => {
+  console.log(reportType);
   return "report"; // All reports use report mode (has input, report-focused mood)
 };
 
