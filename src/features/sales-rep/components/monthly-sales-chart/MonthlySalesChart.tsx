@@ -1,5 +1,6 @@
 import ExpandableCard from "@/components/ui/expandable-card";
 import { useIsMobile } from "@/lib/hooks/useIsMobile";
+import { Loader2, TrendingUp } from "lucide-react";
 import React from "react";
 import {
   Bar,
@@ -12,23 +13,91 @@ import {
   YAxis,
 } from "recharts";
 import { CustomLabel } from "./components";
-import { mockMonthlySalesData } from "./constants";
+import { useMonthlySales } from "./hooks";
 import {
-  calculateAverageClosedSales,
   calculateAverageVolumeInfluenced,
   calculateTotalClosedSales,
   calculateTotalVolumeInfluenced,
 } from "./utils";
 
-const MonthlySalesChart: React.FC = () => {
+interface MonthlySalesChartProps {
+  userId: number;
+}
+
+const MonthlySalesChart: React.FC<MonthlySalesChartProps> = ({ userId }) => {
   const isMobile = useIsMobile();
 
+  const {
+    data: salesData,
+    isLoading,
+    error,
+    refetch,
+  } = useMonthlySales(userId);
+
+  // Show loading state if no data
+  if (isLoading) {
+    return (
+      <ExpandableCard
+        title="My Monthly Sales Influence"
+        summary={
+          <div className="flex items-center gap-2 text-muted-foreground">
+            <Loader2 className="h-4 w-4 animate-spin" />
+            <span className="text-sm">Loading sales data...</span>
+          </div>
+        }
+        className="sm:h-fit"
+      >
+        <div className="h-72 w-full flex items-center justify-center">
+          <div className="text-center text-muted-foreground">
+            <Loader2 className="h-8 w-8 animate-spin mx-auto mb-2" />
+            <p className="text-sm">Loading chart data...</p>
+          </div>
+        </div>
+      </ExpandableCard>
+    );
+  }
+
+  // Show error state
+  if (error) {
+    return (
+      <ExpandableCard
+        title="My Monthly Sales Influence"
+        summary={
+          <div className="flex items-center gap-2 text-muted-foreground">
+            <TrendingUp className="h-4 w-4" />
+            <span className="text-sm">Error loading data</span>
+          </div>
+        }
+        className="sm:h-fit"
+      >
+        <div className="h-72 w-full flex items-center justify-center">
+          <div className="text-center text-muted-foreground">
+            <p className="text-sm mb-2">
+              Failed to load sales data: {error.message}
+            </p>
+            <button
+              onClick={() => refetch()}
+              className="text-xs text-blue-600 hover:underline"
+            >
+              Try again
+            </button>
+          </div>
+        </div>
+      </ExpandableCard>
+    );
+  }
+
+  // Extract data from API response
+  const monthlySalesData = salesData?.data.monthly_sales || [];
+  const averageSales = salesData?.data.average_sales || 0;
+
+  // Calculate metrics
   const totalVolumeInfluenced =
-    calculateTotalVolumeInfluenced(mockMonthlySalesData);
-  const totalClosedSales = calculateTotalClosedSales(mockMonthlySalesData);
+    calculateTotalVolumeInfluenced(monthlySalesData);
+  const totalClosedSales = calculateTotalClosedSales(monthlySalesData);
   const avgVolumeInfluenced =
-    calculateAverageVolumeInfluenced(mockMonthlySalesData);
-  const avgClosedSales = calculateAverageClosedSales(mockMonthlySalesData);
+    calculateAverageVolumeInfluenced(monthlySalesData);
+  const avgClosedSales = averageSales; // Use API provided average
 
   // Summary content - only the key numbers
   const summaryContent = (
@@ -67,7 +136,7 @@ const MonthlySalesChart: React.FC = () => {
     <div className="h-72 w-full">
       <ResponsiveContainer width="100%" height="100%">
         <BarChart
-          data={mockMonthlySalesData}
+          data={monthlySalesData}
           margin={{
             top: 20,
             right: 10,
@@ -159,7 +228,7 @@ const MonthlySalesChart: React.FC = () => {
             radius={[3, 3, 0, 0]}
             maxBarSize={32}
           >
-            {mockMonthlySalesData.map((entry, index) => (
+            {monthlySalesData.map((entry, index) => (
               <Cell
                 key={`volume-${index}`}
                 fillOpacity={
@@ -175,7 +244,7 @@ const MonthlySalesChart: React.FC = () => {
             radius={[3, 3, 0, 0]}
             maxBarSize={32}
           >
-            {mockMonthlySalesData.map((entry, index) => (
+            {monthlySalesData.map((entry, index) => (
               <Cell
                 key={`sales-${index}`}
                 fillOpacity={entry.closedSales >= avgClosedSales ? 1 : 0.4}

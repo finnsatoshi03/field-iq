@@ -1,3 +1,4 @@
+import { useUserStore } from "@/store/user-store";
 import { createFileRoute } from "@tanstack/react-router";
 
 import {
@@ -13,6 +14,10 @@ export const Route = createFileRoute("/_authenticated/sales/")({
 });
 
 function SalesDashboard() {
+  const { user } = useUserStore();
+
+  const userId = 3;
+
   return (
     <div className="flex-1 flex flex-col min-h-0 h-full">
       <div className="mb-4">
@@ -21,6 +26,11 @@ function SalesDashboard() {
         </h1>
         <p className="text-muted-foreground font-sans text-sm">
           Monitor your sales performance and key metrics
+          {user && (
+            <span className="ml-2 text-xs bg-gray-100 px-2 py-1 rounded">
+              ID: {userId}
+            </span>
+          )}
         </p>
       </div>
 
@@ -28,7 +38,7 @@ function SalesDashboard() {
         <div className="flex flex-col md:grid md:grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
           <div className="lg:col-span-2 xl:col-span-2 h-fit gap-6 grid grid-cols-1 lg:grid-cols-2">
             <div className="lg:col-span-2 xl:col-span-2">
-              <MonthlySalesChart />
+              <MonthlySalesChart userId={userId} />
             </div>
             <div className="lg:col-span-2 xl:col-span-2">
               <VisitSchedule />

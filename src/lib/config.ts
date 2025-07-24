@@ -7,7 +7,11 @@ export const FIELD_IQ_API_CONFIG = {
   baseUrl: import.meta.env.VITE_FIELD_IQ_API_URL || "http://localhost:8000",
   endpoints: {
     farmerDashboard: "/ViewModels/farmer-dashboard",
-    // Add more endpoints as they become available
+
+    // Sales Rep API Endpoints
+    sales_rep: {
+      monthly_sales: "/salesrep/monthly-sales",
+    },
   },
 } as const;
 

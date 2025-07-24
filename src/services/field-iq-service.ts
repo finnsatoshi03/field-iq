@@ -1,6 +1,7 @@
 import { FIELD_IQ_API_CONFIG } from "@/lib/config";
 
 import type { FarmerDashboardData } from "@/features/farmer/types";
+import type { MonthlySalesResponse } from "@/features/sales-rep/types";
 
 // Types for the Field IQ API responses
 export interface FarmerDashboardViewModel extends FarmerDashboardData {
@@ -93,6 +94,27 @@ export const fieldIQService = {
 
     const response = await apiClient.get<FarmerDashboardViewModel>(
       `${FIELD_IQ_API_CONFIG.endpoints.farmerDashboard}/${farmerUserProfileId}`,
+    );
+
+    if (response.error) {
+      throw new Error(response.error);
+    }
+
+    if (!response.data) {
+      throw new Error("No data received from server");
+    }
+
+    return response.data;
+  },
+
+  // Sales Rep Monthly Sales
+  async getSalesRepMonthlySales(userId: number): Promise<MonthlySalesResponse> {
+    if (userId <= 0) {
+      throw new Error("Invalid user ID.");
+    }
+
+    const response = await apiClient.get<MonthlySalesResponse>(
+      `${FIELD_IQ_API_CONFIG.endpoints.sales_rep.monthly_sales}?user_id=${userId}`,
     );
 
     if (response.error) {
