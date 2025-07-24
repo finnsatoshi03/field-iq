@@ -11,6 +11,8 @@ export const FIELD_IQ_API_CONFIG = {
     // Sales Rep API Endpoints
     sales_rep: {
       monthly_sales: "/salesrep/monthly-sales",
+      sales_rep_logs: "/salesrep/sales-rep-logs",
+      farms: "/salesrep/farms",
     },
   },
 } as const;
