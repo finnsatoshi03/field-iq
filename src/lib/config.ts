@@ -15,6 +15,13 @@ export const FIELD_IQ_API_CONFIG = {
       farms: "/salesrep/farms",
       visit_schedule: "/salesrep/visit-schedule",
     },
+
+    // Admin API Endpoints
+    admin: {
+      sales: "/admin/sales",
+      dealer_issues: "/admin/dealers/issue",
+      farms: "/admin/farms",
+    },
   },
 } as const;
 

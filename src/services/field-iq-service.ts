@@ -1,5 +1,10 @@
 import { FIELD_IQ_API_CONFIG } from "@/lib/config";
 
+import type {
+  AdminDealerIssuesResponse,
+  AdminFarmsResponse,
+  AdminSalesResponse,
+} from "@/features/admin/types";
 import type { FarmerDashboardData } from "@/features/farmer/types";
 import type {
   FarmsResponse,
@@ -183,6 +188,71 @@ export const fieldIQService = {
 
     const response = await apiClient.get<VisitScheduleResponse>(
       `${FIELD_IQ_API_CONFIG.endpoints.sales_rep.visit_schedule}?user_id=${userId}`,
+    );
+
+    if (response.error) {
+      throw new Error(response.error);
+    }
+
+    if (!response.data) {
+      throw new Error("No data received from server");
+    }
+
+    return response.data;
+  },
+
+  // Admin Sales
+  async getAdminSales(companyId: number): Promise<AdminSalesResponse> {
+    if (companyId <= 0) {
+      throw new Error("Invalid company ID.");
+    }
+
+    const response = await apiClient.get<AdminSalesResponse>(
+      `${FIELD_IQ_API_CONFIG.endpoints.admin.sales}?company_id=${companyId}`,
+    );
+
+    if (response.error) {
+      throw new Error(response.error);
+    }
+
+    if (!response.data) {
+      throw new Error("No data received from server");
+    }
+
+    return response.data;
+  },
+
+  // Admin Dealer Issues
+  async getAdminDealerIssues(
+    companyId: number,
+  ): Promise<AdminDealerIssuesResponse> {
+    if (companyId <= 0) {
+      throw new Error("Invalid company ID.");
+    }
+
+    const response = await apiClient.get<AdminDealerIssuesResponse>(
+      `${FIELD_IQ_API_CONFIG.endpoints.admin.dealer_issues}?company_id=${companyId}`,
+    );
+
+    if (response.error) {
+      throw new Error(response.error);
+    }
+
+    if (!response.data) {
+      throw new Error("No data received from server");
+    }
+
+    return response.data;
+  },
+
+  // Admin Farms
+  async getAdminFarms(companyId: number): Promise<AdminFarmsResponse> {
+    if (companyId <= 0) {
+      throw new Error("Invalid company ID.");
+    }
+
+    const response = await apiClient.get<AdminFarmsResponse>(
+      `${FIELD_IQ_API_CONFIG.endpoints.admin.farms}?company_id=${companyId}`,
     );
 
     if (response.error) {

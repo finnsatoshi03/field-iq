@@ -1,11 +1,73 @@
+import type { AdminDealerIssueApiItem } from "@/features/admin/types";
 import type {
   DealerIssue,
   IssueMetrics,
+  IssueTypeKey,
   MapPin,
   SeverityLevel,
-  IssueTypeKey,
 } from "./constants";
-import { ISSUE_TYPES, ISSUE_STATUS } from "./constants";
+import { ISSUE_STATUS, ISSUE_TYPES } from "./constants";
+
+// Map API issue types to component issue types
+export const mapApiIssueTypeToComponent = (
+  apiIssueType: string,
+): IssueTypeKey => {
+  const lowerCaseType = apiIssueType.toLowerCase();
+
+  // Map various API issue types to our three categories
+  if (
+    lowerCaseType.includes("stock") ||
+    lowerCaseType.includes("out of stock")
+  ) {
+    return ISSUE_TYPES.STOCKOUT;
+  }
+
+  if (
+    lowerCaseType.includes("delivery") ||
+    lowerCaseType.includes("late") ||
+    lowerCaseType.includes("missing") ||
+    lowerCaseType.includes("damaged") ||
+    lowerCaseType.includes("spoiled") ||
+    lowerCaseType.includes("broken") ||
+    lowerCaseType.includes("wrong product") ||
+    lowerCaseType.includes("mold") ||
+    lowerCaseType.includes("leak")
+  ) {
+    return ISSUE_TYPES.DELIVERY;
+  }
+
+  // Default everything else to pricing (including billing/invoice issues)
+  return ISSUE_TYPES.PRICING;
+};
+
+// Transform API data to component format
+export const transformApiDataToDealerIssues = (
+  apiData: AdminDealerIssueApiItem[],
+): DealerIssue[] => {
+  return apiData.map((item) => ({
+    id: item.id.toString(),
+    dealerName: item.dealerName,
+    dealerCode: item.dealerCode,
+    location: {
+      lat: item.location.lat,
+      lng: item.location.lng,
+      address: item.location.address || "Unknown Address",
+      region: item.location.region || "Unknown Region",
+    },
+    issues: item.issues.map((issue) => ({
+      type: mapApiIssueTypeToComponent(issue.type),
+      description: issue.description || issue.type, // Use type as fallback if description is null
+      reportedDate: issue.reportedDate,
+      status: issue.status,
+      priority: issue.priority,
+    })),
+    severity: item.severity,
+    lastUpdated: item.lastUpdated,
+    contactPerson: item.contactPerson || "N/A",
+    phone: item.phone || "N/A",
+    email: item.email || "N/A",
+  }));
+};
 
 export const calculateIssueMetrics = (dealers: DealerIssue[]): IssueMetrics => {
   const totalDealers = dealers.length;
@@ -13,20 +75,20 @@ export const calculateIssueMetrics = (dealers: DealerIssue[]): IssueMetrics => {
   const totalIssues = allIssues.length;
 
   const stockoutIssues = allIssues.filter(
-    (issue) => issue.type === ISSUE_TYPES.STOCKOUT
+    (issue) => issue.type === ISSUE_TYPES.STOCKOUT,
   ).length;
   const deliveryIssues = allIssues.filter(
-    (issue) => issue.type === ISSUE_TYPES.DELIVERY
+    (issue) => issue.type === ISSUE_TYPES.DELIVERY,
   ).length;
   const pricingIssues = allIssues.filter(
-    (issue) => issue.type === ISSUE_TYPES.PRICING
+    (issue) => issue.type === ISSUE_TYPES.PRICING,
   ).length;
 
   const criticalIssues = dealers.filter(
-    (dealer) => dealer.severity === "critical"
+    (dealer) => dealer.severity === "critical",
   ).length;
   const resolvedIssues = allIssues.filter(
-    (issue) => issue.status === ISSUE_STATUS.RESOLVED
+    (issue) => issue.status === ISSUE_STATUS.RESOLVED,
   ).length;
 
   return {
@@ -52,7 +114,7 @@ export const convertToMapPins = (dealers: DealerIssue[]): MapPin[] => {
 
 export const filterDealersBySeverity = (
   dealers: DealerIssue[],
-  severity?: SeverityLevel
+  severity?: SeverityLevel,
 ): DealerIssue[] => {
   if (!severity) return dealers;
   return dealers.filter((dealer) => dealer.severity === severity);
@@ -60,20 +122,20 @@ export const filterDealersBySeverity = (
 
 export const filterDealersByIssueType = (
   dealers: DealerIssue[],
-  issueType?: IssueTypeKey
+  issueType?: IssueTypeKey,
 ): DealerIssue[] => {
   if (!issueType) return dealers;
   return dealers.filter((dealer) =>
-    dealer.issues.some((issue) => issue.type === issueType)
+    dealer.issues.some((issue) => issue.type === issueType),
   );
 };
 
 export const sortDealersBySeverity = (
-  dealers: DealerIssue[]
+  dealers: DealerIssue[],
 ): DealerIssue[] => {
   const severityOrder = { critical: 4, high: 3, medium: 2, low: 1 };
   return [...dealers].sort(
-    (a, b) => severityOrder[b.severity] - severityOrder[a.severity]
+    (a, b) => severityOrder[b.severity] - severityOrder[a.severity],
   );
 };
 
@@ -139,7 +201,7 @@ export const getIssueTypeLabel = (type: IssueTypeKey): string => {
 export const calculateResolutionRate = (dealers: DealerIssue[]): number => {
   const allIssues = dealers.flatMap((dealer) => dealer.issues);
   const resolvedIssues = allIssues.filter(
-    (issue) => issue.status === ISSUE_STATUS.RESOLVED
+    (issue) => issue.status === ISSUE_STATUS.RESOLVED,
   );
   return allIssues.length > 0
     ? (resolvedIssues.length / allIssues.length) * 100
@@ -147,7 +209,7 @@ export const calculateResolutionRate = (dealers: DealerIssue[]): number => {
 };
 
 export const getHeatmapData = (
-  dealers: DealerIssue[]
+  dealers: DealerIssue[],
 ): Array<{ lat: number; lng: number; intensity: number }> => {
   return dealers.map((dealer) => ({
     lat: dealer.location.lat,
@@ -166,7 +228,7 @@ export const getHeatmapData = (
 // GPS Direction utilities for dealers
 export const openGoogleMapsDirections = (
   dealer: DealerIssue,
-  userLocation?: { lat: number; lng: number }
+  userLocation?: { lat: number; lng: number },
 ) => {
   if (!dealer.location?.lat || !dealer.location?.lng) {
     console.warn("No GPS coordinates available for this dealer");
@@ -176,7 +238,7 @@ export const openGoogleMapsDirections = (
   // Check if user is on mobile device
   const isMobile =
     /Android|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(
-      navigator.userAgent
+      navigator.userAgent,
     );
 
   let url: string;
@@ -222,7 +284,7 @@ export const openGoogleMapsDirections = (
 
 export const openWazeDirections = (
   dealer: DealerIssue,
-  userLocation?: { lat: number; lng: number }
+  userLocation?: { lat: number; lng: number },
 ) => {
   if (!dealer.location?.lat || !dealer.location?.lng) {
     console.warn("GPS coordinates not available for this dealer");
@@ -243,7 +305,7 @@ export const openWazeDirections = (
 
 export const openAppleMapsDirections = (
   dealer: DealerIssue,
-  userLocation?: { lat: number; lng: number }
+  userLocation?: { lat: number; lng: number },
 ) => {
   if (!dealer.location?.lat || !dealer.location?.lng) {
     console.warn("GPS coordinates not available for this dealer");
@@ -265,7 +327,7 @@ export const openAppleMapsDirections = (
 
 export const openMapboxDirections = (
   dealer: DealerIssue,
-  userLocation?: { lat: number; lng: number }
+  userLocation?: { lat: number; lng: number },
 ) => {
   if (!dealer.location?.lat || !dealer.location?.lng) {
     console.warn("GPS coordinates not available for this dealer");
@@ -312,5 +374,96 @@ export const getDealerDirectionsOptions = () => [
 ];
 
 export const hasDealerGpsCoordinates = (dealer: DealerIssue): boolean => {
-  return !!(dealer.location?.lat && dealer.location?.lng);
+  return !!(
+    dealer.location?.lat &&
+    dealer.location?.lng &&
+    dealer.location.lat !== 0 &&
+    dealer.location.lng !== 0
+  );
+};
+
+// Geocoding service using Nominatim (OpenStreetMap)
+export const geocodeAddress = async (
+  address: string,
+): Promise<{ lat: number; lng: number } | null> => {
+  if (!address || address.trim() === "") {
+    return null;
+  }
+
+  try {
+    const encodedAddress = encodeURIComponent(address.trim());
+    const response = await fetch(
+      `https://nominatim.openstreetmap.org/search?format=json&q=${encodedAddress}&limit=1&addressdetails=1`,
+    );
+
+    if (!response.ok) {
+      console.warn("Geocoding service unavailable");
+      return null;
+    }
+
+    const data = await response.json();
+
+    if (data && data.length > 0) {
+      const result = data[0];
+      return {
+        lat: parseFloat(result.lat),
+        lng: parseFloat(result.lon),
+      };
+    }
+
+    return null;
+  } catch (error) {
+    console.warn("Error geocoding address:", error);
+    return null;
+  }
+};
+
+// Enhanced transform function with geocoding
+export const transformApiDataToDealerIssuesWithGeocoding = async (
+  apiData: AdminDealerIssueApiItem[],
+): Promise<DealerIssue[]> => {
+  const dealers = transformApiDataToDealerIssues(apiData);
+
+  // Process dealers that need geocoding
+  const geocodingPromises = dealers.map(async (dealer) => {
+    if (!hasDealerGpsCoordinates(dealer) && dealer.location.address) {
+      console.log(
+        `Geocoding address for ${dealer.dealerName}: ${dealer.location.address}`,
+      );
+
+      // Add a small delay to be respectful to the geocoding service
+      await new Promise((resolve) => setTimeout(resolve, 100));
+
+      const coords = await geocodeAddress(dealer.location.address);
+      if (coords) {
+        return {
+          ...dealer,
+          location: {
+            ...dealer.location,
+            lat: coords.lat,
+            lng: coords.lng,
+          },
+        };
+      }
+    }
+    return dealer;
+  });
+
+  return Promise.all(geocodingPromises);
+};
+
+// Default coordinates for dealers without GPS or address (Manila center as fallback)
+export const getDefaultCoordinates = () => ({
+  lat: 14.5995,
+  lng: 120.9842,
+});
+
+// Enhanced coordinate validation that handles geocoded addresses
+export const getValidCoordinates = (dealer: DealerIssue) => {
+  if (hasDealerGpsCoordinates(dealer)) {
+    return { lat: dealer.location.lat, lng: dealer.location.lng };
+  }
+
+  // Return default coordinates if no valid GPS
+  return getDefaultCoordinates();
 };

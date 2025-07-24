@@ -23,6 +23,188 @@ import {
   MOCK_TIME_SERIES_DATA,
 } from "./constants";
 
+// Add API transformation utilities
+import type { AdminFarmApiItem } from "@/features/admin/types";
+
+// Transform farm type to crop types mapping
+export const mapFarmTypeToCropTypes = (farmType: string): string[] => {
+  const farmTypeMap: Record<string, string[]> = {
+    broiler: ["Broiler Chicken"],
+    layer: ["Layer Chicken"],
+    swine: ["Swine", "Pig"],
+    cattle: ["Cattle", "Beef"],
+    dairy: ["Dairy Cattle"],
+    goat: ["Goat"],
+    sheep: ["Sheep"],
+    duck: ["Duck"],
+    quail: ["Quail"],
+    fish: ["Fish", "Aquaculture"],
+  };
+
+  const lowerFarmType = farmType.toLowerCase();
+  return farmTypeMap[lowerFarmType] || [farmType];
+};
+
+// Generate mock contact info since API doesn't provide it
+export const generateMockContactInfo = (farmerId: number) => ({
+  phone: `+63 9${String(farmerId).padStart(2, "0")}${Math.floor(
+    Math.random() * 1000000,
+  )
+    .toString()
+    .padStart(7, "0")}`,
+  email: `farmer${farmerId}@example.com`,
+});
+
+// Calculate mock monthly revenue based on farm size and type
+export const calculateMockRevenue = (
+  farmSize: number,
+  farmType: string,
+): number => {
+  const revenuePerHectare: Record<string, number> = {
+    broiler: 15000,
+    layer: 12000,
+    swine: 18000,
+    cattle: 8000,
+    dairy: 14000,
+    goat: 6000,
+    sheep: 5000,
+    duck: 10000,
+    quail: 7000,
+    fish: 16000,
+  };
+
+  const baseRevenue = revenuePerHectare[farmType.toLowerCase()] || 10000;
+  return Math.round(farmSize * baseRevenue * (0.8 + Math.random() * 0.4)); // ±20% variation
+};
+
+// Transform API data to FarmRegistration format
+export const transformApiDataToFarmRegistrations = (
+  apiData: AdminFarmApiItem[],
+): FarmRegistration[] => {
+  const registrations: FarmRegistration[] = [];
+
+  apiData.forEach((item) => {
+    // Each farmer can have multiple farm details, create a registration for each
+    item.farmer.farmer_details.forEach((farmDetail) => {
+      const salesRepName =
+        item.salesrep.first_name && item.salesrep.last_name
+          ? `${item.salesrep.first_name} ${item.salesrep.last_name}`
+          : `Sales Rep ${item.salesrep.id}`;
+
+      const farmerName = `${item.farmer.first_name} ${item.farmer.last_name}`;
+
+      // Build location address
+      const addressParts = [
+        farmDetail.location_barangay && farmDetail.location_barangay !== "224"
+          ? `Brgy. ${farmDetail.location_barangay}`
+          : null,
+        farmDetail.location_city,
+        farmDetail.location_province,
+      ].filter(Boolean);
+
+      const address =
+        addressParts.length > 0 ? addressParts.join(", ") : "Unknown Location";
+
+      // Determine registration type based on farm creation date (simplified logic)
+      const createdDate = new Date(farmDetail.created_at);
+      const isRecent =
+        Date.now() - createdDate.getTime() < 90 * 24 * 60 * 60 * 1000; // 90 days
+      const registrationType: "new" | "expansion" | "conversion" = isRecent
+        ? "new"
+        : "expansion";
+
+      // Determine status based on current_feed and days_on_feed
+      const daysOnFeed = parseInt(farmDetail.days_on_feed) || 0;
+      const status: "active" | "pending" | "inactive" =
+        daysOnFeed > 0 ? "active" : "pending";
+
+      const registration: FarmRegistration = {
+        id: `${item.farmer.id}-${farmDetail.id}`,
+        farmName: farmDetail.farm_name || `Farm ${farmDetail.id}`,
+        farmerName,
+        location: {
+          lat: farmDetail.latitude || 0,
+          lng: farmDetail.longitude || 0,
+          address,
+          region: farmDetail.location_province || "Unknown Region",
+          province: farmDetail.location_province || "Unknown Province",
+        },
+        registrationDate: farmDetail.created_at,
+        salesRep: salesRepName,
+        salesRepId: item.salesrep.id.toString(),
+        farmSize: farmDetail.farm_size || 0,
+        cropTypes: mapFarmTypeToCropTypes(farmDetail.farm_type),
+        registrationType,
+        status,
+        monthlyRevenue: calculateMockRevenue(
+          farmDetail.farm_size || 0,
+          farmDetail.farm_type,
+        ),
+        contactInfo: generateMockContactInfo(item.farmer.id),
+      };
+
+      registrations.push(registration);
+    });
+  });
+
+  return registrations;
+};
+
+// Transform API data to SalesRep format
+export const transformApiDataToSalesReps = (
+  apiData: AdminFarmApiItem[],
+): SalesRep[] => {
+  const salesRepMap = new Map<string, SalesRep>();
+
+  apiData.forEach((item) => {
+    const salesRepId = item.salesrep.id.toString();
+    const salesRepName =
+      item.salesrep.first_name && item.salesrep.last_name
+        ? `${item.salesrep.first_name} ${item.salesrep.last_name}`
+        : `Sales Rep ${item.salesrep.id}`;
+
+    const territory =
+      item.salesrep.salesrep_details.length > 0
+        ? item.salesrep.salesrep_details[0].territory
+        : "Unknown Territory";
+
+    if (!salesRepMap.has(salesRepId)) {
+      salesRepMap.set(salesRepId, {
+        id: salesRepId,
+        name: salesRepName,
+        territory,
+        registrationsThisMonth: 0,
+        totalRegistrations: 0,
+        targetRegistrations:
+          item.salesrep.salesrep_details.length > 0
+            ? Math.floor(
+                item.salesrep.salesrep_details[0].quota_monthly / 50000,
+              ) // Rough conversion
+            : 10, // Default target
+      });
+    }
+
+    const salesRep = salesRepMap.get(salesRepId)!;
+
+    // Count registrations
+    const farmerRegistrations = item.farmer.farmer_details.length;
+    salesRep.totalRegistrations += farmerRegistrations;
+
+    // Count recent registrations (this month)
+    const thisMonth = new Date();
+    thisMonth.setDate(1); // First day of current month
+
+    const recentRegistrations = item.farmer.farmer_details.filter((detail) => {
+      const createdDate = new Date(detail.created_at);
+      return createdDate >= thisMonth;
+    }).length;
+
+    salesRep.registrationsThisMonth += recentRegistrations;
+  });
+
+  return Array.from(salesRepMap.values());
+};
+
 export interface FilterOptions {
   registrationType?: RegistrationType | "all";
   status?: RegistrationStatus | "all";

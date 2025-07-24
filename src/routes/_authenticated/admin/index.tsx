@@ -14,6 +14,8 @@ export const Route = createFileRoute("/_authenticated/admin/")({
 });
 
 function AdminDashboard() {
+  const companyId = 1;
+
   return (
     <div className="flex-1 flex flex-col min-h-0 h-full">
       <div className="mb-4">
@@ -29,10 +31,10 @@ function AdminDashboard() {
         <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
           <div className="lg:col-span-2 xl:col-span-2 h-fit gap-6 grid grid-cols-1 lg:grid-cols-2">
             <div className="lg:col-span-2 xl:col-span-2">
-              <SalesActivitySummary />
+              <SalesActivitySummary companyId={companyId} />
             </div>
             <div className="lg:col-span-2 xl:col-span-2">
-              <DealerIssueTracker />
+              <DealerIssueTracker companyId={companyId} />
             </div>
             <div className="lg:col-span-2 xl:col-span-2">
               <FaqManager />
@@ -40,7 +42,7 @@ function AdminDashboard() {
           </div>
           <div className="xl:col-span-1 space-y-6">
             <UserManager />
-            <FarmRegistrationTracker />
+            <FarmRegistrationTracker companyId={companyId} />
             <CompetitorIntelligence />
             <FeedPerformanceTracker />
           </div>

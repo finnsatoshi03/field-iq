@@ -21,7 +21,7 @@ export interface IssueType {
   description: string;
   reportedDate: string;
   status: "open" | "in-progress" | "resolved";
-  priority: "low" | "medium" | "high";
+  priority: "low" | "medium" | "high" | "critical";
 }
 
 export interface IssueMetrics {
