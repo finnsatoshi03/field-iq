@@ -1,10 +1,10 @@
-import { toast } from "sonner";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useNavigate } from "@tanstack/react-router";
+import { toast } from "sonner";
 
-import { authService, type SignInData } from "@/services/auth-service";
-import { useUserStore, transformSupabaseUser } from "@/store/user-store";
 import { getDefaultDashboardRoute } from "@/lib/rbac";
+import { authService, type SignInData } from "@/services/auth-service";
+import { transformSupabaseUser, useUserStore } from "@/store/user-store";
 
 export const useSignIn = () => {
   const navigate = useNavigate();
@@ -17,14 +17,23 @@ export const useSignIn = () => {
       // Set loading state
       setLoading(true);
     },
-    onSuccess: (data) => {
-      // Transform and store user in Zustand
-      const userProfile = transformSupabaseUser(data.user);
+    onSuccess: async (data) => {
+      // Get user profile data from the database
+      const userProfileData = await authService.getUserProfileById(
+        data.user.id,
+      );
+
+      // Transform and store user in Zustand with merged profile data
+      const userProfile = transformSupabaseUser(
+        data.user,
+        userProfileData?.[0],
+      );
       setUser(userProfile);
 
       // Cache the user data in React Query
       queryClient.setQueryData(["auth", "user"], data.user);
       queryClient.setQueryData(["auth", "session"], data.session);
+      queryClient.setQueryData(["auth", "profile"], userProfileData);
 
       // Show success message
       toast.success("Sign in successful");

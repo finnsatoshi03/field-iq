@@ -34,6 +34,17 @@ export const authService = {
     }
   },
 
+  async getUserProfileById(userId: string) {
+    const { data, error } = await supabase
+      .from("user_profiles")
+      .select("*")
+      .eq("identity_id", userId);
+    if (error) {
+      throw error;
+    }
+    return data;
+  },
+
   async getCurrentUser() {
     const {
       data: { user },
