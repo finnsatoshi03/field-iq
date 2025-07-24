@@ -2,8 +2,15 @@ import { FIELD_IQ_API_CONFIG } from "@/lib/config";
 
 import type {
   AdminDealerIssuesResponse,
+  AdminFaqsResponse,
+  AdminFarmPerformanceResponse,
   AdminFarmsResponse,
   AdminSalesResponse,
+  CreateFaqRequest,
+  CreateFaqResponse,
+  DeleteFaqResponse,
+  UpdateFaqRequest,
+  UpdateFaqResponse,
 } from "@/features/admin/types";
 import type { FarmerDashboardData } from "@/features/farmer/types";
 import type {
@@ -253,6 +260,102 @@ export const fieldIQService = {
 
     const response = await apiClient.get<AdminFarmsResponse>(
       `${FIELD_IQ_API_CONFIG.endpoints.admin.farms}?company_id=${companyId}`,
+    );
+
+    if (response.error) {
+      throw new Error(response.error);
+    }
+
+    if (!response.data) {
+      throw new Error("No data received from server");
+    }
+
+    return response.data;
+  },
+
+  // Admin Farm Performance
+  async getAdminFarmPerformance(
+    companyId: number,
+  ): Promise<AdminFarmPerformanceResponse> {
+    if (companyId <= 0) {
+      throw new Error("Invalid company ID.");
+    }
+
+    const response = await apiClient.get<AdminFarmPerformanceResponse>(
+      `${FIELD_IQ_API_CONFIG.endpoints.admin.farm_performance}?company_id=${companyId}`,
+    );
+
+    if (response.error) {
+      throw new Error(response.error);
+    }
+
+    if (!response.data) {
+      throw new Error("No data received from server");
+    }
+
+    return response.data;
+  },
+
+  // Admin FAQs
+  async getAdminFaqs(): Promise<AdminFaqsResponse> {
+    const response = await apiClient.get<AdminFaqsResponse>(
+      FIELD_IQ_API_CONFIG.endpoints.admin.faqs,
+    );
+
+    if (response.error) {
+      throw new Error(response.error);
+    }
+
+    if (!response.data) {
+      throw new Error("No data received from server");
+    }
+
+    return response.data;
+  },
+
+  // Create FAQ
+  async createAdminFaq(faqData: CreateFaqRequest): Promise<CreateFaqResponse> {
+    const response = await apiClient.post<CreateFaqResponse>(
+      FIELD_IQ_API_CONFIG.endpoints.admin.faqs,
+      faqData,
+    );
+
+    if (response.error) {
+      throw new Error(response.error);
+    }
+
+    if (!response.data) {
+      throw new Error("No data received from server");
+    }
+
+    return response.data;
+  },
+
+  // Update FAQ
+  async updateAdminFaq(
+    faqId: number,
+    faqData: UpdateFaqRequest,
+  ): Promise<UpdateFaqResponse> {
+    const response = await apiClient.put<UpdateFaqResponse>(
+      `${FIELD_IQ_API_CONFIG.endpoints.admin.faqs}/${faqId}`,
+      faqData,
+    );
+
+    if (response.error) {
+      throw new Error(response.error);
+    }
+
+    if (!response.data) {
+      throw new Error("No data received from server");
+    }
+
+    return response.data;
+  },
+
+  // Delete FAQ
+  async deleteAdminFaq(faqId: number): Promise<DeleteFaqResponse> {
+    const response = await apiClient.delete<DeleteFaqResponse>(
+      `${FIELD_IQ_API_CONFIG.endpoints.admin.faqs}/${faqId}`,
     );
 
     if (response.error) {

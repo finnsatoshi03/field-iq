@@ -1,4 +1,5 @@
-import { useState } from "react";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import {
   Dialog,
   DialogContent,
@@ -7,60 +8,86 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { TrendingUp, Activity, MapPin, Maximize2 } from "lucide-react";
+import {
+  Activity,
+  AlertTriangle,
+  Loader2,
+  MapPin,
+  Maximize2,
+  TrendingUp,
+} from "lucide-react";
+import { useState } from "react";
 import {
   FilterControls,
-  ViewToggle,
   PerformanceChart,
-  RadarChart,
   PerformanceMap,
+  RadarChart,
+  ViewToggle,
 } from "./components";
 import {
-  MOCK_PERFORMANCE_METRICS,
-  MOCK_REGIONAL_PERFORMANCE,
-  VIEW_MODES,
   CHART_TYPES,
-  type ViewMode,
+  VIEW_MODES,
   type ChartType,
+  type ViewMode,
 } from "./constants";
+import { useAdminFarmPerformance } from "./hooks";
 import {
-  getDefaultFilters,
+  calculatePerformanceMetrics,
   filterPerformanceMetrics,
   filterRegionalPerformance,
-  calculatePerformanceMetrics,
-  getUniqueRegions,
-  getUniqueProvinces,
   formatFcr,
-  formatWeight,
   formatMortality,
   formatPerformanceScore,
+  formatWeight,
+  getDefaultFilters,
+  getUniqueProvinces,
+  getUniqueRegions,
+  transformApiDataToPerformanceData,
   type FilterOptions,
 } from "./utils";
 
-const FeedPerformanceTracker = () => {
+interface FeedPerformanceTrackerProps {
+  className?: string;
+  companyId?: number;
+}
+
+const FeedPerformanceTracker: React.FC<FeedPerformanceTrackerProps> = ({
+  className,
+  companyId = 1, // Default company ID
+}) => {
   const [filters, setFilters] = useState<FilterOptions>(getDefaultFilters());
   const [currentView, setCurrentView] = useState<ViewMode>(VIEW_MODES.CHART);
   const [chartType, setChartType] = useState<ChartType>(CHART_TYPES.COMBINED);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
 
+  // Fetch data using our hook
+  const {
+    data: performanceData,
+    isLoading,
+    error,
+    refetch,
+  } = useAdminFarmPerformance(companyId);
+
+  // Transform API data to component format
+  const transformedData = performanceData
+    ? transformApiDataToPerformanceData(performanceData.data)
+    : null;
+  const allMetrics = transformedData?.metrics || [];
+  const allRegionalData = transformedData?.regional || [];
+
   // Filter data based on current filters
-  const filteredMetrics = filterPerformanceMetrics(
-    MOCK_PERFORMANCE_METRICS,
-    filters
-  );
+  const filteredMetrics = filterPerformanceMetrics(allMetrics, filters);
   const filteredRegionalData = filterRegionalPerformance(
-    MOCK_REGIONAL_PERFORMANCE,
-    filters
+    allRegionalData,
+    filters,
   );
 
   // Calculate performance metrics
   const performanceStats = calculatePerformanceMetrics(filteredMetrics);
 
   // Get unique regions and provinces for filters
-  const regions = getUniqueRegions(MOCK_PERFORMANCE_METRICS);
-  const provinces = getUniqueProvinces(MOCK_PERFORMANCE_METRICS);
+  const regions = getUniqueRegions(allMetrics);
+  const provinces = getUniqueProvinces(allMetrics);
 
   const handleFiltersChange = (newFilters: FilterOptions) => {
     setFilters(newFilters);
@@ -73,6 +100,102 @@ const FeedPerformanceTracker = () => {
   const handleChartTypeChange = (type: ChartType) => {
     setChartType(type);
   };
+
+  // Loading state
+  if (isLoading) {
+    return (
+      <div className="bg-card rounded-lg border border-border pt-4 space-y-4">
+        <div className="flex items-center justify-between px-4">
+          <div>
+            <h3 className="text-foreground font-display font-medium text-base tracking-tight">
+              Feed Performance Tracker
+            </h3>
+            <p className="text-muted-foreground text-xs font-sans">
+              Track feed performance and field validation
+            </p>
+          </div>
+          <div className="flex items-center gap-2 text-muted-foreground">
+            <Loader2 className="h-4 w-4 animate-spin" />
+            <span className="text-sm">Loading...</span>
+          </div>
+        </div>
+
+        <div className="h-96 w-full flex items-center justify-center px-4">
+          <div className="text-center text-muted-foreground">
+            <Loader2 className="h-8 w-8 animate-spin mx-auto mb-2" />
+            <p className="text-sm">Loading performance data...</p>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // Error state
+  if (error) {
+    return (
+      <div className="bg-card rounded-lg border border-border pt-4 space-y-4">
+        <div className="flex items-center justify-between px-4">
+          <div>
+            <h3 className="text-foreground font-display font-medium text-base tracking-tight">
+              Feed Performance Tracker
+            </h3>
+            <p className="text-muted-foreground text-xs font-sans">
+              Track feed performance and field validation
+            </p>
+          </div>
+          <div className="flex items-center gap-2 text-muted-foreground">
+            <AlertTriangle className="h-4 w-4" />
+            <span className="text-sm">Error loading data</span>
+          </div>
+        </div>
+
+        <div className="h-96 w-full flex items-center justify-center px-4">
+          <div className="text-center text-muted-foreground">
+            <p className="text-sm mb-2">
+              Failed to load performance data: {error.message}
+            </p>
+            <button
+              onClick={() => refetch()}
+              className="text-xs text-blue-600 hover:underline"
+            >
+              Try again
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // Empty state
+  if (allMetrics.length === 0) {
+    return (
+      <div className="bg-card rounded-lg border border-border pt-4 space-y-4">
+        <div className="flex items-center justify-between px-4">
+          <div>
+            <h3 className="text-foreground font-display font-medium text-base tracking-tight">
+              Feed Performance Tracker
+            </h3>
+            <p className="text-muted-foreground text-xs font-sans">
+              Track feed performance and field validation
+            </p>
+          </div>
+        </div>
+
+        <div className="h-96 w-full flex items-center justify-center px-4">
+          <div className="text-center text-muted-foreground">
+            <AlertTriangle className="h-12 w-12 mx-auto mb-4 opacity-50" />
+            <h3 className="font-display font-medium text-foreground mb-2">
+              No performance data found
+            </h3>
+            <p className="text-sm">
+              Performance data will appear here once available for company ID{" "}
+              {companyId}.
+            </p>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   const renderCurrentView = () => {
     switch (currentView) {
@@ -194,7 +317,9 @@ const FeedPerformanceTracker = () => {
   };
 
   return (
-    <div className="bg-card rounded-lg border border-border pt-4 space-y-4">
+    <div
+      className={`bg-card rounded-lg border border-border pt-4 space-y-4 ${className}`}
+    >
       {/* Header */}
       <div className="flex items-center justify-between px-4">
         <div>
@@ -269,7 +394,8 @@ const FeedPerformanceTracker = () => {
       {/* Footer */}
       <div className="px-4 bg-muted/20 py-4">
         <div className="text-xs text-muted-foreground">
-          Feed performance observations
+          Feed performance observations: {allMetrics.length} total,{" "}
+          {filteredMetrics.length} filtered
         </div>
       </div>
     </div>

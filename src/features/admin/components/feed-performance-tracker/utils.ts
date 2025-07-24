@@ -1,13 +1,22 @@
 import type {
-  FeedProduct,
-  PerformanceMetric,
-  RegionalPerformance,
-  ProductPerformance,
   FeedCategory,
+  FeedProduct,
   FormulationType,
-  TargetSpecies,
+  PerformanceComparison,
+  PerformanceMetric,
   PerformanceRating,
+  ProductPerformance,
+  RegionalPerformance,
+  TargetSpecies,
 } from "./constants";
+
+// Add API transformation utilities
+import type {
+  AdminFarmPerformanceData,
+  AdminPerformanceMetric,
+  AdminPerformanceTimeline,
+  AdminRegionalPerformance,
+} from "@/features/admin/types";
 
 export interface FilterOptions {
   product: string | "all";
@@ -41,7 +50,7 @@ export const getDefaultFilters = (): FilterOptions => ({
 
 export const filterPerformanceMetrics = (
   metrics: PerformanceMetric[],
-  filters: FilterOptions
+  filters: FilterOptions,
 ): PerformanceMetric[] => {
   return metrics.filter((metric) => {
     if (filters.product !== "all" && metric.productId !== filters.product) {
@@ -71,7 +80,7 @@ export const filterPerformanceMetrics = (
 
 export const filterFeedProducts = (
   products: FeedProduct[],
-  filters: FilterOptions
+  filters: FilterOptions,
 ): FeedProduct[] => {
   return products.filter((product) => {
     if (filters.category !== "all" && product.category !== filters.category) {
@@ -98,7 +107,7 @@ export const filterFeedProducts = (
 
 export const filterRegionalPerformance = (
   regional: RegionalPerformance[],
-  filters: FilterOptions
+  filters: FilterOptions,
 ): RegionalPerformance[] => {
   return regional.filter((region) => {
     if (filters.region !== "all" && region.region !== filters.region) {
@@ -158,7 +167,7 @@ export const calculatePerformanceMetrics = (metrics: PerformanceMetric[]) => {
 
 export const calculateProductPerformance = (
   products: FeedProduct[],
-  metrics: PerformanceMetric[]
+  metrics: PerformanceMetric[],
 ): ProductPerformance[] => {
   return products.map((product) => {
     const productMetrics = metrics.filter((m) => m.productId === product.id);
@@ -167,14 +176,14 @@ export const calculateProductPerformance = (
     // Determine trend based on recent vs older data
     const sortedMetrics = productMetrics.sort(
       (a, b) =>
-        new Date(b.recordDate).getTime() - new Date(a.recordDate).getTime()
+        new Date(b.recordDate).getTime() - new Date(a.recordDate).getTime(),
     );
     const recentMetrics = sortedMetrics.slice(
       0,
-      Math.ceil(sortedMetrics.length / 2)
+      Math.ceil(sortedMetrics.length / 2),
     );
     const olderMetrics = sortedMetrics.slice(
-      Math.ceil(sortedMetrics.length / 2)
+      Math.ceil(sortedMetrics.length / 2),
     );
 
     let trend: "improving" | "stable" | "declining" = "stable";
@@ -350,7 +359,7 @@ export const prepareChartData = (metrics: PerformanceMetric[]) => {
       acc[date].managementScore.push(metric.managementScore);
       return acc;
     },
-    {} as Record<string, any>
+    {} as Record<string, any>,
   );
 
   return Object.values(groupedData)
@@ -371,7 +380,7 @@ export const prepareChartData = (metrics: PerformanceMetric[]) => {
       managementScore:
         item.managementScore.reduce(
           (sum: number, val: number) => sum + val,
-          0
+          0,
         ) / item.managementScore.length,
     }))
     .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
@@ -412,4 +421,153 @@ export const prepareRadarData = (metrics: PerformanceMetric[]) => {
       fullMark: 100,
     },
   ];
+};
+
+// Transform weather condition from API to component format
+export const mapWeatherCondition = (
+  condition: string,
+): "hot" | "moderate" | "cold" | "rainy" => {
+  const normalizedCondition = condition.toLowerCase();
+  if (
+    normalizedCondition.includes("hot") ||
+    normalizedCondition.includes("warm")
+  ) {
+    return "hot";
+  }
+  if (
+    normalizedCondition.includes("cold") ||
+    normalizedCondition.includes("cool")
+  ) {
+    return "cold";
+  }
+  if (
+    normalizedCondition.includes("rain") ||
+    normalizedCondition.includes("wet")
+  ) {
+    return "rainy";
+  }
+  return "moderate";
+};
+
+// Transform performance rating from API to component format
+export const mapPerformanceRating = (
+  rating: string,
+): "excellent" | "good" | "average" | "poor" => {
+  const normalizedRating = rating.toLowerCase();
+  if (normalizedRating === "excellent") return "excellent";
+  if (normalizedRating === "good") return "good";
+  if (normalizedRating === "average") return "average";
+  return "poor";
+};
+
+// Transform API metrics to component format
+export const transformApiPerformanceMetrics = (
+  apiMetrics: AdminPerformanceMetric[],
+): PerformanceMetric[] => {
+  return apiMetrics.map((metric) => ({
+    id: metric.id.toString(),
+    productId: metric.productId.toString(),
+    productName: metric.productName.toString(),
+    farmId: metric.farmId.toString(),
+    farmName: metric.farmName,
+    region: metric.region,
+    province: metric.province,
+    gpsCoordinates: {
+      lat: metric.gpsCoordinates.lat,
+      lng: metric.gpsCoordinates.lng,
+    },
+    recordDate: metric.recordDate,
+    batchSize: metric.batchSize || 0,
+    daysOnFeed: parseInt(metric.daysOnFeed) || 0,
+    fcr: metric.fcr,
+    weightGain: metric.weightGain || 0,
+    mortality: metric.mortality,
+    avgWeight: metric.avgWeight,
+    feedIntake: metric.feedIntake,
+    weatherCondition: mapWeatherCondition(metric.weatherCondition),
+    managementScore: metric.managementScore,
+    reportedBy: metric.reportedBy,
+    verified: metric.verified,
+  }));
+};
+
+// Transform API regional data to component format
+export const transformApiRegionalPerformance = (
+  apiRegional: AdminRegionalPerformance[],
+): RegionalPerformance[] => {
+  return apiRegional.map((regional) => ({
+    region: regional.region,
+    province: regional.province,
+    gpsCoordinates: {
+      lat: regional.gpsCoordinates.lat,
+      lng: regional.gpsCoordinates.lng,
+    },
+    totalFarms: regional.totalFarms,
+    avgFcr: regional.avgFcr,
+    avgWeightGain: regional.avgWeightGain,
+    avgMortality: regional.avgMortality,
+    topProduct: regional.topProduct.toString(),
+    performanceRating: mapPerformanceRating(regional.performanceRating),
+    lastUpdate: regional.lastUpdate,
+  }));
+};
+
+// Transform API timeline data to comparison format
+export const transformApiTimelineToComparison = (
+  apiTimeline: AdminPerformanceTimeline[],
+): PerformanceComparison[] => {
+  return apiTimeline.map((timeline) => ({
+    date: timeline.date,
+    fcr: timeline.fcr,
+    weightGain: timeline.weightGain,
+    mortality: timeline.mortality || 0,
+    feedIntake: timeline.feedIntake,
+    managementScore: timeline.managementScore,
+  }));
+};
+
+// Calculate weight gain from avgWeight progression (for API data that lacks weightGain)
+export const calculateWeightGainFromProgression = (
+  metrics: AdminPerformanceMetric[],
+): AdminPerformanceMetric[] => {
+  const sortedMetrics = [...metrics].sort(
+    (a, b) =>
+      new Date(a.recordDate).getTime() - new Date(b.recordDate).getTime(),
+  );
+
+  return sortedMetrics.map((metric, index) => {
+    if (metric.weightGain !== null) {
+      return metric; // Use existing weight gain if available
+    }
+
+    // Calculate weight gain from previous record
+    if (index > 0) {
+      const prevMetric = sortedMetrics[index - 1];
+      const weightGain = metric.avgWeight - prevMetric.avgWeight;
+      return {
+        ...metric,
+        weightGain: Math.max(0, weightGain), // Ensure positive weight gain
+      };
+    }
+
+    // For first record, use the avgWeight as initial gain
+    return {
+      ...metric,
+      weightGain: metric.avgWeight,
+    };
+  });
+};
+
+// Enhanced transformation that calculates missing weightGain values
+export const transformApiDataToPerformanceData = (
+  apiData: AdminFarmPerformanceData,
+) => {
+  // Calculate weight gain for metrics that don't have it
+  const enhancedMetrics = calculateWeightGainFromProgression(apiData.metrics);
+
+  return {
+    metrics: transformApiPerformanceMetrics(enhancedMetrics),
+    regional: transformApiRegionalPerformance(apiData.regional),
+    timeline: transformApiTimelineToComparison(apiData.timeline),
+  };
 };

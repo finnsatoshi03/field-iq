@@ -7,6 +7,7 @@ import {
   SalesActivitySummary,
   UserManager,
 } from "@/features/admin/components";
+import { useUserStore } from "@/store";
 import { createFileRoute } from "@tanstack/react-router";
 
 export const Route = createFileRoute("/_authenticated/admin/")({
@@ -14,7 +15,9 @@ export const Route = createFileRoute("/_authenticated/admin/")({
 });
 
 function AdminDashboard() {
-  const companyId = 1;
+  const { user } = useUserStore();
+
+  const companyId = user?.company_id || 1;
 
   return (
     <div className="flex-1 flex flex-col min-h-0 h-full">
@@ -24,6 +27,11 @@ function AdminDashboard() {
         </h1>
         <p className="text-muted-foreground font-sans text-sm">
           Monitor sales performance and administrative metrics
+          {user && (
+            <span className="ml-2 text-xs bg-gray-100 px-2 py-1 rounded">
+              ID: {user.id}
+            </span>
+          )}
         </p>
       </div>
 
@@ -44,7 +52,7 @@ function AdminDashboard() {
             <UserManager />
             <FarmRegistrationTracker companyId={companyId} />
             <CompetitorIntelligence />
-            <FeedPerformanceTracker />
+            <FeedPerformanceTracker companyId={companyId} />
           </div>
         </div>
       </div>

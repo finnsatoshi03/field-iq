@@ -1,6 +1,12 @@
-import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Calendar } from "@/components/ui/calendar";
+import { Input } from "@/components/ui/input";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
 import {
   Select,
   SelectContent,
@@ -8,17 +14,12 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Calendar } from "@/components/ui/calendar";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
-import { CalendarIcon, X, Search } from "lucide-react";
-import { format } from "date-fns";
 import { cn } from "@/lib/utils";
+import { format } from "date-fns";
+import { CalendarIcon, Search, X } from "lucide-react";
+import { useCallback, useEffect, useMemo, useState } from "react";
+import { FAQ_CATEGORIES } from "../constants";
 import type { FilterOptions } from "../utils";
-import { FAQ_CATEGORIES, FAQ_STATUS, PRIORITY_LEVELS } from "../constants";
 
 interface FilterControlsProps {
   filters: FilterOptions;
@@ -26,44 +27,92 @@ interface FilterControlsProps {
   className?: string;
 }
 
+// Custom hook for debounced search
+const useDebounce = (value: string, delay: number) => {
+  const [debouncedValue, setDebouncedValue] = useState(value);
+
+  useEffect(() => {
+    const handler = setTimeout(() => {
+      setDebouncedValue(value);
+    }, delay);
+
+    return () => {
+      clearTimeout(handler);
+    };
+  }, [value, delay]);
+
+  return debouncedValue;
+};
+
 const FilterControls = ({
   filters,
   onFiltersChange,
   className,
 }: FilterControlsProps) => {
-  const handleSearchChange = (search: string) => {
-    onFiltersChange({ ...filters, search });
-  };
+  // Local search state for immediate UI feedback
+  const [searchInput, setSearchInput] = useState(filters.search);
 
-  const handleCategoryChange = (category: string) => {
-    onFiltersChange({ ...filters, category: category as any });
-  };
+  // Debounced search value
+  const debouncedSearch = useDebounce(searchInput, 300);
 
-  const handleStatusChange = (status: string) => {
-    onFiltersChange({ ...filters, status: status as any });
-  };
+  // Update parent filters when debounced search changes
+  useEffect(() => {
+    if (debouncedSearch !== filters.search) {
+      onFiltersChange({ ...filters, search: debouncedSearch });
+    }
+  }, [debouncedSearch, filters, onFiltersChange]);
 
-  const handlePriorityChange = (priority: string) => {
-    onFiltersChange({
-      ...filters,
-      priority: priority === "all" ? "all" : parseInt(priority),
-    });
-  };
+  // Sync local search state with external filters (for reset functionality)
+  useEffect(() => {
+    if (filters.search !== searchInput) {
+      setSearchInput(filters.search);
+    }
+  }, [filters.search]);
 
-  const handleDateRangeChange = (
-    field: "from" | "to",
-    date: Date | undefined,
-  ) => {
-    onFiltersChange({
-      ...filters,
-      dateRange: {
-        ...filters.dateRange,
-        [field]: date || null,
-      },
-    });
-  };
+  // Memoized handlers to prevent unnecessary re-renders
+  const handleSearchInputChange = useCallback((value: string) => {
+    setSearchInput(value);
+  }, []);
 
-  const clearFilters = () => {
+  const handleCategoryChange = useCallback(
+    (category: string) => {
+      onFiltersChange({ ...filters, category: category as any });
+    },
+    [filters, onFiltersChange],
+  );
+
+  const handleStatusChange = useCallback(
+    (status: string) => {
+      onFiltersChange({ ...filters, status: status as any });
+    },
+    [filters, onFiltersChange],
+  );
+
+  const handlePriorityChange = useCallback(
+    (priority: string) => {
+      onFiltersChange({
+        ...filters,
+        priority: priority === "all" ? "all" : parseInt(priority),
+      });
+    },
+    [filters, onFiltersChange],
+  );
+
+  const handleDateRangeChange = useCallback(
+    (field: "from" | "to", date: Date | undefined) => {
+      onFiltersChange({
+        ...filters,
+        dateRange: {
+          ...filters.dateRange,
+          [field]: date || null,
+        },
+      });
+    },
+    [filters, onFiltersChange],
+  );
+
+  const clearFilters = useCallback(() => {
+    setSearchInput(""); // Clear local search state immediately
     onFiltersChange({
       search: "",
       category: "all",
@@ -71,15 +120,54 @@ const FilterControls = ({
       priority: "all",
       dateRange: { from: null, to: null },
     });
-  };
+  }, [onFiltersChange]);
 
-  const hasActiveFilters =
-    filters.search ||
-    filters.category !== "all" ||
-    filters.status !== "all" ||
-    filters.priority !== "all" ||
-    filters.dateRange.from ||
-    filters.dateRange.to;
+  const clearSearch = useCallback(() => {
+    setSearchInput("");
+    onFiltersChange({ ...filters, search: "" });
+  }, [filters, onFiltersChange]);
+
+  const clearCategory = useCallback(() => {
+    handleCategoryChange("all");
+  }, [handleCategoryChange]);
+
+  const clearStatus = useCallback(() => {
+    handleStatusChange("all");
+  }, [handleStatusChange]);
+
+  const clearPriority = useCallback(() => {
+    handlePriorityChange("all");
+  }, [handlePriorityChange]);
+
+  const clearFromDate = useCallback(() => {
+    handleDateRangeChange("from", undefined);
+  }, [handleDateRangeChange]);
+
+  const clearToDate = useCallback(() => {
+    handleDateRangeChange("to", undefined);
+  }, [handleDateRangeChange]);
+
+  // Memoize active filters check to prevent unnecessary computations
+  const hasActiveFilters = useMemo(() => {
+    return (
+      filters.search ||
+      filters.category !== "all" ||
+      filters.status !== "all" ||
+      filters.priority !== "all" ||
+      filters.dateRange.from ||
+      filters.dateRange.to
+    );
+  }, [filters]);
+
+  // Memoize formatted category display
+  const formattedCategories = useMemo(() => {
+    return FAQ_CATEGORIES.map((category) => ({
+      value: category,
+      label: category
+        .replace("_", " ")
+        .replace(/\b\w/g, (l) => l.toUpperCase()),
+    }));
+  }, []);
 
   return (
     <div className={cn("space-y-4", className)}>
@@ -89,10 +177,18 @@ const FilterControls = ({
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground " />
             <Input
               placeholder="Search FAQs..."
-              value={filters.search}
-              onChange={(e) => handleSearchChange(e.target.value)}
+              value={searchInput}
+              onChange={(e) => handleSearchInputChange(e.target.value)}
               className="pl-10 bg-white"
             />
+            {searchInput && (
+              <button
+                onClick={clearSearch}
+                className="absolute right-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground hover:text-foreground transition-colors"
+              >
+                <X className="h-4 w-4" />
+              </button>
+            )}
           </div>
         </div>
 
@@ -102,9 +198,9 @@ const FilterControls = ({
           </SelectTrigger>
           <SelectContent>
             <SelectItem value="all">All Categories</SelectItem>
-            {FAQ_CATEGORIES.map((category) => (
-              <SelectItem key={category} value={category}>
-                {category}
+            {formattedCategories.map((category) => (
+              <SelectItem key={category.value} value={category.value}>
+                {category.label}
               </SelectItem>
             ))}
           </SelectContent>
@@ -116,9 +212,9 @@ const FilterControls = ({
           </SelectTrigger>
           <SelectContent>
             <SelectItem value="all">All Status</SelectItem>
-            <SelectItem value={FAQ_STATUS.ACTIVE}>Active</SelectItem>
-            <SelectItem value={FAQ_STATUS.INACTIVE}>Inactive</SelectItem>
-            <SelectItem value={FAQ_STATUS.DRAFT}>Draft</SelectItem>
+            <SelectItem value="active">Active</SelectItem>
+            <SelectItem value="inactive">Inactive</SelectItem>
+            <SelectItem value="draft">Draft</SelectItem>
           </SelectContent>
         </Select>
 
@@ -131,11 +227,16 @@ const FilterControls = ({
           </SelectTrigger>
           <SelectContent>
             <SelectItem value="all">All Priority</SelectItem>
-            {PRIORITY_LEVELS.map((level) => (
-              <SelectItem key={level.value} value={level.value.toString()}>
-                {level.label}
-              </SelectItem>
-            ))}
+            <SelectItem value="1">1 - High</SelectItem>
+            <SelectItem value="2">2 - High</SelectItem>
+            <SelectItem value="3">3 - Medium</SelectItem>
+            <SelectItem value="4">4 - Normal</SelectItem>
+            <SelectItem value="5">5 - Normal</SelectItem>
+            <SelectItem value="6">6 - Normal</SelectItem>
+            <SelectItem value="7">7 - Low</SelectItem>
+            <SelectItem value="8">8 - Low</SelectItem>
+            <SelectItem value="9">9 - Low</SelectItem>
+            <SelectItem value="10">10 - Low</SelectItem>
           </SelectContent>
         </Select>
 
@@ -213,23 +314,26 @@ const FilterControls = ({
           {filters.search && (
             <Badge variant="secondary" className="gap-1">
               Search: {filters.search}
-              <button onClick={() => handleSearchChange("")}>
+              <button onClick={clearSearch}>
                 <X className="h-3 w-3" />
               </button>
             </Badge>
           )}
           {filters.category !== "all" && (
             <Badge variant="secondary" className="gap-1">
-              Category: {filters.category}
-              <button onClick={() => handleCategoryChange("all")}>
+              Category:{" "}
+              {formattedCategories.find((c) => c.value === filters.category)
+                ?.label || filters.category}
+              <button onClick={clearCategory}>
                 <X className="h-3 w-3" />
               </button>
             </Badge>
           )}
           {filters.status !== "all" && (
             <Badge variant="secondary" className="gap-1">
-              Status: {filters.status}
-              <button onClick={() => handleStatusChange("all")}>
+              Status:{" "}
+              {filters.status.charAt(0).toUpperCase() + filters.status.slice(1)}
+              <button onClick={clearStatus}>
                 <X className="h-3 w-3" />
               </button>
             </Badge>
@@ -237,7 +341,7 @@ const FilterControls = ({
           {filters.priority !== "all" && (
             <Badge variant="secondary" className="gap-1">
               Priority: {filters.priority}
-              <button onClick={() => handlePriorityChange("all")}>
+              <button onClick={clearPriority}>
                 <X className="h-3 w-3" />
               </button>
             </Badge>
@@ -245,7 +349,7 @@ const FilterControls = ({
           {filters.dateRange.from && (
             <Badge variant="secondary" className="gap-1">
               From: {format(filters.dateRange.from, "MMM dd, yyyy")}
-              <button onClick={() => handleDateRangeChange("from", undefined)}>
+              <button onClick={clearFromDate}>
                 <X className="h-3 w-3" />
               </button>
             </Badge>
@@ -253,7 +357,7 @@ const FilterControls = ({
           {filters.dateRange.to && (
             <Badge variant="secondary" className="gap-1">
               To: {format(filters.dateRange.to, "MMM dd, yyyy")}
-              <button onClick={() => handleDateRangeChange("to", undefined)}>
+              <button onClick={clearToDate}>
                 <X className="h-3 w-3" />
               </button>
             </Badge>

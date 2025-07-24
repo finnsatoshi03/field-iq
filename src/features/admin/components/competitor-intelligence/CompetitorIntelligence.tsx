@@ -1,6 +1,5 @@
-import { useState, useMemo } from "react";
-import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import {
   Dialog,
   DialogContent,
@@ -9,32 +8,40 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from "recharts";
-import { Eye, TrendingUp, AlertTriangle, Building2 } from "lucide-react";
 import {
-  FilterControls,
-  ViewToggle,
-  CompetitorChart,
+  AlertTriangle,
+  Building2,
+  Eye,
+  Sparkles,
+  Star,
+  TrendingUp,
+} from "lucide-react";
+import { useMemo, useState } from "react";
+import { Cell, Pie, PieChart, ResponsiveContainer, Tooltip } from "recharts";
+import {
   BrandRankings,
+  CompetitorChart,
+  FilterControls,
   SwitchingRisks,
+  ViewToggle,
 } from "./components";
 import {
+  MOCK_BRAND_MENTIONS,
   MOCK_COMPETITOR_BRANDS,
   MOCK_COMPETITOR_PROMOS,
   MOCK_SWITCHING_RISKS,
-  MOCK_BRAND_MENTIONS,
   VIEW_MODES,
   type ViewMode,
 } from "./constants";
 import {
-  getDefaultFilters,
+  calculateCompetitorMetrics,
+  calculateMarketShareData,
   filterCompetitorBrands,
   filterCompetitorPromos,
   filterSwitchingRisks,
-  calculateCompetitorMetrics,
-  calculateMarketShareData,
-  getUniqueRegions,
   formatCurrency,
+  getDefaultFilters,
+  getUniqueRegions,
   type FilterOptions,
 } from "./utils";
 
@@ -49,25 +56,25 @@ const CompetitorIntelligence = () => {
       getUniqueRegions(
         MOCK_COMPETITOR_BRANDS,
         MOCK_COMPETITOR_PROMOS,
-        MOCK_SWITCHING_RISKS
+        MOCK_SWITCHING_RISKS,
       ),
-    []
+    [],
   );
 
   // Apply filters
   const filteredBrands = useMemo(
     () => filterCompetitorBrands(MOCK_COMPETITOR_BRANDS, filters),
-    [filters]
+    [filters],
   );
 
   const filteredPromos = useMemo(
     () => filterCompetitorPromos(MOCK_COMPETITOR_PROMOS, filters),
-    [filters]
+    [filters],
   );
 
   const filteredRisks = useMemo(
     () => filterSwitchingRisks(MOCK_SWITCHING_RISKS, filters),
-    [filters]
+    [filters],
   );
 
   const filteredMentions = useMemo(() => {
@@ -84,7 +91,7 @@ const CompetitorIntelligence = () => {
   const metrics = useMemo(
     () =>
       calculateCompetitorMetrics(filteredBrands, filteredPromos, filteredRisks),
-    [filteredBrands, filteredPromos, filteredRisks]
+    [filteredBrands, filteredPromos, filteredRisks],
   );
 
   const renderCurrentView = () => {
@@ -282,150 +289,174 @@ const CompetitorIntelligence = () => {
   };
 
   return (
-    <div className="bg-card rounded-lg border border-border pt-4 space-y-6">
-      <div className="px-4">
-        <div className="flex flex-wrap gap-2 justify-between">
-          <div>
-            <h3 className="text-foreground font-display font-medium text-base tracking-tight">
-              Competitor Intelligence
-            </h3>
-            <p className="text-muted-foreground text-xs font-sans">
-              Track competitor activity and market share
-            </p>
+    <div className="bg-card rounded-lg border border-border pt-4 relative overflow-hidden opacity-60 cursor-not-allowed">
+      {/* Coming Soon Overlay */}
+      <div className="absolute inset-0 bg-gradient-to-br from-muted/80 to-muted/60 backdrop-blur-[2px] z-10 flex items-center justify-center">
+        <div className="text-center p-4">
+          <div className="flex items-center justify-center mb-2">
+            <Sparkles className="h-6 w-6 text-primary mr-2 animate-pulse" />
+            <Star className="h-5 w-5 text-yellow-500 animate-bounce" />
           </div>
-          <ViewToggle currentView={currentView} onViewChange={setCurrentView} />
-        </div>
-      </div>
-
-      <div className="px-4 space-y-2">
-        <div className="flex justify-between items-center">
-          <h3 className="text-sm sm:text-base font-medium font-display truncate">
-            {currentView === VIEW_MODES.CHART
-              ? "Market Distribution"
-              : currentView === VIEW_MODES.BRANDS
-                ? "Brand Rankings"
-                : currentView === VIEW_MODES.RISKS
-                  ? "Revenue at Risk"
-                  : "Sentiment Analysis"}
+          <h3 className="font-display font-semibold text-foreground mb-1">
+            Coming Soon
           </h3>
-          <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-            <DialogTrigger asChild>
-              <Button
-                size="sm"
-                variant="link"
-                className="text-xs underline p-0 w-fit h-fit"
-              >
-                More Details
-              </Button>
-            </DialogTrigger>
-            <DialogContent className="max-w-[95vw] sm:max-w-[90vw] lg:max-w-4xl xl:max-w-6xl max-h-[90vh] overflow-y-auto">
-              <DialogHeader className="gap-0 space-y-0">
-                <DialogTitle className="font-semibold font-display text-lg">
-                  Competitor Intelligence Analytics
-                </DialogTitle>
-                <DialogDescription>
-                  Track competitor activity and market share
-                </DialogDescription>
-              </DialogHeader>
-              <div className="space-y-6">
-                {/* Filters */}
-                <div className="-mx-6 px-2 bg-accent">
-                  <div className="p-4">
-                    <FilterControls
-                      filters={filters}
-                      onFiltersChange={setFilters}
-                      regions={regions}
-                    />
-                  </div>
-                </div>
-
-                {/* View Toggle */}
-                <ViewToggle
-                  currentView={currentView}
-                  onViewChange={setCurrentView}
-                />
-
-                {/* Content */}
-                {renderCurrentView()}
-              </div>
-            </DialogContent>
-          </Dialog>
+          <p className="text-xs text-muted-foreground">
+            Competitor intelligence features are being developed
+          </p>
         </div>
-        {renderCompactView()}
       </div>
 
-      <div className="px-4 bg-muted/20 py-4 space-y-4">
-        <div className="flex gap-4 justify-between">
-          <h4 className="text-foreground font-display font-medium text-sm tracking-tight">
-            Threat Intelligence Summary
-          </h4>
-          <div className="flex flex-col items-end gap-1 text-xs">
-            <div className="flex items-center gap-1.5">
-              <AlertTriangle className="h-3 w-3 text-red-600 dark:text-red-400" />
-              <span className="text-muted-foreground font-sans">
-                Top Threat
-              </span>
-              <span className="font-medium text-foreground font-display">
-                {metrics.topThreat}
-              </span>
+      {/* Original Content (Blurred) */}
+      <div className="filter blur-sm pointer-events-none">
+        <div className="px-4">
+          <div className="flex flex-wrap gap-2 justify-between">
+            <div>
+              <h3 className="text-foreground font-display font-medium text-base tracking-tight">
+                Competitor Intelligence
+              </h3>
+              <p className="text-muted-foreground text-xs font-sans">
+                Track competitor activity and market share
+              </p>
             </div>
-            <div className="flex items-center gap-1.5">
-              <TrendingUp className="h-3 w-3 text-yellow-600 dark:text-yellow-400" />
-              <span className="text-muted-foreground font-sans">
-                Market Loss
-              </span>
-              <span className="font-medium text-foreground font-display">
-                {metrics.marketShareLoss.toFixed(1)}%
-              </span>
-            </div>
+            <ViewToggle
+              currentView={currentView}
+              onViewChange={setCurrentView}
+            />
           </div>
         </div>
 
-        <div className="space-y-2">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <Building2 className="h-3 w-3 text-blue-500" />
-              <span className="text-sm font-medium">Market Share Analysis</span>
+        <div className="px-4 space-y-2">
+          <div className="flex justify-between items-center">
+            <h3 className="text-sm sm:text-base font-medium font-display truncate">
+              {currentView === VIEW_MODES.CHART
+                ? "Market Distribution"
+                : currentView === VIEW_MODES.BRANDS
+                  ? "Brand Rankings"
+                  : currentView === VIEW_MODES.RISKS
+                    ? "Revenue at Risk"
+                    : "Sentiment Analysis"}
+            </h3>
+            <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+              <DialogTrigger asChild>
+                <Button
+                  size="sm"
+                  variant="link"
+                  className="text-xs underline p-0 w-fit h-fit"
+                >
+                  More Details
+                </Button>
+              </DialogTrigger>
+              <DialogContent className="max-w-[95vw] sm:max-w-[90vw] lg:max-w-4xl xl:max-w-6xl max-h-[90vh] overflow-y-auto">
+                <DialogHeader className="gap-0 space-y-0">
+                  <DialogTitle className="font-semibold font-display text-lg">
+                    Competitor Intelligence Analytics
+                  </DialogTitle>
+                  <DialogDescription>
+                    Track competitor activity and market share
+                  </DialogDescription>
+                </DialogHeader>
+                <div className="space-y-6">
+                  {/* Filters */}
+                  <div className="-mx-6 px-2 bg-accent">
+                    <div className="p-4">
+                      <FilterControls
+                        filters={filters}
+                        onFiltersChange={setFilters}
+                        regions={regions}
+                      />
+                    </div>
+                  </div>
+
+                  {/* View Toggle */}
+                  <ViewToggle
+                    currentView={currentView}
+                    onViewChange={setCurrentView}
+                  />
+
+                  {/* Content */}
+                  {renderCurrentView()}
+                </div>
+              </DialogContent>
+            </Dialog>
+          </div>
+          {renderCompactView()}
+        </div>
+
+        <div className="px-4 bg-muted/20 py-4 space-y-4">
+          <div className="flex gap-4 justify-between">
+            <h4 className="text-foreground font-display font-medium text-sm tracking-tight">
+              Threat Intelligence Summary
+            </h4>
+            <div className="flex flex-col items-end gap-1 text-xs">
+              <div className="flex items-center gap-1.5">
+                <AlertTriangle className="h-3 w-3 text-red-600 dark:text-red-400" />
+                <span className="text-muted-foreground font-sans">
+                  Top Threat
+                </span>
+                <span className="font-medium text-foreground font-display">
+                  {metrics.topThreat}
+                </span>
+              </div>
+              <div className="flex items-center gap-1.5">
+                <TrendingUp className="h-3 w-3 text-yellow-600 dark:text-yellow-400" />
+                <span className="text-muted-foreground font-sans">
+                  Market Loss
+                </span>
+                <span className="font-medium text-foreground font-display">
+                  {metrics.marketShareLoss.toFixed(1)}%
+                </span>
+              </div>
             </div>
-            <Badge
-              variant="outline"
-              className="text-xs font-display border-black"
-            >
-              {metrics.emergingCompetitors} Emerging
-            </Badge>
           </div>
 
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <Eye className="h-3 w-3 text-yellow-500" />
-              <span className="text-sm font-medium">Revenue at Risk</span>
+          <div className="space-y-2">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <Building2 className="h-3 w-3 text-blue-500" />
+                <span className="text-sm font-medium">
+                  Market Share Analysis
+                </span>
+              </div>
+              <Badge
+                variant="outline"
+                className="text-xs font-display border-black"
+              >
+                {metrics.emergingCompetitors} Emerging
+              </Badge>
             </div>
-            <div className="text-xs font-medium font-display">
-              {formatCurrency(metrics.estimatedRevenueLoss || 0)}
-            </div>
-          </div>
 
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <TrendingUp className="h-3 w-3 text-green-500" />
-              <span className="text-sm font-medium">Sentiment Analysis</span>
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <Eye className="h-3 w-3 text-yellow-500" />
+                <span className="text-sm font-medium">Revenue at Risk</span>
+              </div>
+              <div className="text-xs font-medium font-display">
+                {formatCurrency(metrics.estimatedRevenueLoss || 0)}
+              </div>
             </div>
-            <Badge
-              variant={
-                metrics.averageSentiment > 0
-                  ? "default"
+
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <TrendingUp className="h-3 w-3 text-green-500" />
+                <span className="text-sm font-medium">Sentiment Analysis</span>
+              </div>
+              <Badge
+                variant={
+                  metrics.averageSentiment > 0
+                    ? "default"
+                    : metrics.averageSentiment < 0
+                      ? "destructive"
+                      : "secondary"
+                }
+                className="text-xs"
+              >
+                {metrics.averageSentiment > 0
+                  ? "Positive"
                   : metrics.averageSentiment < 0
-                    ? "destructive"
-                    : "secondary"
-              }
-              className="text-xs"
-            >
-              {metrics.averageSentiment > 0
-                ? "Positive"
-                : metrics.averageSentiment < 0
-                  ? "Negative"
-                  : "Neutral"}
-            </Badge>
+                    ? "Negative"
+                    : "Neutral"}
+              </Badge>
+            </div>
           </div>
         </div>
       </div>

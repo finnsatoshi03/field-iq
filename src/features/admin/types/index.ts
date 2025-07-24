@@ -97,3 +97,116 @@ export interface AdminFarmsResponse {
   message: string;
   data: AdminFarmApiItem[];
 }
+
+// Farm Performance Types
+export interface AdminPerformanceMetric {
+  id: number;
+  productId: number;
+  productName: number;
+  farmId: number;
+  farmName: string;
+  region: string;
+  province: string;
+  gpsCoordinates: {
+    lat: number;
+    lng: number;
+  };
+  recordDate: string;
+  batchSize: number | null;
+  daysOnFeed: string;
+  fcr: number;
+  weightGain: number | null;
+  mortality: number;
+  avgWeight: number;
+  feedIntake: number;
+  weatherCondition: string;
+  managementScore: number;
+  reportedBy: string;
+  verified: boolean;
+}
+
+export interface AdminRegionalPerformance {
+  region: string;
+  province: string;
+  gpsCoordinates: {
+    lat: number;
+    lng: number;
+  };
+  totalFarms: number;
+  avgFcr: number;
+  avgWeightGain: number;
+  avgMortality: number;
+  topProduct: number;
+  performanceRating: string;
+  lastUpdate: string;
+}
+
+export interface AdminPerformanceTimeline {
+  date: string;
+  fcr: number;
+  weightGain: number;
+  mortality: number | null;
+  feedIntake: number;
+  managementScore: number;
+}
+
+export interface AdminFarmPerformanceData {
+  metrics: AdminPerformanceMetric[];
+  regional: AdminRegionalPerformance[];
+  timeline: AdminPerformanceTimeline[];
+}
+
+export interface AdminFarmPerformanceResponse {
+  message: string;
+  data: AdminFarmPerformanceData;
+}
+
+// FAQ Types
+export interface AdminFaqItem {
+  id: number;
+  question: string;
+  answer: string;
+  category: string;
+  status: string;
+  priority: number;
+  views: number;
+  lastUpdated: string;
+  createdBy: string;
+  tags: string[];
+  is_featured?: boolean; // Added field from API
+}
+
+export interface AdminFaqsResponse {
+  message: string;
+  data: AdminFaqItem[];
+}
+
+// FAQ CRUD Request Types
+export interface CreateFaqRequest {
+  question: string;
+  answer: string;
+  category: string;
+  is_featured: boolean;
+}
+
+export interface UpdateFaqRequest {
+  question: string;
+  answer: string;
+  category: string;
+  is_featured: boolean;
+}
+
+// FAQ CRUD Response Types
+export interface CreateFaqResponse {
+  message: string;
+  data: AdminFaqItem;
+}
+
+export interface UpdateFaqResponse {
+  message: string;
+  data: AdminFaqItem;
+}
+
+export interface DeleteFaqResponse {
+  message: string;
+}

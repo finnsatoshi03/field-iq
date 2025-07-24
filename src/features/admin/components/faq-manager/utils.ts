@@ -1,10 +1,9 @@
-import type { FaqCategory, FaqItem, FaqStatus } from "./constants";
-import { FAQ_STATUS } from "./constants";
+import type { FaqItem } from "./constants";
 
 export interface FilterOptions {
   search: string;
-  category: FaqCategory | "all";
-  status: FaqStatus | "all";
+  category: string | "all"; // Changed from FaqCategory to string
+  status: string | "all"; // Changed from FaqStatus to string
   priority: number | "all";
   dateRange: {
     from: Date | null;
@@ -118,23 +117,19 @@ export const sortFaqItems = (
 
 export const calculateFaqMetrics = (items: FaqItem[]) => {
   const totalFaqs = items.length;
-  const activeFaqs = items.filter(
-    (item) => item.status === FAQ_STATUS.ACTIVE,
-  ).length;
-  const draftFaqs = items.filter(
-    (item) => item.status === FAQ_STATUS.DRAFT,
-  ).length;
+  const activeFaqs = items.filter((item) => item.status === "active").length;
+  const draftFaqs = items.filter((item) => item.status === "draft").length;
   const inactiveFaqs = items.filter(
-    (item) => item.status === FAQ_STATUS.INACTIVE,
+    (item) => item.status === "inactive",
   ).length;
   const totalViews = items.reduce((sum, item) => sum + item.views, 0);
   const avgViews = totalFaqs > 0 ? Math.round(totalViews / totalFaqs) : 0;
 
-  const highPriorityFaqs = items.filter((item) => item.priority <= 3).length;
+  const highPriorityFaqs = items.filter((item) => item.priority <= 2).length;
   const mediumPriorityFaqs = items.filter(
-    (item) => item.priority > 3 && item.priority <= 6,
+    (item) => item.priority > 2 && item.priority <= 3,
   ).length;
-  const lowPriorityFaqs = items.filter((item) => item.priority > 6).length;
+  const lowPriorityFaqs = items.filter((item) => item.priority > 3).length;
 
   return {
     totalFaqs,
@@ -155,11 +150,11 @@ export const getFaqsByCategory = (items: FaqItem[]) => {
       acc[item.category] = (acc[item.category] || 0) + 1;
       return acc;
     },
-    {} as Record<FaqCategory, number>,
+    {} as Record<string, number>, // Changed from FaqCategory to string
   );
 
   return Object.entries(categoryCounts).map(([category, count]) => ({
-    category: category as FaqCategory,
+    category,
     count,
     percentage: Math.round((count / items.length) * 100),
   }));
@@ -196,29 +191,32 @@ export const formatNumber = (num: number) => {
   return num.toString();
 };
 
-export const getStatusColor = (status: FaqStatus) => {
+export const getStatusColor = (status: string) => {
+  // Changed from FaqStatus to string
   switch (status) {
-    case FAQ_STATUS.ACTIVE:
+    case "active":
       return "bg-green-100 text-green-800";
-    case FAQ_STATUS.INACTIVE:
+    case "inactive":
       return "bg-gray-100 text-gray-800";
-    case FAQ_STATUS.DRAFT:
+    case "draft":
       return "bg-yellow-100 text-yellow-800";
     default:
       return "bg-gray-100 text-gray-800";
   }
 };
 
-export const getCategoryColor = (category: FaqCategory) => {
-  const colors = {
-    General: "bg-blue-100 text-blue-800",
-    Products: "bg-purple-100 text-purple-800",
-    Nutrition: "bg-green-100 text-green-800",
-    Health: "bg-red-100 text-red-800",
-    Management: "bg-orange-100 text-orange-800",
-    Pricing: "bg-yellow-100 text-yellow-800",
-    Support: "bg-indigo-100 text-indigo-800",
-    Technical: "bg-pink-100 text-pink-800",
+export const getCategoryColor = (category: string) => {
+  // Changed from FaqCategory to string
+  const colors: Record<string, string> = {
+    farm_visit: "bg-blue-100 text-blue-800",
+    product_issue: "bg-red-100 text-red-800",
+    general_inquiry: "bg-purple-100 text-purple-800",
+    nutrition: "bg-green-100 text-green-800",
+    health: "bg-red-100 text-red-800",
+    management: "bg-orange-100 text-orange-800",
+    pricing: "bg-yellow-100 text-yellow-800",
+    support: "bg-indigo-100 text-indigo-800",
+    technical: "bg-pink-100 text-pink-800",
   };
   return colors[category] || "bg-gray-100 text-gray-800";
 };
@@ -235,13 +233,14 @@ export const generateId = () => {
 export const createNewFaq = (): Omit<FaqItem, "id"> => ({
   question: "",
   answer: "",
-  category: "General",
-  status: FAQ_STATUS.DRAFT,
-  priority: 5,
+  category: "general_inquiry", // Updated to match API categories
+  status: "draft",
+  priority: 4, // Updated to match API priority levels
   views: 0,
-  lastUpdated: new Date().toISOString().split("T")[0],
+  lastUpdated: new Date().toISOString(),
   createdBy: "Admin",
   tags: [],
+  is_featured: false, // Added field from API
 });
 
 export const validateFaqItem = (item: Partial<FaqItem>): string[] => {

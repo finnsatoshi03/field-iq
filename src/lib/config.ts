@@ -21,6 +21,8 @@ export const FIELD_IQ_API_CONFIG = {
       sales: "/admin/sales",
       dealer_issues: "/admin/dealers/issue",
       farms: "/admin/farms",
+      farm_performance: "/admin/farm/performance",
+      faqs: "/admin/faqs",
     },
   },
 } as const;
