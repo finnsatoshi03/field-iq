@@ -1,4 +1,24 @@
-import { type Visit, type DailyPlan, VISIT_STATUS } from "./constants";
+import type { VisitScheduleItem } from "@/features/sales-rep/types";
+import { type DailyPlan, type Visit, VISIT_STATUS } from "./constants";
+
+// Transform API data to component format
+export const transformApiDataToVisits = (
+  apiData: VisitScheduleItem[],
+): Visit[] => {
+  return apiData.map((item) => ({
+    id: item.id.toString(),
+    farmName: item.farmName,
+    location: item.location,
+    scheduledDate: new Date(item.scheduledDate),
+    status: item.status as Visit["status"],
+    type: "initial" as Visit["type"], // Default since API doesn't provide this
+    notes: item.notes || undefined,
+    gpsCoordinates: item.gpsCoordinates,
+    contactPerson: item.contactPerson,
+    phoneNumber: item.phoneNumber,
+    priority: item.priority,
+  }));
+};
 
 export const formatVisitDate = (date: Date) => {
   const dateString = date.toLocaleDateString("en-US", {
@@ -62,14 +82,14 @@ export const getUpcomingVisits = (visits: Visit[]) => {
   return visits
     .filter(
       (visit) =>
-        visit.status === VISIT_STATUS.SCHEDULED && visit.scheduledDate >= now
+        visit.status === VISIT_STATUS.SCHEDULED && visit.scheduledDate >= now,
     )
     .sort((a, b) => a.scheduledDate.getTime() - b.scheduledDate.getTime());
 };
 
 export const getVisitsForDate = (visits: Visit[], date: Date) => {
   return visits.filter(
-    (visit) => visit.scheduledDate.toDateString() === date.toDateString()
+    (visit) => visit.scheduledDate.toDateString() === date.toDateString(),
   );
 };
 
@@ -95,7 +115,7 @@ export const getRelativeDateLabel = (date: Date) => {
   if (isTomorrow(date)) return "Tomorrow";
 
   const daysDiff = Math.ceil(
-    (date.getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24)
+    (date.getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24),
   );
   if (daysDiff < 0)
     return `${Math.abs(daysDiff)} day${Math.abs(daysDiff) > 1 ? "s" : ""} ago`;
@@ -147,7 +167,7 @@ export const getStatusColor = (status: string) => {
 
 export const calculateTaskProgress = (dailyPlan: DailyPlan) => {
   const completedTasks = dailyPlan.tasks.filter(
-    (task) => task.completed
+    (task) => task.completed,
   ).length;
   const totalTasks = dailyPlan.tasks.length;
   return totalTasks > 0 ? Math.round((completedTasks / totalTasks) * 100) : 0;
@@ -169,7 +189,7 @@ export const formatDuration = (minutes: number) => {
 // GPS Direction utilities
 export const openGoogleMapsDirections = (
   visit: Visit,
-  userLocation?: { lat: number; lng: number }
+  userLocation?: { lat: number; lng: number },
 ) => {
   if (!visit.gpsCoordinates && !visit.location) {
     console.warn("No location data available for this visit");
@@ -179,7 +199,7 @@ export const openGoogleMapsDirections = (
   // Check if user is on mobile device
   const isMobile =
     /Android|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(
-      navigator.userAgent
+      navigator.userAgent,
     );
 
   let url: string;
@@ -224,7 +244,7 @@ export const openGoogleMapsDirections = (
   } else {
     // Fallback to address search
     const destination = encodeURIComponent(
-      `${visit.farmName}, ${visit.location}`
+      `${visit.farmName}, ${visit.location}`,
     );
     if (userLocation) {
       const origin = `${userLocation.lat},${userLocation.lng}`;
@@ -239,7 +259,7 @@ export const openGoogleMapsDirections = (
 
 export const openWazeDirections = (
   visit: Visit,
-  userLocation?: { lat: number; lng: number }
+  userLocation?: { lat: number; lng: number },
 ) => {
   if (!visit.gpsCoordinates) {
     console.warn("GPS coordinates not available for this visit");
@@ -260,7 +280,7 @@ export const openWazeDirections = (
 
 export const openAppleMapsDirections = (
   visit: Visit,
-  userLocation?: { lat: number; lng: number }
+  userLocation?: { lat: number; lng: number },
 ) => {
   let url: string;
 
@@ -277,7 +297,7 @@ export const openAppleMapsDirections = (
   } else {
     // Fallback to address search
     const destination = encodeURIComponent(
-      `${visit.farmName}, ${visit.location}`
+      `${visit.farmName}, ${visit.location}`,
     );
     if (userLocation) {
       const origin = `${userLocation.lat},${userLocation.lng}`;
@@ -292,7 +312,7 @@ export const openAppleMapsDirections = (
 
 export const openMapboxDirections = (
   visit: Visit,
-  userLocation?: { lat: number; lng: number }
+  userLocation?: { lat: number; lng: number },
 ) => {
   if (!visit.gpsCoordinates) {
     console.warn("GPS coordinates not available for this visit");

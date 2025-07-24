@@ -13,6 +13,7 @@ export const FIELD_IQ_API_CONFIG = {
       monthly_sales: "/salesrep/monthly-sales",
       sales_rep_logs: "/salesrep/sales-rep-logs",
       farms: "/salesrep/farms",
+      visit_schedule: "/salesrep/visit-schedule",
     },
   },
 } as const;

@@ -5,6 +5,7 @@ import type {
   FarmsResponse,
   MonthlySalesResponse,
   SalesRepLogsResponse,
+  VisitScheduleResponse,
 } from "@/features/sales-rep/types";
 
 // Types for the Field IQ API responses
@@ -161,6 +162,27 @@ export const fieldIQService = {
 
     const response = await apiClient.get<FarmsResponse>(
       `${FIELD_IQ_API_CONFIG.endpoints.sales_rep.farms}?user_id=${userId}`,
+    );
+
+    if (response.error) {
+      throw new Error(response.error);
+    }
+
+    if (!response.data) {
+      throw new Error("No data received from server");
+    }
+
+    return response.data;
+  },
+
+  // Sales Rep Visit Schedule
+  async getVisitSchedule(userId: number): Promise<VisitScheduleResponse> {
+    if (userId <= 0) {
+      throw new Error("Invalid user ID.");
+    }
+
+    const response = await apiClient.get<VisitScheduleResponse>(
+      `${FIELD_IQ_API_CONFIG.endpoints.sales_rep.visit_schedule}?user_id=${userId}`,
     );
 
     if (response.error) {

@@ -47,3 +47,28 @@ export interface FarmsResponse {
     completed_count: number;
   };
 }
+
+// Visit Schedule Types
+export interface VisitScheduleItem {
+  id: number;
+  farmName: string;
+  location: string;
+  status: "scheduled" | "completed" | "overdue";
+  scheduledDate: string;
+  notes: string;
+  observations: string | null;
+  notes1: string;
+  contactPerson: string;
+  phoneNumber: string;
+  priority: "high" | "medium" | "low";
+  gpsCoordinates: {
+    lat: number;
+    lng: number;
+  };
+  type: string;
+}
+
+export interface VisitScheduleResponse {
+  message: string;
+  data: VisitScheduleItem[];
+}

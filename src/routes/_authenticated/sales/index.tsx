@@ -41,7 +41,7 @@ function SalesDashboard() {
               <MonthlySalesChart userId={userId} />
             </div>
             <div className="lg:col-span-2 xl:col-span-2">
-              <VisitSchedule />
+              <VisitSchedule userId={userId} />
             </div>
           </div>
           <div className="lg:col-span-1 xl:col-span-1 space-y-6 sm:grid sm:grid-cols-2 gap-6 md:block">
