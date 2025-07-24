@@ -8,6 +8,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import type { FarmerDashboardViewModel } from "@/services/field-iq-service";
 import { useChatWidgetStore } from "@/store/chat-widget-store";
 import { Plus, TrendingUp } from "lucide-react";
 import {
@@ -19,7 +20,13 @@ import {
 import { ANIMAL_TYPES } from "./constants";
 import { useGrowthPerformance } from "./hooks";
 
-export const GrowthPerformanceLog = () => {
+interface GrowthPerformanceLogProps {
+  dashboardData?: FarmerDashboardViewModel;
+}
+
+export const GrowthPerformanceLog: React.FC<GrowthPerformanceLogProps> = ({
+  dashboardData,
+}) => {
   const {
     animalType,
     records,
@@ -30,13 +37,37 @@ export const GrowthPerformanceLog = () => {
     progressValue,
     setAnimalType,
     setIsDetailViewOpen,
-  } = useGrowthPerformance();
+  } = useGrowthPerformance(dashboardData?.growth_performance);
 
   const { openGrowthMetricsReport } = useChatWidgetStore();
 
   const handleAddRecordClick = () => {
     openGrowthMetricsReport();
   };
+
+  // Show loading state if no data
+  if (!dashboardData?.growth_performance) {
+    return (
+      <ExpandableCard
+        title="Growth Performance Log"
+        summary={
+          <div className="flex items-center gap-2 text-muted-foreground">
+            <TrendingUp className="h-4 w-4" />
+            <span className="text-sm">Loading performance data...</span>
+          </div>
+        }
+        className="h-fit"
+      >
+        <div className="space-y-4">
+          <div className="rounded-lg p-4 border">
+            <div className="text-center text-muted-foreground">
+              <p className="text-sm">No performance data available</p>
+            </div>
+          </div>
+        </div>
+      </ExpandableCard>
+    );
+  }
 
   // Summary content - show key performance metrics
   const summaryContent = (

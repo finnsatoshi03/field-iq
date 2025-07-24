@@ -1,18 +1,51 @@
 import { Button } from "@/components/ui/button";
 import ExpandableCard from "@/components/ui/expandable-card";
+import type { FarmerDashboardViewModel } from "@/services/field-iq-service";
 import { useChatWidgetStore } from "@/store/chat-widget-store";
-import { Plus } from "lucide-react";
+import { Plus, TrendingUp } from "lucide-react";
 import { BehaviorList, BehaviorMeter, BehaviorSummary } from "./components";
 import { useFeedBehavior } from "./hooks";
 
-export const FeedIntakeBehavior = () => {
-  const { records, summary } = useFeedBehavior();
+interface FeedIntakeBehaviorProps {
+  dashboardData?: FarmerDashboardViewModel;
+}
+
+export const FeedIntakeBehavior: React.FC<FeedIntakeBehaviorProps> = ({
+  dashboardData,
+}) => {
+  const { records, summary } = useFeedBehavior(
+    dashboardData?.feed_intake_behavior,
+  );
 
   const { openFeedConsumptionReport } = useChatWidgetStore();
 
   const handleAddBehaviorClick = () => {
     openFeedConsumptionReport();
   };
+
+  // Show loading state if no data
+  if (!dashboardData?.feed_intake_behavior) {
+    return (
+      <ExpandableCard
+        title="Feed Intake Behavior"
+        summary={
+          <div className="flex items-center gap-2 text-muted-foreground">
+            <TrendingUp className="h-4 w-4" />
+            <span className="text-sm">Loading behavior data...</span>
+          </div>
+        }
+        className="h-fit"
+      >
+        <div className="space-y-4">
+          <div className="rounded-lg p-4 border">
+            <div className="text-center text-muted-foreground">
+              <p className="text-sm">No behavior data available</p>
+            </div>
+          </div>
+        </div>
+      </ExpandableCard>
+    );
+  }
 
   // Summary content - show behavior statistics
   const summaryContent = (
@@ -65,7 +98,7 @@ export const FeedIntakeBehavior = () => {
         </div>
 
         {/* Recent Records */}
-        <div className="bg-muted/50 space-y-2 py-4 rounded-b-lg">
+        <div className="bg-muted/50 space-y-2 pt-4 rounded-b-lg -mx-4 px-4">
           <p className="font-medium font-display">Recent Records</p>
           <BehaviorList records={records} maxItems={5} />
         </div>
