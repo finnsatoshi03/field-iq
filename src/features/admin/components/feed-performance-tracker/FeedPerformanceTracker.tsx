@@ -48,12 +48,12 @@ import {
 
 interface FeedPerformanceTrackerProps {
   className?: string;
-  companyId?: number;
+  companyId: number;
 }
 
 const FeedPerformanceTracker: React.FC<FeedPerformanceTrackerProps> = ({
   className,
-  companyId = 1, // Default company ID
+  companyId,
 }) => {
   const [filters, setFilters] = useState<FilterOptions>(getDefaultFilters());
   const [currentView, setCurrentView] = useState<ViewMode>(VIEW_MODES.CHART);

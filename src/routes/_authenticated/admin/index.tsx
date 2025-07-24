@@ -17,7 +17,7 @@ export const Route = createFileRoute("/_authenticated/admin/")({
 function AdminDashboard() {
   const { user } = useUserStore();
 
-  const companyId = user?.company_id || 1;
+  const companyId = user?.company_id || 0;
 
   return (
     <div className="flex-1 flex flex-col min-h-0 h-full">

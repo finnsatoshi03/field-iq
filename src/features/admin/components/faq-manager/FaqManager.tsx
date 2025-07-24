@@ -221,6 +221,50 @@ const FaqManager = () => {
     );
   }
 
+  // Empty state - add this before renderCurrentView
+  if (faqData.length === 0) {
+    return (
+      <div className="bg-card rounded-lg border border-border pt-4 space-y-4">
+        <div className="flex items-center justify-between px-4">
+          <div>
+            <h3 className="text-foreground font-display font-medium text-base tracking-tight">
+              FAQ Manager
+            </h3>
+            <p className="text-muted-foreground text-xs font-sans">
+              Manage frequently asked questions from chat interactions
+            </p>
+          </div>
+          <Button onClick={handleAddFaq} size="sm" className="gap-1">
+            <Plus className="h-3 w-3" />
+            Add FAQ
+          </Button>
+        </div>
+
+        <div className="px-4 py-12 flex items-center justify-center">
+          <div className="text-center text-muted-foreground">
+            <HelpCircle className="h-12 w-12 mx-auto mb-4 opacity-50" />
+            <h3 className="font-display font-medium text-foreground mb-2">
+              No FAQs available
+            </h3>
+            <p className="text-sm mb-4">
+              FAQ data will appear here once available from chat interactions.
+            </p>
+            <Button onClick={handleAddFaq} className="gap-2">
+              <Plus className="h-4 w-4" />
+              Create your first FAQ
+            </Button>
+          </div>
+        </div>
+
+        <div className="px-4 bg-muted/20 py-4">
+          <div className="text-xs text-muted-foreground">
+            FAQ insights from chat interactions
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   const renderCurrentView = () => {
     switch (currentView) {
       case VIEW_MODES.LIST:

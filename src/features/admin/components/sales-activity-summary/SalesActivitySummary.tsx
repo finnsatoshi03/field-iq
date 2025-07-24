@@ -12,11 +12,11 @@ import {
 } from "./utils";
 
 interface SalesActivitySummaryProps {
-  companyId?: number;
+  companyId: number;
 }
 
 const SalesActivitySummary: React.FC<SalesActivitySummaryProps> = ({
-  companyId = 1, // Default company ID, you can adjust this
+  companyId,
 }) => {
   const [viewMode, setViewMode] = useState<ViewMode>(VIEW_MODES.REGION);
 

@@ -265,6 +265,25 @@ export const UserManager = ({ className }: UserManagerProps) => {
       );
     }
 
+    // Empty state
+    if (users.length === 0) {
+      return (
+        <div className="text-center py-8">
+          <Users className="h-12 w-12 text-muted-foreground mx-auto mb-4 opacity-50" />
+          <h3 className="font-display font-medium text-foreground mb-2">
+            No users found
+          </h3>
+          <p className="text-sm text-muted-foreground mb-4">
+            User data will appear here once users are registered.
+          </p>
+          <Button onClick={() => setIsInviteDialogOpen(true)} className="gap-2">
+            <UserPlus className="h-4 w-4" />
+            Invite first user
+          </Button>
+        </div>
+      );
+    }
+
     return (
       <div className="space-y-4">
         {/* Stats Grid */}
@@ -487,47 +506,71 @@ export const UserManager = ({ className }: UserManagerProps) => {
                         </div>
                       ) : (
                         <div className="space-y-3">
-                          {recentUsers.map((user) => (
-                            <div
-                              key={user.id}
-                              className="flex items-center justify-between p-3 rounded-lg border border-border hover:bg-muted/30 transition-colors"
-                            >
-                              <div className="flex items-center gap-3">
-                                <div className="w-8 h-8 bg-muted rounded-full flex items-center justify-center">
-                                  <span className="text-sm font-medium text-foreground">
-                                    {user.email.charAt(0).toUpperCase()}
-                                  </span>
-                                </div>
-                                <div>
-                                  <p className="text-sm font-medium text-foreground">
-                                    {user.email}
-                                  </p>
-                                  <div className="flex items-center gap-1">
-                                    {getUserRoleIcon(user.user_metadata?.role)}
-                                    <p className="text-xs text-muted-foreground">
-                                      {user.user_metadata?.role === "farmer"
-                                        ? "Farmer"
-                                        : user.user_metadata?.role ===
-                                            "sales_rep"
-                                          ? "Sales Representative"
-                                          : "User"}
+                          {users.length === 0 ? (
+                            <div className="text-center py-8">
+                              <Users className="h-12 w-12 text-muted-foreground mx-auto mb-4 opacity-50" />
+                              <h3 className="font-display font-medium text-foreground mb-2">
+                                No users found
+                              </h3>
+                              <p className="text-sm text-muted-foreground mb-4">
+                                User data will appear here once users are
+                                registered.
+                              </p>
+                              <Button
+                                onClick={() => setIsInviteDialogOpen(true)}
+                                className="gap-2"
+                              >
+                                <UserPlus className="h-4 w-4" />
+                                Invite first user
+                              </Button>
+                            </div>
+                          ) : (
+                            recentUsers.map((user) => (
+                              <div
+                                key={user.id}
+                                className="flex items-center justify-between p-3 rounded-lg border border-border hover:bg-muted/30 transition-colors"
+                              >
+                                <div className="flex items-center gap-3">
+                                  <div className="w-8 h-8 bg-muted rounded-full flex items-center justify-center">
+                                    <span className="text-sm font-medium text-foreground">
+                                      {user.email.charAt(0).toUpperCase()}
+                                    </span>
+                                  </div>
+                                  <div>
+                                    <p className="text-sm font-medium text-foreground">
+                                      {user.email}
                                     </p>
+                                    <div className="flex items-center gap-1">
+                                      {getUserRoleIcon(
+                                        user.user_metadata?.role,
+                                      )}
+                                      <p className="text-xs text-muted-foreground">
+                                        {user.user_metadata?.role === "farmer"
+                                          ? "Farmer"
+                                          : user.user_metadata?.role ===
+                                              "sales_rep"
+                                            ? "Sales Representative"
+                                            : "User"}
+                                      </p>
+                                    </div>
                                   </div>
                                 </div>
+                                <Badge
+                                  variant="outline"
+                                  className={getUserStatusColor(
+                                    user.last_sign_in_at,
+                                  )}
+                                >
+                                  {getUserStatusIcon(user.last_sign_in_at)}
+                                  <span className="ml-1">
+                                    {user.last_sign_in_at
+                                      ? "Active"
+                                      : "Pending"}
+                                  </span>
+                                </Badge>
                               </div>
-                              <Badge
-                                variant="outline"
-                                className={getUserStatusColor(
-                                  user.last_sign_in_at,
-                                )}
-                              >
-                                {getUserStatusIcon(user.last_sign_in_at)}
-                                <span className="ml-1">
-                                  {user.last_sign_in_at ? "Active" : "Pending"}
-                                </span>
-                              </Badge>
-                            </div>
-                          ))}
+                            ))
+                          )}
                         </div>
                       )}
                     </CardContent>

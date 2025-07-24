@@ -54,12 +54,12 @@ import {
 
 interface FarmRegistrationTrackerProps {
   className?: string;
-  companyId?: number;
+  companyId: number;
 }
 
 const FarmRegistrationTracker: React.FC<FarmRegistrationTrackerProps> = ({
   className,
-  companyId = 1, // Default company ID
+  companyId,
 }) => {
   const [currentView, setCurrentView] = useState<ViewMode>("chart");
   const [chartType, setChartType] = useState<ChartType>("registrations");

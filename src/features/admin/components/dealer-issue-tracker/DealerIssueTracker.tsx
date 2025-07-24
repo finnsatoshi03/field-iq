@@ -28,12 +28,12 @@ import {
 
 interface DealerIssueTrackerProps {
   className?: string;
-  companyId?: number;
+  companyId: number;
 }
 
 const DealerIssueTracker: React.FC<DealerIssueTrackerProps> = ({
   className,
-  companyId = 1, // Default company ID
+  companyId,
 }) => {
   const [viewMode, setViewMode] = useState<ViewMode>(VIEW_MODES.MAP);
   const [selectedSeverity, setSelectedSeverity] = useState<
