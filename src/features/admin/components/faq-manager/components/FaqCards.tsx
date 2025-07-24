@@ -1,6 +1,5 @@
-import { useState } from "react";
-import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import {
   DropdownMenu,
@@ -9,26 +8,27 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { cn } from "@/lib/utils";
 import {
-  Edit,
-  Trash2,
-  Eye,
-  MoreHorizontal,
-  MessageCircle,
   Bot,
-  User,
-  TrendingUp,
   Calendar,
   ChevronDown,
   ChevronUp,
+  Edit,
+  Eye,
+  MessageCircle,
+  MoreHorizontal,
+  Trash2,
+  TrendingUp,
+  User,
 } from "lucide-react";
-import { cn } from "@/lib/utils";
+import { useState } from "react";
 import type { FaqItem } from "../constants";
 import {
   formatDate,
   formatNumber,
-  getStatusColor,
   getCategoryColor,
+  getStatusColor,
   truncateText,
 } from "../utils";
 
@@ -47,9 +47,9 @@ const FaqCards = ({
   onView,
   className,
 }: FaqCardsProps) => {
-  const [expandedCard, setExpandedCard] = useState<string | null>(null);
+  const [expandedCard, setExpandedCard] = useState<number | null>(null);
 
-  const toggleExpanded = (id: string) => {
+  const toggleExpanded = (id: number) => {
     setExpandedCard(expandedCard === id ? null : id);
   };
 
@@ -93,7 +93,7 @@ const FaqCards = ({
                             variant="outline"
                             className={cn(
                               "text-xs border-gray-300",
-                              getCategoryColor(faq.category)
+                              getCategoryColor(faq.category),
                             )}
                           >
                             {faq.category}
@@ -161,7 +161,7 @@ const FaqCards = ({
                       variant="outline"
                       className={cn(
                         "text-xs border-gray-300",
-                        getStatusColor(faq.status)
+                        getStatusColor(faq.status),
                       )}
                     >
                       {faq.status}
