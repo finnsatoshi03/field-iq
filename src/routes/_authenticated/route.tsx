@@ -1,10 +1,10 @@
 import { createFileRoute, Outlet, redirect } from "@tanstack/react-router";
 
-import { getDefaultDashboardRoute, hasRoutePermission } from "@/lib/rbac";
 import { BYPASS_AUTH } from "@/lib/config";
+import { getDefaultDashboardRoute, hasRoutePermission } from "@/lib/rbac";
 
-import { useUserStore } from "@/store/user-store";
 import { Header } from "@/components/custom/header";
+import { useUserStore } from "@/store/user-store";
 
 export const Route = createFileRoute("/_authenticated")({
   beforeLoad: async ({ location }) => {
