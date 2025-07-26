@@ -33,12 +33,14 @@ import {
   useCreateUser,
   useGenerateEmailLink,
   useGetUsers,
+  useInviteUserByEmail,
 } from "@/features/auth/mutations/admin-mutations";
 import type { UserRole } from "@/lib/types";
 import { cn } from "@/lib/utils";
 import type {
   EmailLinkType,
   GenerateEmailLinkParams,
+  InviteUserParams,
 } from "@/services/admin-service";
 import { toast } from "sonner";
 import { formatDate } from "../../../admin/components/faq-manager/utils";
@@ -47,7 +49,7 @@ const EMAIL_LINK_TYPES = [
   {
     value: "invite" as EmailLinkType,
     label: "Invitation",
-    description: "Invite farmer to join",
+    description: "Invite farmer to join (passwordless)",
     requiresPassword: false,
     icon: Mail,
   },
@@ -74,6 +76,8 @@ export const FarmerManager = ({ className }: FarmerManagerProps) => {
   const { data: users = [], isLoading, error } = useGetUsers();
   const generateEmailLinkMutation = useGenerateEmailLink();
   const createUserMutation = useCreateUser();
+  const inviteUserMutation = useInviteUserByEmail();
+
   const selectedType = EMAIL_LINK_TYPES.find((type) => type.value === linkType);
 
   // Filter only farmers and calculate metrics
@@ -122,6 +126,22 @@ export const FarmerManager = ({ className }: FarmerManagerProps) => {
       return;
     }
 
+    // For invite, use inviteUserByEmail mutation
+    if (linkType === "invite") {
+      const inviteParams: InviteUserParams = {
+        email,
+        options: {
+          ...(redirectTo && { redirectTo }),
+          data: {
+            role: "farmer", // Always farmer
+          },
+        },
+      };
+
+      inviteUserMutation.mutate(inviteParams);
+      return;
+    }
+
     // For other link types, use generateEmailLink mutation
     const params: GenerateEmailLinkParams = {
       type: linkType,
@@ -164,13 +184,19 @@ export const FarmerManager = ({ className }: FarmerManagerProps) => {
   };
 
   // Listen for successful mutation
-  if (generateEmailLinkMutation.isSuccess || createUserMutation.isSuccess) {
+  if (
+    generateEmailLinkMutation.isSuccess ||
+    createUserMutation.isSuccess ||
+    inviteUserMutation.isSuccess
+  ) {
     handleSuccess();
   }
 
   // Check if any mutation is pending
   const isPending =
-    generateEmailLinkMutation.isPending || createUserMutation.isPending;
+    generateEmailLinkMutation.isPending ||
+    createUserMutation.isPending ||
+    inviteUserMutation.isPending;
 
   const getUserStatusIcon = (lastSignIn: string | null) => {
     if (lastSignIn) {

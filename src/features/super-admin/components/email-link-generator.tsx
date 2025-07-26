@@ -23,11 +23,13 @@ import {
 import {
   useCreateUser,
   useGenerateEmailLink,
+  useInviteUserByEmail,
 } from "@/features/auth/mutations/admin-mutations";
 import type { UserRole } from "@/lib/types";
 import type {
   EmailLinkType,
   GenerateEmailLinkParams,
+  InviteUserParams,
 } from "@/services/admin-service";
 
 const EMAIL_LINK_TYPES = [
@@ -41,14 +43,7 @@ const EMAIL_LINK_TYPES = [
   {
     value: "invite" as EmailLinkType,
     label: "Invitation",
-    description: "Invite user to join",
-    requiresPassword: false,
-    supportsRole: true,
-  },
-  {
-    value: "magiclink" as EmailLinkType,
-    label: "Magic Link",
-    description: "Passwordless sign-in",
+    description: "Invite user to join (passwordless)",
     requiresPassword: false,
     supportsRole: true,
   },
@@ -118,6 +113,8 @@ export const EmailLinkGenerator = ({
 
   const generateEmailLinkMutation = useGenerateEmailLink();
   const createUserMutation = useCreateUser();
+  const inviteUserMutation = useInviteUserByEmail();
+
   const selectedType = EMAIL_LINK_TYPES.find((type) => type.value === linkType);
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -142,6 +139,24 @@ export const EmailLinkGenerator = ({
       };
 
       createUserMutation.mutate(userParams);
+      return;
+    }
+
+    // For invite, use inviteUserByEmail mutation
+    if (linkType === "invite") {
+      const inviteParams: InviteUserParams = {
+        email,
+        options: {
+          ...(redirectTo && { redirectTo }),
+          ...(selectedType?.supportsRole && {
+            data: {
+              role: selectedRole,
+            },
+          }),
+        },
+      };
+
+      inviteUserMutation.mutate(inviteParams);
       return;
     }
 
@@ -185,7 +200,9 @@ export const EmailLinkGenerator = ({
 
   // Check if any mutation is pending
   const isPending =
-    generateEmailLinkMutation.isPending || createUserMutation.isPending;
+    generateEmailLinkMutation.isPending ||
+    createUserMutation.isPending ||
+    inviteUserMutation.isPending;
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>

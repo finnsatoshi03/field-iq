@@ -6,6 +6,7 @@ import {
   adminService,
   type AdminUser,
   type GenerateEmailLinkParams,
+  type InviteUserParams,
 } from "@/services/admin-service";
 
 // Query keys
@@ -182,6 +183,30 @@ export const useGenerateEmailLink = () => {
     },
     onError: (error: any) => {
       toast.error(error.message || "Failed to generate email link");
+    },
+  });
+};
+
+// Invite user by email mutation
+export const useInviteUserByEmail = () => {
+  const { isDev, isAdmin, isSalesRep } = useUser();
+
+  return useMutation({
+    mutationFn: (params: InviteUserParams) => {
+      if (!isDev && !isAdmin && !isSalesRep) {
+        throw new Error("Access denied. Dev role required.");
+      }
+      return adminService.inviteUserByEmail(params);
+    },
+    onSuccess: (data, params) => {
+      if (data.error) {
+        throw new Error(data.error.message);
+      }
+
+      toast.success(`Invitation sent to ${params.email}`);
+    },
+    onError: (error: any) => {
+      toast.error(error.message || "Failed to send invitation");
     },
   });
 };

@@ -38,12 +38,14 @@ import {
   useCreateUser,
   useGenerateEmailLink,
   useGetUsers,
+  useInviteUserByEmail,
 } from "@/features/auth/mutations/admin-mutations";
 import type { UserRole } from "@/lib/types";
 import { cn } from "@/lib/utils";
 import type {
   EmailLinkType,
   GenerateEmailLinkParams,
+  InviteUserParams,
 } from "@/services/admin-service";
 import { toast } from "sonner";
 import { formatDate } from "../faq-manager/utils";
@@ -60,18 +62,10 @@ const EMAIL_LINK_TYPES = [
   {
     value: "invite" as EmailLinkType,
     label: "Invitation",
-    description: "Invite user to join",
+    description: "Invite user to join (passwordless)",
     requiresPassword: false,
     supportsRole: true,
     icon: Mail,
-  },
-  {
-    value: "magiclink" as EmailLinkType,
-    label: "Magic Link",
-    description: "Passwordless sign-in",
-    requiresPassword: false,
-    supportsRole: true,
-    icon: UserCheck,
   },
 ];
 
@@ -104,6 +98,8 @@ export const UserManager = ({ className }: UserManagerProps) => {
   const { data: users = [], isLoading, error } = useGetUsers();
   const generateEmailLinkMutation = useGenerateEmailLink();
   const createUserMutation = useCreateUser();
+  const inviteUserMutation = useInviteUserByEmail();
+
   const selectedType = EMAIL_LINK_TYPES.find((type) => type.value === linkType);
 
   // Calculate metrics from real user data
@@ -156,6 +152,24 @@ export const UserManager = ({ className }: UserManagerProps) => {
       return;
     }
 
+    // For invite, use inviteUserByEmail mutation
+    if (linkType === "invite") {
+      const inviteParams: InviteUserParams = {
+        email,
+        options: {
+          ...(redirectTo && { redirectTo }),
+          ...(selectedType?.supportsRole && {
+            data: {
+              role: selectedRole,
+            },
+          }),
+        },
+      };
+
+      inviteUserMutation.mutate(inviteParams);
+      return;
+    }
+
     // For other link types, use generateEmailLink mutation
     const params: GenerateEmailLinkParams = {
       type: linkType,
@@ -195,13 +209,19 @@ export const UserManager = ({ className }: UserManagerProps) => {
   };
 
   // Listen for successful mutation
-  if (generateEmailLinkMutation.isSuccess || createUserMutation.isSuccess) {
+  if (
+    generateEmailLinkMutation.isSuccess ||
+    createUserMutation.isSuccess ||
+    inviteUserMutation.isSuccess
+  ) {
     handleSuccess();
   }
 
   // Check if any mutation is pending
   const isPending =
-    generateEmailLinkMutation.isPending || createUserMutation.isPending;
+    generateEmailLinkMutation.isPending ||
+    createUserMutation.isPending ||
+    inviteUserMutation.isPending;
 
   const getUserRoleIcon = (role?: string) => {
     switch (role) {
