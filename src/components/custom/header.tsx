@@ -1,8 +1,8 @@
 import { User } from "lucide-react";
 
-import { cn } from "@/lib/utils";
-import { useUser } from "@/hooks/use-user";
 import { useSignOut } from "@/features/auth/mutations/sign-out";
+import { useUser } from "@/hooks/use-user";
+import { cn } from "@/lib/utils";
 
 import {
   DropdownMenu,
@@ -30,17 +30,17 @@ export const Header = ({
 
   const getSrc = () => {
     if (variant === "logo-word") {
-      return "/logo.word.svg";
+      return "/logo.word.png";
     }
 
     // For logo variant, handle theme variations
     switch (theme) {
       case "light":
-        return "/favicon.light.svg";
+        return "/favicon.png";
       case "white":
-        return "/favicon.light.white.svg";
+        return "/favicon.png";
       default:
-        return "/favicon.svg";
+        return "/favicon.png";
     }
   };
 
@@ -69,7 +69,7 @@ export const Header = ({
     <header
       className={cn(
         "border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60",
-        className
+        className,
       )}
     >
       <div className="flex h-16 items-center justify-between px-4">
