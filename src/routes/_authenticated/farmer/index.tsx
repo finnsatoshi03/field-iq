@@ -21,7 +21,7 @@ export const Route = createFileRoute("/_authenticated/farmer/")({
 function FarmerDashboard() {
   const { user } = useUserStore();
 
-  const farmerUserProfileId = user?.profileId || 3;
+  const farmerUserProfileId = user?.profileId || 0;
 
   const {
     data: dashboardData,
