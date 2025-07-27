@@ -1,10 +1,26 @@
+import type { AdminSalesItem } from "@/features/admin/types";
 import type {
+  ChartDataPoint,
   SalesData,
   SalesMetrics,
-  ChartDataPoint,
   ViewMode,
 } from "./constants";
 import { VIEW_MODES } from "./constants";
+
+// Transform API data to component format
+export const transformApiDataToSalesData = (
+  apiData: AdminSalesItem[],
+): SalesData[] => {
+  return apiData.map((item) => ({
+    id: item.id,
+    region: item.region || "Unknown Region",
+    rep: item.rep || "Unknown Rep",
+    influencedVolume: item.targetInfluence, // Map targetInfluence to influencedVolume
+    closedSales: item.closedSales,
+    growthRate: item.growthRate,
+    period: item.period,
+  }));
+};
 
 export const formatCurrency = (amount: number): string => {
   return new Intl.NumberFormat("en-PH", {
@@ -30,13 +46,13 @@ export const formatPercentage = (percentage: number): string => {
 };
 
 export const calculateSalesMetrics = (salesData: SalesData[]): SalesMetrics => {
-  const totalTargetInfluence = salesData.reduce(
-    (sum, data) => sum + data.targetInfluence,
-    0
+  const totalInfluencedVolume = salesData.reduce(
+    (sum, data) => sum + data.influencedVolume,
+    0,
   );
   const totalClosedSales = salesData.reduce(
     (sum, data) => sum + data.closedSales,
-    0
+    0,
   );
   const averageGrowthRate =
     salesData.reduce((sum, data) => sum + data.growthRate, 0) /
@@ -52,12 +68,12 @@ export const calculateSalesMetrics = (salesData: SalesData[]): SalesMetrics => {
       acc[data.region].closed += data.closedSales;
       return acc;
     },
-    {} as Record<string, { influenced: number; closed: number }>
+    {} as Record<string, { influenced: number; closed: number }>,
   );
 
   const topPerformingRegion =
     Object.entries(regionTotals).sort(
-      ([, a], [, b]) => b.closed - a.closed
+      ([, a], [, b]) => b.closed - a.closed,
     )[0]?.[0] || "";
 
   // Find top performing rep
@@ -83,7 +99,7 @@ export const groupDataByRegion = (salesData: SalesData[]): ChartDataPoint[] => {
       acc[data.region].closed += data.closedSales;
       return acc;
     },
-    {} as Record<string, { influenced: number; closed: number }>
+    {} as Record<string, { influenced: number; closed: number }>,
   );
 
   return Object.entries(grouped).map(([region, totals]) => ({
@@ -105,7 +121,7 @@ export const groupDataByRep = (salesData: SalesData[]): ChartDataPoint[] => {
 
 export const getChartData = (
   salesData: SalesData[],
-  viewMode: ViewMode
+  viewMode: ViewMode,
 ): ChartDataPoint[] => {
   return viewMode === VIEW_MODES.REGION
     ? groupDataByRegion(salesData)
@@ -113,15 +129,15 @@ export const getChartData = (
 };
 
 export const getConversionRate = (
-  targetInfluence: number,
-  closedSales: number
+  influencedVolume: number,
+  closedSales: number,
 ): number => {
   return targetInfluence > 0 ? (closedSales / targetInfluence) * 100 : 0;
 };
 
 export const sortChartData = (
   data: ChartDataPoint[],
-  sortBy: "influenced" | "closed" = "closed"
+  sortBy: "influenced" | "closed" = "closed",
 ): ChartDataPoint[] => {
   return [...data].sort((a, b) => {
     return sortBy === "influenced"

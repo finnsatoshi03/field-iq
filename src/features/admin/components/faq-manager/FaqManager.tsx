@@ -1,14 +1,3 @@
-import { useState, useMemo } from "react";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -19,32 +8,51 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import { Plus, Maximize2, HelpCircle, Eye } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import {
-  ViewToggle,
-  FilterControls,
-  FaqList,
-  FaqCards,
-  FaqStats,
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+import { Eye, HelpCircle, Loader2, Maximize2, Plus } from "lucide-react";
+import { useMemo, useState } from "react";
+import { toast } from "sonner";
+import {
   EditFaqDialog,
+  FaqCards,
+  FaqList,
+  FaqStats,
+  FilterControls,
+  ViewToggle,
 } from "./components";
+import { VIEW_MODES, type FaqItem, type ViewMode } from "./constants";
 import {
-  VIEW_MODES,
-  MOCK_FAQ_DATA,
-  type ViewMode,
-  type FaqItem,
-} from "./constants";
+  useAdminFaqs,
+  useCreateFaq,
+  useDeleteFaq,
+  useUpdateFaq,
+} from "./hooks";
 import {
-  getDefaultFilters,
-  filterFaqItems,
   calculateFaqMetrics,
-  getFaqsByCategory,
-  formatNumber,
+  filterFaqItems,
   formatDate,
+  formatNumber,
+  getDefaultFilters,
+  getFaqsByCategory,
   type FilterOptions,
 } from "./utils";
 
 const FaqManager = () => {
+  // API hooks
+  const { data: faqResponse, isLoading, isError, error } = useAdminFaqs();
+  const createFaqMutation = useCreateFaq();
+  const updateFaqMutation = useUpdateFaq();
+  const deleteFaqMutation = useDeleteFaq();
+
   const [currentView, setCurrentView] = useState<ViewMode>(VIEW_MODES.LIST);
   const [filters, setFilters] = useState<FilterOptions>(getDefaultFilters());
   const [isDialogOpen, setIsDialogOpen] = useState(false);
@@ -53,7 +61,9 @@ const FaqManager = () => {
   const [editMode, setEditMode] = useState<"add" | "edit">("add");
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [faqToDelete, setFaqToDelete] = useState<FaqItem | null>(null);
-  const [faqData, setFaqData] = useState<FaqItem[]>(MOCK_FAQ_DATA);
+
+  // Get FAQ data from API response
+  const faqData = faqResponse?.data || [];
 
   // Filter FAQs based on current filters
   const filteredFaqs = useMemo(() => {
@@ -100,25 +110,160 @@ const FaqManager = () => {
     setDeleteDialogOpen(true);
   };
 
-  const confirmDeleteFaq = () => {
+  const confirmDeleteFaq = async () => {
     if (faqToDelete) {
-      setFaqData((prev) => prev.filter((faq) => faq.id !== faqToDelete.id));
-      setDeleteDialogOpen(false);
-      setFaqToDelete(null);
+      const deletePromise = deleteFaqMutation.mutateAsync(faqToDelete.id);
+
+      toast.promise(deletePromise, {
+        loading: "Deleting FAQ...",
+        success: "FAQ deleted successfully",
+        error: "Failed to delete FAQ",
+      });
+
+      try {
+        await deletePromise;
+        setDeleteDialogOpen(false);
+        setFaqToDelete(null);
+      } catch (error) {
+        console.error("Delete FAQ error:", error);
+      }
     }
   };
 
-  const handleSaveFaq = (faq: FaqItem) => {
+  const handleSaveFaq = async (faq: FaqItem) => {
+    const faqData = {
+      question: faq.question,
+      answer: faq.answer,
+      category: faq.category,
+      is_featured: faq.is_featured || false,
+    };
+
+    let savePromise: Promise<any>;
+    let loadingMessage: string;
+    let successMessage: string;
+
     if (editMode === "add") {
-      setFaqData((prev) => [...prev, faq]);
+      savePromise = createFaqMutation.mutateAsync(faqData);
+      loadingMessage = "Creating FAQ...";
+      successMessage = "FAQ created successfully";
     } else {
-      setFaqData((prev) =>
-        prev.map((item) => (item.id === faq.id ? faq : item)),
-      );
+      savePromise = updateFaqMutation.mutateAsync({
+        faqId: faq.id,
+        faqData,
+      });
+      loadingMessage = "Updating FAQ...";
+      successMessage = "FAQ updated successfully";
     }
-    setEditDialogOpen(false);
-    setSelectedFaq(null);
+
+    toast.promise(savePromise, {
+      loading: loadingMessage,
+      success: successMessage,
+      error: `Failed to ${editMode === "add" ? "create" : "update"} FAQ`,
+    });
+
+    try {
+      await savePromise;
+      setEditDialogOpen(false);
+      setSelectedFaq(null);
+    } catch (error) {
+      const action = editMode === "add" ? "create" : "update";
+      console.error(`${action} FAQ error:`, error);
+    }
   };
+
+  // Loading state
+  if (isLoading) {
+    return (
+      <div className="bg-card rounded-lg border border-border pt-4 space-y-4">
+        <div className="flex items-center justify-between px-4">
+          <div>
+            <h3 className="text-foreground font-display font-medium text-base tracking-tight">
+              FAQ Manager
+            </h3>
+            <p className="text-muted-foreground text-xs font-sans">
+              Manage frequently asked questions from chat interactions
+            </p>
+          </div>
+        </div>
+        <div className="px-4 py-8 flex items-center justify-center">
+          <div className="flex items-center gap-2 text-muted-foreground">
+            <Loader2 className="h-4 w-4 animate-spin" />
+            <span className="text-sm">Loading FAQs...</span>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // Error state
+  if (isError) {
+    return (
+      <div className="bg-card rounded-lg border border-border pt-4 space-y-4">
+        <div className="flex items-center justify-between px-4">
+          <div>
+            <h3 className="text-foreground font-display font-medium text-base tracking-tight">
+              FAQ Manager
+            </h3>
+            <p className="text-muted-foreground text-xs font-sans">
+              Manage frequently asked questions from chat interactions
+            </p>
+          </div>
+        </div>
+        <div className="px-4 py-8 flex items-center justify-center">
+          <div className="text-center">
+            <p className="text-sm text-red-600 mb-2">Failed to load FAQs</p>
+            <p className="text-xs text-muted-foreground">
+              {error?.message || "An error occurred"}
+            </p>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // Empty state - add this before renderCurrentView
+  if (faqData.length === 0) {
+    return (
+      <div className="bg-card rounded-lg border border-border pt-4 space-y-4">
+        <div className="flex items-center justify-between px-4">
+          <div>
+            <h3 className="text-foreground font-display font-medium text-base tracking-tight">
+              FAQ Manager
+            </h3>
+            <p className="text-muted-foreground text-xs font-sans">
+              Manage frequently asked questions from chat interactions
+            </p>
+          </div>
+          <Button onClick={handleAddFaq} size="sm" className="gap-1">
+            <Plus className="h-3 w-3" />
+            Add FAQ
+          </Button>
+        </div>
+
+        <div className="px-4 py-12 flex items-center justify-center">
+          <div className="text-center text-muted-foreground">
+            <HelpCircle className="h-12 w-12 mx-auto mb-4 opacity-50" />
+            <h3 className="font-display font-medium text-foreground mb-2">
+              No FAQs available
+            </h3>
+            <p className="text-sm mb-4">
+              FAQ data will appear here once available from chat interactions.
+            </p>
+            <Button onClick={handleAddFaq} className="gap-2">
+              <Plus className="h-4 w-4" />
+              Create your first FAQ
+            </Button>
+          </div>
+        </div>
+
+        <div className="px-4 bg-muted/20 py-4">
+          <div className="text-xs text-muted-foreground">
+            FAQ insights from chat interactions
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   const renderCurrentView = () => {
     switch (currentView) {
@@ -353,9 +498,23 @@ const FaqManager = () => {
                     >
                       {filteredFaqs.length} FAQs
                     </Badge>
-                    <Button onClick={handleAddFaq} size="sm" className="gap-1">
-                      <Plus className="h-3 w-3" />
-                      Add FAQ
+                    <Button
+                      onClick={handleAddFaq}
+                      size="sm"
+                      className="gap-1"
+                      disabled={createFaqMutation.isPending}
+                    >
+                      {createFaqMutation.isPending ? (
+                        <>
+                          <Loader2 className="h-3 w-3 animate-spin" />
+                          Adding...
+                        </>
+                      ) : (
+                        <>
+                          <Plus className="h-3 w-3" />
+                          Add FAQ
+                        </>
+                      )}
                     </Button>
                   </div>
                 </div>
@@ -401,12 +560,22 @@ const FaqManager = () => {
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogCancel disabled={deleteFaqMutation.isPending}>
+              Cancel
+            </AlertDialogCancel>
             <AlertDialogAction
               onClick={confirmDeleteFaq}
               className="bg-red-600 hover:bg-red-700"
+              disabled={deleteFaqMutation.isPending}
             >
-              Delete
+              {deleteFaqMutation.isPending ? (
+                <>
+                  <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                  Deleting...
+                </>
+              ) : (
+                "Delete"
+              )}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

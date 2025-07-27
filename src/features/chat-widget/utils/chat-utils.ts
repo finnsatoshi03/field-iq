@@ -42,6 +42,7 @@ export const getAPISuggestedChats = async (
   reportType: string,
   reportSubType: string,
 ): Promise<string[]> => {
+  console.log(conversationContext);
   // This is a placeholder for future API implementation
   // In the future, this would call an AI service to generate contextual suggestions
 

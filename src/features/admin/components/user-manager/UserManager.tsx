@@ -38,12 +38,14 @@ import {
   useCreateUser,
   useGenerateEmailLink,
   useGetUsers,
+  useInviteUserByEmail,
 } from "@/features/auth/mutations/admin-mutations";
 import type { UserRole } from "@/lib/types";
 import { cn } from "@/lib/utils";
 import type {
   EmailLinkType,
   GenerateEmailLinkParams,
+  InviteUserParams,
 } from "@/services/admin-service";
 import { toast } from "sonner";
 import { formatDate } from "../faq-manager/utils";
@@ -60,18 +62,10 @@ const EMAIL_LINK_TYPES = [
   {
     value: "invite" as EmailLinkType,
     label: "Invitation",
-    description: "Invite user to join",
+    description: "Invite user to join (passwordless)",
     requiresPassword: false,
     supportsRole: true,
     icon: Mail,
-  },
-  {
-    value: "magiclink" as EmailLinkType,
-    label: "Magic Link",
-    description: "Passwordless sign-in",
-    requiresPassword: false,
-    supportsRole: true,
-    icon: UserCheck,
   },
 ];
 
@@ -104,6 +98,8 @@ export const UserManager = ({ className }: UserManagerProps) => {
   const { data: users = [], isLoading, error } = useGetUsers();
   const generateEmailLinkMutation = useGenerateEmailLink();
   const createUserMutation = useCreateUser();
+  const inviteUserMutation = useInviteUserByEmail();
+
   const selectedType = EMAIL_LINK_TYPES.find((type) => type.value === linkType);
 
   // Calculate metrics from real user data
@@ -156,6 +152,25 @@ export const UserManager = ({ className }: UserManagerProps) => {
       return;
     }
 
+    // For invite, use inviteUserByEmail mutation
+    if (linkType === "invite") {
+      const inviteParams: InviteUserParams = {
+        email,
+        options: {
+          // Always redirect invites to the dedicated invite route
+          redirectTo: redirectTo || `${window.location.origin}/invite`,
+          ...(selectedType?.supportsRole && {
+            data: {
+              role: selectedRole,
+            },
+          }),
+        },
+      };
+
+      inviteUserMutation.mutate(inviteParams);
+      return;
+    }
+
     // For other link types, use generateEmailLink mutation
     const params: GenerateEmailLinkParams = {
       type: linkType,
@@ -195,13 +210,19 @@ export const UserManager = ({ className }: UserManagerProps) => {
   };
 
   // Listen for successful mutation
-  if (generateEmailLinkMutation.isSuccess || createUserMutation.isSuccess) {
+  if (
+    generateEmailLinkMutation.isSuccess ||
+    createUserMutation.isSuccess ||
+    inviteUserMutation.isSuccess
+  ) {
     handleSuccess();
   }
 
   // Check if any mutation is pending
   const isPending =
-    generateEmailLinkMutation.isPending || createUserMutation.isPending;
+    generateEmailLinkMutation.isPending ||
+    createUserMutation.isPending ||
+    inviteUserMutation.isPending;
 
   const getUserRoleIcon = (role?: string) => {
     switch (role) {
@@ -261,6 +282,25 @@ export const UserManager = ({ className }: UserManagerProps) => {
           <UserX className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
           <h3 className="text-lg font-medium">Unable to load users</h3>
           <p className="text-muted-foreground">Please try again later.</p>
+        </div>
+      );
+    }
+
+    // Empty state
+    if (users.length === 0) {
+      return (
+        <div className="text-center py-8">
+          <Users className="h-12 w-12 text-muted-foreground mx-auto mb-4 opacity-50" />
+          <h3 className="font-display font-medium text-foreground mb-2">
+            No users found
+          </h3>
+          <p className="text-sm text-muted-foreground mb-4">
+            User data will appear here once users are registered.
+          </p>
+          <Button onClick={() => setIsInviteDialogOpen(true)} className="gap-2">
+            <UserPlus className="h-4 w-4" />
+            Invite first user
+          </Button>
         </div>
       );
     }
@@ -487,47 +527,71 @@ export const UserManager = ({ className }: UserManagerProps) => {
                         </div>
                       ) : (
                         <div className="space-y-3">
-                          {recentUsers.map((user) => (
-                            <div
-                              key={user.id}
-                              className="flex items-center justify-between p-3 rounded-lg border border-border hover:bg-muted/30 transition-colors"
-                            >
-                              <div className="flex items-center gap-3">
-                                <div className="w-8 h-8 bg-muted rounded-full flex items-center justify-center">
-                                  <span className="text-sm font-medium text-foreground">
-                                    {user.email.charAt(0).toUpperCase()}
-                                  </span>
-                                </div>
-                                <div>
-                                  <p className="text-sm font-medium text-foreground">
-                                    {user.email}
-                                  </p>
-                                  <div className="flex items-center gap-1">
-                                    {getUserRoleIcon(user.user_metadata?.role)}
-                                    <p className="text-xs text-muted-foreground">
-                                      {user.user_metadata?.role === "farmer"
-                                        ? "Farmer"
-                                        : user.user_metadata?.role ===
-                                            "sales_rep"
-                                          ? "Sales Representative"
-                                          : "User"}
+                          {users.length === 0 ? (
+                            <div className="text-center py-8">
+                              <Users className="h-12 w-12 text-muted-foreground mx-auto mb-4 opacity-50" />
+                              <h3 className="font-display font-medium text-foreground mb-2">
+                                No users found
+                              </h3>
+                              <p className="text-sm text-muted-foreground mb-4">
+                                User data will appear here once users are
+                                registered.
+                              </p>
+                              <Button
+                                onClick={() => setIsInviteDialogOpen(true)}
+                                className="gap-2"
+                              >
+                                <UserPlus className="h-4 w-4" />
+                                Invite first user
+                              </Button>
+                            </div>
+                          ) : (
+                            recentUsers.map((user) => (
+                              <div
+                                key={user.id}
+                                className="flex items-center justify-between p-3 rounded-lg border border-border hover:bg-muted/30 transition-colors"
+                              >
+                                <div className="flex items-center gap-3">
+                                  <div className="w-8 h-8 bg-muted rounded-full flex items-center justify-center">
+                                    <span className="text-sm font-medium text-foreground">
+                                      {user.email.charAt(0).toUpperCase()}
+                                    </span>
+                                  </div>
+                                  <div>
+                                    <p className="text-sm font-medium text-foreground">
+                                      {user.email}
                                     </p>
+                                    <div className="flex items-center gap-1">
+                                      {getUserRoleIcon(
+                                        user.user_metadata?.role,
+                                      )}
+                                      <p className="text-xs text-muted-foreground">
+                                        {user.user_metadata?.role === "farmer"
+                                          ? "Farmer"
+                                          : user.user_metadata?.role ===
+                                              "sales_rep"
+                                            ? "Sales Representative"
+                                            : "User"}
+                                      </p>
+                                    </div>
                                   </div>
                                 </div>
+                                <Badge
+                                  variant="outline"
+                                  className={getUserStatusColor(
+                                    user.last_sign_in_at,
+                                  )}
+                                >
+                                  {getUserStatusIcon(user.last_sign_in_at)}
+                                  <span className="ml-1">
+                                    {user.last_sign_in_at
+                                      ? "Active"
+                                      : "Pending"}
+                                  </span>
+                                </Badge>
                               </div>
-                              <Badge
-                                variant="outline"
-                                className={getUserStatusColor(
-                                  user.last_sign_in_at,
-                                )}
-                              >
-                                {getUserStatusIcon(user.last_sign_in_at)}
-                                <span className="ml-1">
-                                  {user.last_sign_in_at ? "Active" : "Pending"}
-                                </span>
-                              </Badge>
-                            </div>
-                          ))}
+                            ))
+                          )}
                         </div>
                       )}
                     </CardContent>
@@ -724,7 +788,12 @@ export const UserManager = ({ className }: UserManagerProps) => {
                 type="url"
                 value={redirectTo}
                 onChange={(e) => setRedirectTo(e.target.value)}
-                placeholder="https://yourapp.com/dashboard"
+                disabled={linkType === "invite"}
+                placeholder={
+                  linkType === "invite"
+                    ? `${window.location.origin}/invite (default for invites)`
+                    : "https://yourapp.com/dashboard"
+                }
               />
             </div>
 

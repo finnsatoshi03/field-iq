@@ -107,7 +107,7 @@ export const ChatStage = ({
     });
 
     // Send AI response based on suggestion
-    sendAIResponse(suggestion);
+    sendAIResponse(suggestion, intent);
   };
 
   const handleKeyPress = (e: React.KeyboardEvent) => {

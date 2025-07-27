@@ -7,6 +7,7 @@ import {
   SalesActivitySummary,
   UserManager,
 } from "@/features/admin/components";
+import { useUserStore } from "@/store";
 import { createFileRoute } from "@tanstack/react-router";
 
 export const Route = createFileRoute("/_authenticated/admin/")({
@@ -14,6 +15,10 @@ export const Route = createFileRoute("/_authenticated/admin/")({
 });
 
 function AdminDashboard() {
+  const { user } = useUserStore();
+
+  const companyId = user?.company_id || 0;
+
   return (
     <div className="flex-1 flex flex-col min-h-0 h-full">
       <div className="mb-4">
@@ -22,6 +27,11 @@ function AdminDashboard() {
         </h1>
         <p className="text-muted-foreground font-sans text-sm">
           Monitor sales performance and administrative metrics
+          {user && (
+            <span className="ml-2 text-xs bg-gray-100 px-2 py-1 rounded">
+              ID: {user.id}
+            </span>
+          )}
         </p>
       </div>
 
@@ -29,10 +39,10 @@ function AdminDashboard() {
         <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
           <div className="lg:col-span-2 xl:col-span-2 h-fit gap-6 grid grid-cols-1 lg:grid-cols-2">
             <div className="lg:col-span-2 xl:col-span-2">
-              <SalesActivitySummary />
+              <SalesActivitySummary companyId={companyId} />
             </div>
             <div className="lg:col-span-2 xl:col-span-2">
-              <DealerIssueTracker />
+              <DealerIssueTracker companyId={companyId} />
             </div>
             <div className="lg:col-span-2 xl:col-span-2">
               <FaqManager />
@@ -40,9 +50,9 @@ function AdminDashboard() {
           </div>
           <div className="xl:col-span-1 space-y-6">
             <UserManager />
-            <FarmRegistrationTracker />
+            <FarmRegistrationTracker companyId={companyId} />
             <CompetitorIntelligence />
-            <FeedPerformanceTracker />
+            <FeedPerformanceTracker companyId={companyId} />
           </div>
         </div>
       </div>

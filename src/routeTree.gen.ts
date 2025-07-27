@@ -9,6 +9,7 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as InviteRouteImport } from './routes/invite'
 import { Route as AuthRouteRouteImport } from './routes/auth/route'
 import { Route as PublicRouteRouteImport } from './routes/_public/route'
 import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
@@ -23,6 +24,11 @@ import { Route as AuthenticatedFarmerIndexRouteImport } from './routes/_authenti
 import { Route as AuthenticatedDevIndexRouteImport } from './routes/_authenticated/dev/index'
 import { Route as AuthenticatedAdminIndexRouteImport } from './routes/_authenticated/admin/index'
 
+const InviteRoute = InviteRouteImport.update({
+  id: '/invite',
+  path: '/invite',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AuthRouteRoute = AuthRouteRouteImport.update({
   id: '/auth',
   path: '/auth',
@@ -91,6 +97,7 @@ const AuthenticatedAdminIndexRoute = AuthenticatedAdminIndexRouteImport.update({
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/auth': typeof AuthRouteRouteWithChildren
+  '/invite': typeof InviteRoute
   '/auth/create-password': typeof AuthCreatePasswordRoute
   '/auth/dev-signup': typeof AuthDevSignupRoute
   '/auth/forgot-password': typeof AuthForgotPasswordRoute
@@ -104,6 +111,7 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/auth': typeof AuthRouteRouteWithChildren
+  '/invite': typeof InviteRoute
   '/auth/create-password': typeof AuthCreatePasswordRoute
   '/auth/dev-signup': typeof AuthDevSignupRoute
   '/auth/forgot-password': typeof AuthForgotPasswordRoute
@@ -120,6 +128,7 @@ export interface FileRoutesById {
   '/_authenticated': typeof AuthenticatedRouteRouteWithChildren
   '/_public': typeof PublicRouteRoute
   '/auth': typeof AuthRouteRouteWithChildren
+  '/invite': typeof InviteRoute
   '/auth/create-password': typeof AuthCreatePasswordRoute
   '/auth/dev-signup': typeof AuthDevSignupRoute
   '/auth/forgot-password': typeof AuthForgotPasswordRoute
@@ -135,6 +144,7 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/auth'
+    | '/invite'
     | '/auth/create-password'
     | '/auth/dev-signup'
     | '/auth/forgot-password'
@@ -148,6 +158,7 @@ export interface FileRouteTypes {
   to:
     | '/'
     | '/auth'
+    | '/invite'
     | '/auth/create-password'
     | '/auth/dev-signup'
     | '/auth/forgot-password'
@@ -163,6 +174,7 @@ export interface FileRouteTypes {
     | '/_authenticated'
     | '/_public'
     | '/auth'
+    | '/invite'
     | '/auth/create-password'
     | '/auth/dev-signup'
     | '/auth/forgot-password'
@@ -179,10 +191,18 @@ export interface RootRouteChildren {
   AuthenticatedRouteRoute: typeof AuthenticatedRouteRouteWithChildren
   PublicRouteRoute: typeof PublicRouteRoute
   AuthRouteRoute: typeof AuthRouteRouteWithChildren
+  InviteRoute: typeof InviteRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/invite': {
+      id: '/invite'
+      path: '/invite'
+      fullPath: '/invite'
+      preLoaderRoute: typeof InviteRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/auth': {
       id: '/auth'
       path: '/auth'
@@ -319,6 +339,7 @@ const rootRouteChildren: RootRouteChildren = {
   AuthenticatedRouteRoute: AuthenticatedRouteRouteWithChildren,
   PublicRouteRoute: PublicRouteRoute,
   AuthRouteRoute: AuthRouteRouteWithChildren,
+  InviteRoute: InviteRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

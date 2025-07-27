@@ -1,15 +1,24 @@
+import type { UserRole } from "@/lib/types";
+import type { User } from "@supabase/supabase-js";
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
-import type { User } from "@supabase/supabase-js";
-import type { UserRole } from "@/lib/types";
 
 export interface UserProfile {
-  id: string;
+  id: string; // identity_id from Supabase
+  profileId: number | null; // id from user profile table
   email: string;
   name: string | null;
   role: UserRole;
   isEmailVerified: boolean;
   avatar_url: string | null;
+  // Additional fields from user profile
+  first_name: string | null;
+  last_name: string | null;
+  mobile_number: string | null;
+  profile_picture_url: string | null;
+  company_id: number | null;
+  created_at: string | null;
+  updated_at: string | null;
 }
 
 interface UserState {
@@ -61,16 +70,28 @@ export const useUserStore = create<UserState>()(
         user: state.user,
         isAuthenticated: state.isAuthenticated,
       }),
-    }
-  )
+    },
+  ),
 );
 
 // Helper function to transform Supabase User to UserProfile
-export const transformSupabaseUser = (user: User): UserProfile => ({
+export const transformSupabaseUser = (
+  user: User,
+  profileData?: any,
+): UserProfile => ({
   id: user.id,
+  profileId: profileData?.id || null,
   email: user.email || "",
   name: user.user_metadata?.name || user.email?.split("@")[0] || null,
   role: user.user_metadata?.role || "sales_rep",
   isEmailVerified: user.email_confirmed_at !== null,
   avatar_url: user.user_metadata?.avatar_url || null,
+  // Profile data fields
+  first_name: profileData?.first_name || null,
+  last_name: profileData?.last_name || null,
+  mobile_number: profileData?.mobile_number || null,
+  profile_picture_url: profileData?.profile_picture_url || null,
+  company_id: profileData?.company_id || null,
+  created_at: profileData?.created_at || null,
+  updated_at: profileData?.updated_at || null,
 });

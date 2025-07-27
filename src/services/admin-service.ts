@@ -15,7 +15,6 @@ export interface AdminUser {
 export type EmailLinkType =
   | "signup"
   | "invite"
-  | "magiclink"
   | "recovery"
   | "email_change_current"
   | "email_change_new"
@@ -40,6 +39,14 @@ export interface GenerateEmailLinkResponse {
   hashed_token?: string;
   verification_type?: string;
   redirect_to?: string;
+}
+
+export interface InviteUserParams {
+  email: string;
+  options?: {
+    data?: Record<string, any>; // Custom user metadata
+    redirectTo?: string; // Redirect URL
+  };
 }
 
 export const adminService = {
@@ -87,6 +94,18 @@ export const adminService = {
     }
 
     return data;
+  },
+
+  // Invite user by email (sends invite link)
+  async inviteUserByEmail(
+    params: InviteUserParams,
+  ): Promise<{ data: any; error: any }> {
+    const { data, error } = await supabaseAdmin.auth.admin.inviteUserByEmail(
+      params.email,
+      params.options,
+    );
+
+    return { data, error };
   },
 
   // Update user metadata

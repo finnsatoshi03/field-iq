@@ -1,20 +1,53 @@
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import ExpandableCard from "@/components/ui/expandable-card";
+import type { FarmerDashboardViewModel } from "@/services/field-iq-service";
 import { useChatWidgetStore } from "@/store/chat-widget-store";
-import { Plus } from "lucide-react";
+import { Plus, TrendingUp } from "lucide-react";
 import { IssueList, IssueSummary, SmileyMeter } from "./components";
 import { TIME_PERIODS } from "./constants";
 import { useHealthWatch } from "./hooks";
 
-export const HealthWatchSummary = () => {
-  const { timePeriod, setTimePeriod, issues, summary } = useHealthWatch();
+interface HealthWatchSummaryProps {
+  dashboardData?: FarmerDashboardViewModel;
+}
+
+export const HealthWatchSummary: React.FC<HealthWatchSummaryProps> = ({
+  dashboardData,
+}) => {
+  const { timePeriod, setTimePeriod, issues, summary } = useHealthWatch(
+    dashboardData?.health_watch,
+  );
 
   const { openFlockMortalityReport } = useChatWidgetStore();
 
   const handleAddIssueClick = () => {
     openFlockMortalityReport();
   };
+
+  // Show loading state if no data
+  if (!dashboardData?.health_watch) {
+    return (
+      <ExpandableCard
+        title="Health Watch Summary"
+        summary={
+          <div className="flex items-center gap-2 text-muted-foreground">
+            <TrendingUp className="h-4 w-4" />
+            <span className="text-sm">Loading health data...</span>
+          </div>
+        }
+        className="h-fit"
+      >
+        <div className="space-y-4">
+          <div className="rounded-lg p-4 border">
+            <div className="text-center text-muted-foreground">
+              <p className="text-sm">No health data available</p>
+            </div>
+          </div>
+        </div>
+      </ExpandableCard>
+    );
+  }
 
   // Summary content - show health statistics
   const summaryContent = (
@@ -98,7 +131,7 @@ export const HealthWatchSummary = () => {
         </div>
 
         {/* Recent Issues */}
-        <div className="bg-muted/20 py-4 rounded-lg">
+        <div className="bg-muted/20 py-4 rounded-lg -mx-4 px-4">
           <div className="pb-2">
             <span className="text-base font-medium text-foreground">
               Recent Issues

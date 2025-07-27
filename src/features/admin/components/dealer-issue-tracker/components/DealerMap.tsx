@@ -1,12 +1,18 @@
-import { useEffect, useRef, useState } from "react";
-import { MapContainer, TileLayer, Marker, Popup, useMap } from "react-leaflet";
-import L from "leaflet";
-import type { DealerIssue } from "../constants";
-import { SEVERITY_COLORS } from "../constants";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { ChevronLeft, ChevronRight } from "lucide-react";
-import { getSeverityBadgeClass, getIssueTypeLabel, formatDate } from "../utils";
+import L from "leaflet";
+import { ChevronLeft, ChevronRight, MapPin } from "lucide-react";
+import { useEffect, useMemo, useRef, useState } from "react";
+import { MapContainer, Marker, Popup, TileLayer, useMap } from "react-leaflet";
+import type { DealerIssue } from "../constants";
+import { SEVERITY_COLORS } from "../constants";
+import {
+  formatDate,
+  getIssueTypeLabel,
+  getSeverityBadgeClass,
+  getValidCoordinates,
+  hasDealerGpsCoordinates,
+} from "../utils";
 
 // Fix for default markers in react-leaflet
 delete (L.Icon.Default.prototype as any)._getIconUrl;
@@ -21,14 +27,24 @@ L.Icon.Default.mergeOptions({
 
 interface DealerMapProps {
   dealers: DealerIssue[];
+  selectedDealer?: DealerIssue;
   onDealerSelect?: (dealer: DealerIssue) => void;
   className?: string;
 }
 
-const createCustomIcon = (severity: string, isHighlighted: boolean = false) => {
+const createCustomIcon = (
+  severity: string,
+  isHighlighted: boolean = false,
+  hasValidGPS: boolean = true,
+) => {
   const color = SEVERITY_COLORS[severity as keyof typeof SEVERITY_COLORS];
   const size = severity === "critical" ? 30 : severity === "high" ? 25 : 20;
   const highlightedSize = isHighlighted ? size + 8 : size;
+
+  // Different styling for dealers without valid GPS coordinates
+  const borderStyle = hasValidGPS
+    ? `border: ${isHighlighted ? "4px" : "2px"} solid ${isHighlighted ? "#ffffff" : "white"};`
+    : `border: ${isHighlighted ? "4px" : "2px"} dashed ${isHighlighted ? "#ffffff" : "white"};`;
 
   return L.divIcon({
     className: "custom-marker",
@@ -37,7 +53,7 @@ const createCustomIcon = (severity: string, isHighlighted: boolean = false) => {
         width: ${highlightedSize}px;
         height: ${highlightedSize}px;
         background-color: ${color};
-        border: ${isHighlighted ? "4px" : "2px"} solid ${isHighlighted ? "#ffffff" : "white"};
+        ${borderStyle}
         border-radius: 50%;
         box-shadow: ${isHighlighted ? "0 4px 12px rgba(0,0,0,0.4)" : "0 2px 4px rgba(0,0,0,0.3)"};
         display: flex;
@@ -45,14 +61,16 @@ const createCustomIcon = (severity: string, isHighlighted: boolean = false) => {
         justify-content: center;
         ${isHighlighted ? "transform: scale(1.1);" : ""}
         transition: all 0.3s ease;
+        ${!hasValidGPS ? "opacity: 0.8;" : ""}
       ">
         <div style="
-          width: ${highlightedSize - 12}px;
-          height: ${highlightedSize - 12}px;
-          background-color: white;
-          border-radius: 50%;
-          opacity: ${isHighlighted ? "1" : "0.8"};
-        "></div>
+          color: white;
+          font-size: ${highlightedSize < 25 ? "8px" : "10px"};
+          font-weight: bold;
+          text-shadow: 1px 1px 2px rgba(0,0,0,0.7);
+        ">
+          ${!hasValidGPS ? "📍" : "•"}
+        </div>
       </div>
     `,
     iconSize: [highlightedSize, highlightedSize],
@@ -60,117 +78,96 @@ const createCustomIcon = (severity: string, isHighlighted: boolean = false) => {
   });
 };
 
-const MapUpdater = ({
-  dealers,
-  currentDealerIndex,
-}: {
-  dealers: DealerIssue[];
-  currentDealerIndex: number;
-}) => {
+// Component to fit map to bounds
+const FitBounds: React.FC<{ bounds: L.LatLngBounds }> = ({ bounds }) => {
   const map = useMap();
 
   useEffect(() => {
-    // Pan to current dealer if valid index
-    if (
-      currentDealerIndex >= 0 &&
-      currentDealerIndex < dealers.length &&
-      dealers.length > 0
-    ) {
-      const currentDealer = dealers[currentDealerIndex];
-      map.setView(
-        [currentDealer.location.lat, currentDealer.location.lng],
-        12,
-        {
-          animate: true,
-          duration: 0.5,
-        }
-      );
-    } else if (dealers.length > 0) {
-      // Fit bounds if there are dealers but no specific focus
-      const group = new L.FeatureGroup(
-        dealers.map((dealer) =>
-          L.marker([dealer.location.lat, dealer.location.lng])
-        )
-      );
-      map.fitBounds(group.getBounds().pad(0.1));
+    if (bounds.isValid()) {
+      map.fitBounds(bounds, { padding: [20, 20] });
     }
-  }, [dealers, map, currentDealerIndex]);
+  }, [bounds, map]);
 
   return null;
 };
 
-const DealerMap = ({ dealers, onDealerSelect, className }: DealerMapProps) => {
+const DealerMap: React.FC<DealerMapProps> = ({
+  dealers,
+  selectedDealer,
+  onDealerSelect,
+}) => {
+  const [currentDealerIndex, setCurrentDealerIndex] = useState(0);
   const mapRef = useRef<L.Map>(null);
-  const [currentDealerIndex, setCurrentDealerIndex] = useState<number>(-1);
 
-  const handleMarkerClick = (dealer: DealerIssue) => {
-    onDealerSelect?.(dealer);
-    // Find and set the index of the clicked dealer
-    const index = dealers.findIndex((d) => d.id === dealer.id);
-    if (index !== -1) {
-      setCurrentDealerIndex(index);
+  // Calculate map bounds based on all dealers with valid coordinates
+  const dealersWithValidCoords = dealers.filter((dealer) =>
+    hasDealerGpsCoordinates(dealer),
+  );
+
+  const bounds = useMemo(() => {
+    if (dealersWithValidCoords.length === 0) {
+      // Default to Manila area if no valid coordinates
+      return L.latLngBounds([
+        [14.4, 120.8],
+        [14.8, 121.2],
+      ]);
     }
-  };
 
-  const handlePreviousDealer = () => {
-    if (dealers.length === 0) return;
-
-    if (currentDealerIndex <= 0) {
-      setCurrentDealerIndex(dealers.length - 1);
-    } else {
-      setCurrentDealerIndex(currentDealerIndex - 1);
+    if (dealersWithValidCoords.length === 1) {
+      const coords = getValidCoordinates(dealersWithValidCoords[0]);
+      return L.latLngBounds([
+        [coords.lat - 0.01, coords.lng - 0.01],
+        [coords.lat + 0.01, coords.lng + 0.01],
+      ]);
     }
+
+    const latLngs = dealersWithValidCoords.map((dealer) => {
+      const coords = getValidCoordinates(dealer);
+      return L.latLng(coords.lat, coords.lng);
+    });
+
+    return L.latLngBounds(latLngs);
+  }, [dealersWithValidCoords]);
+
+  const handlePrevious = () => {
+    setCurrentDealerIndex((prev) =>
+      prev === 0 ? dealers.length - 1 : prev - 1,
+    );
   };
 
-  const handleNextDealer = () => {
-    if (dealers.length === 0) return;
-
-    if (currentDealerIndex >= dealers.length - 1) {
-      setCurrentDealerIndex(0);
-    } else {
-      setCurrentDealerIndex(currentDealerIndex + 1);
-    }
+  const handleNext = () => {
+    setCurrentDealerIndex((prev) =>
+      prev === dealers.length - 1 ? 0 : prev + 1,
+    );
   };
 
-  const handleViewAll = () => {
-    setCurrentDealerIndex(-1);
-  };
-
-  const handleDealerFocus = (index: number) => {
-    setCurrentDealerIndex(index);
-    const dealer = dealers[index];
-    if (dealer && onDealerSelect) {
-      onDealerSelect(dealer);
-    }
-  };
-
-  // Reset current dealer index when dealers change
   useEffect(() => {
-    setCurrentDealerIndex(-1);
-  }, [dealers]);
+    if (selectedDealer) {
+      const index = dealers.findIndex((d) => d.id === selectedDealer.id);
+      if (index !== -1) {
+        setCurrentDealerIndex(index);
+      }
+    }
+  }, [selectedDealer, dealers]);
 
-  // Default center (Philippines)
-  const defaultCenter: [number, number] = [12.8797, 121.774];
-
-  const showNavigation = dealers.length > 1;
-  const currentDealer =
-    currentDealerIndex >= 0 && currentDealerIndex < dealers.length
-      ? dealers[currentDealerIndex]
-      : null;
+  if (dealers.length === 0) {
+    return (
+      <div className="h-full w-full flex items-center justify-center bg-muted/20">
+        <div className="text-center text-muted-foreground">
+          <MapPin className="h-8 w-8 mx-auto mb-2 opacity-50" />
+          <p className="text-sm">No dealers to display</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
-    <div className={`w-full h-full relative z-0 ${className}`}>
-      <link
-        rel="stylesheet"
-        href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
-        integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY="
-        crossOrigin=""
-      />
+    <div className="relative h-full w-full">
       <MapContainer
-        center={defaultCenter}
-        zoom={6}
-        style={{ height: "100%", width: "100%" }}
         ref={mapRef}
+        center={[14.5995, 120.9842]} // Manila center as default
+        zoom={10}
+        style={{ height: "100%", width: "100%" }}
         className="rounded-lg"
       >
         <TileLayer
@@ -178,149 +175,137 @@ const DealerMap = ({ dealers, onDealerSelect, className }: DealerMapProps) => {
           url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
         />
 
-        <MapUpdater dealers={dealers} currentDealerIndex={currentDealerIndex} />
+        <FitBounds bounds={bounds} />
 
-        {dealers.map((dealer, index) => (
-          <Marker
-            key={dealer.id}
-            position={[dealer.location.lat, dealer.location.lng]}
-            icon={createCustomIcon(
-              dealer.severity,
-              index === currentDealerIndex
-            )}
-            eventHandlers={{
-              click: () => handleMarkerClick(dealer),
-            }}
-          >
-            <Popup>
-              <div className="p-2 min-w-64">
-                <div className="flex items-start justify-between mb-3">
-                  <div>
-                    <h3 className="font-semibold text-foreground font-display">
+        {dealers.map((dealer) => {
+          const coords = getValidCoordinates(dealer);
+          const hasValidGPS = hasDealerGpsCoordinates(dealer);
+          const isSelected = selectedDealer?.id === dealer.id;
+
+          return (
+            <Marker
+              key={dealer.id}
+              position={[coords.lat, coords.lng]}
+              icon={createCustomIcon(dealer.severity, isSelected, hasValidGPS)}
+              eventHandlers={{
+                click: () => {
+                  onDealerSelect?.(dealer);
+                  setCurrentDealerIndex(
+                    dealers.findIndex((d) => d.id === dealer.id),
+                  );
+                },
+              }}
+            >
+              <Popup>
+                <div className="p-2 min-w-64">
+                  <div className="flex items-center gap-2 mb-2">
+                    <h3 className="font-semibold text-sm">
                       {dealer.dealerName}
                     </h3>
-                    <p className="text-xs text-muted-foreground font-sans">
-                      {dealer.dealerCode}
-                    </p>
+                    <Badge
+                      className={`text-xs ${getSeverityBadgeClass(dealer.severity)}`}
+                    >
+                      {dealer.severity.toUpperCase()}
+                    </Badge>
                   </div>
-                  <Badge
-                    variant="outline"
-                    className={`text-xs ${getSeverityBadgeClass(dealer.severity)}`}
-                  >
-                    {dealer.severity.toUpperCase()}
-                  </Badge>
-                </div>
 
-                <div className="space-y-2 mb-3">
-                  <p className="text-xs text-muted-foreground font-sans">
-                    📍 {dealer.location.address}
-                  </p>
-                  <p className="text-xs text-muted-foreground font-sans">
-                    👤 {dealer.contactPerson}
-                  </p>
-                </div>
-
-                <div className="space-y-2">
-                  <p className="text-xs font-medium text-foreground font-sans">
-                    Issues ({dealer.issues.length}):
-                  </p>
-                  {dealer.issues.slice(0, 2).map((issue, index) => (
-                    <div key={index} className="flex items-center gap-2">
-                      <Badge
-                        variant="outline"
-                        className={`text-xs ${getSeverityBadgeClass(issue.priority as any)}`}
-                      >
-                        {getIssueTypeLabel(issue.type)}
-                      </Badge>
-                      <span className="text-xs text-muted-foreground font-sans truncate">
-                        {issue.description}
-                      </span>
+                  <div className="space-y-1 text-xs text-muted-foreground">
+                    <div className="flex items-center gap-1">
+                      <MapPin className="w-3 h-3" />
+                      <span>{dealer.location.address}</span>
+                      {!hasValidGPS && (
+                        <span className="text-orange-600 font-medium">
+                          (Estimated location)
+                        </span>
+                      )}
                     </div>
-                  ))}
-                  {dealer.issues.length > 2 && (
-                    <p className="text-xs text-muted-foreground font-sans">
-                      +{dealer.issues.length - 2} more issues
-                    </p>
+                    <div>Code: {dealer.dealerCode}</div>
+                    <div>Issues: {dealer.issues.length}</div>
+                    <div>Last Updated: {formatDate(dealer.lastUpdated)}</div>
+                  </div>
+
+                  {dealer.issues.length > 0 && (
+                    <div className="mt-2 pt-2 border-t">
+                      <div className="text-xs font-medium mb-1">
+                        Recent Issues:
+                      </div>
+                      <div className="space-y-1">
+                        {dealer.issues.slice(0, 2).map((issue, index) => (
+                          <div key={index} className="text-xs">
+                            <span className="font-medium">
+                              {getIssueTypeLabel(issue.type)}:
+                            </span>
+                            <span className="ml-1 text-muted-foreground">
+                              {issue.description.length > 40
+                                ? `${issue.description.substring(0, 40)}...`
+                                : issue.description}
+                            </span>
+                          </div>
+                        ))}
+                        {dealer.issues.length > 2 && (
+                          <div className="text-xs text-blue-600">
+                            +{dealer.issues.length - 2} more issues
+                          </div>
+                        )}
+                      </div>
+                    </div>
                   )}
                 </div>
-
-                <div className="mt-3 pt-2 border-t border-border">
-                  <p className="text-xs text-muted-foreground font-sans">
-                    Last updated: {formatDate(dealer.lastUpdated)}
-                  </p>
-                </div>
-
-                <div className="mt-3 flex justify-center">
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => handleDealerFocus(index)}
-                    className="text-xs"
-                  >
-                    Focus on this dealer
-                  </Button>
-                </div>
-              </div>
-            </Popup>
-          </Marker>
-        ))}
+              </Popup>
+            </Marker>
+          );
+        })}
       </MapContainer>
 
       {/* Navigation Controls */}
-      {showNavigation && (
-        <div className="absolute top-4 right-4 z-[1000] flex items-center gap-2">
-          <div className="bg-card/90 backdrop-blur-sm border border-border rounded-lg p-2 flex items-center gap-2">
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={handlePreviousDealer}
-              className="h-8 w-8 p-0"
-              aria-label="Previous dealer"
-            >
-              <ChevronLeft className="h-4 w-4" />
-            </Button>
+      {dealers.length > 1 && (
+        <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 bg-white rounded-lg shadow-lg border p-2 flex items-center gap-2">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={handlePrevious}
+            className="h-8 w-8 p-0"
+          >
+            <ChevronLeft className="h-4 w-4" />
+          </Button>
 
-            <div className="px-2 text-xs text-foreground font-sans">
-              {currentDealer ? (
-                <div className="text-center min-w-24">
-                  <div className="font-medium">{currentDealer.dealerName}</div>
-                  <div className="text-muted-foreground">
-                    {currentDealerIndex + 1} of {dealers.length}
-                  </div>
-                </div>
-              ) : (
-                <div className="text-center min-w-24">
-                  <div className="font-medium">All Dealers</div>
-                  <div className="text-muted-foreground">
-                    {dealers.length} total
-                  </div>
-                </div>
-              )}
-            </div>
-
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={handleNextDealer}
-              className="h-8 w-8 p-0"
-              aria-label="Next dealer"
-            >
-              <ChevronRight className="h-4 w-4" />
-            </Button>
+          <div className="px-3 py-1 bg-muted rounded text-xs font-medium">
+            {currentDealerIndex + 1} of {dealers.length}
           </div>
 
-          {currentDealer && (
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={handleViewAll}
-              className="bg-card/90 backdrop-blur-sm text-xs"
-            >
-              View All
-            </Button>
-          )}
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={handleNext}
+            className="h-8 w-8 p-0"
+          >
+            <ChevronRight className="h-4 w-4" />
+          </Button>
         </div>
       )}
+
+      {/* Legend */}
+      <div className="absolute top-4 right-4 bg-white rounded-lg shadow-lg border p-3">
+        <div className="text-xs font-medium mb-2">Legend</div>
+        <div className="space-y-1 text-xs">
+          <div className="flex items-center gap-2">
+            <div className="w-3 h-3 bg-red-600 rounded-full border border-white"></div>
+            <span>Critical/High</span>
+          </div>
+          <div className="flex items-center gap-2">
+            <div className="w-3 h-3 bg-amber-500 rounded-full border border-white"></div>
+            <span>Medium</span>
+          </div>
+          <div className="flex items-center gap-2">
+            <div className="w-3 h-3 bg-emerald-500 rounded-full border border-white"></div>
+            <span>Low</span>
+          </div>
+          <div className="flex items-center gap-2">
+            <div className="w-3 h-3 bg-gray-400 rounded-full border-2 border-dashed border-white"></div>
+            <span>Estimated location</span>
+          </div>
+        </div>
+      </div>
     </div>
   );
 };

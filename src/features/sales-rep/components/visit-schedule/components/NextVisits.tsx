@@ -1,15 +1,15 @@
-import React from "react";
-import { Calendar, MapPin, Phone, Clock } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
+import { cn } from "@/lib/utils";
+import { Calendar, Clock, MapPin, Phone } from "lucide-react";
+import React from "react";
 import { type Visit } from "../constants";
 import {
-  getUpcomingVisits,
+  formatDateOnly,
   formatTimeOnly,
   getDayOfWeekLabel,
-  formatDateOnly,
   getPriorityBadgeColor,
+  getUpcomingVisits,
 } from "../utils";
-import { cn } from "@/lib/utils";
 import DirectionsButton from "./DirectionsButton";
 
 interface NextVisitsProps {
@@ -24,7 +24,7 @@ const VisitCard: React.FC<{ visit: Visit }> = ({ visit }) => {
     <div className="flex items-center">
       <div className="flex flex-col items-center mr-3 relative">
         <div className="w-12 h-12 rounded-lg bg-muted/50 flex-shrink-0 flex items-center justify-center">
-          <span className="text-xs font-medium text-foreground font-sans">
+          <span className="text-xs font-medium text-center text-foreground font-sans">
             {timeString}
           </span>
         </div>
@@ -39,7 +39,7 @@ const VisitCard: React.FC<{ visit: Visit }> = ({ visit }) => {
               <Badge
                 className={cn(
                   "text-[10px] px-2 h-fit py-0 rounded-sm",
-                  getPriorityBadgeColor(visit.priority)
+                  getPriorityBadgeColor(visit.priority),
                 )}
               >
                 {visit.priority}
@@ -93,7 +93,7 @@ const DateSection: React.FC<{ date: Date; visits: Visit[] }> = ({
               className={cn(
                 "text-sm font-medium font-sans",
                 isToday && "text-blue-600 dark:text-blue-400",
-                isTomorrow && "text-green-600 dark:text-green-400"
+                isTomorrow && "text-green-600 dark:text-green-400",
               )}
             >
               {dayLabel}
@@ -118,7 +118,7 @@ const DateSection: React.FC<{ date: Date; visits: Visit[] }> = ({
             className={cn(
               "relative",
               index < visits.length - 1 &&
-                "after:content-[''] after:absolute after:left-[-12px] after:top-12 after:w-px after:h-4 after:bg-border"
+                "after:content-[''] after:absolute after:left-[-12px] after:top-12 after:w-px after:h-4 after:bg-border",
             )}
           >
             <VisitCard visit={visit} />
@@ -142,11 +142,11 @@ const NextVisits: React.FC<NextVisitsProps> = ({ visits, className }) => {
       acc[dateKey].push(visit);
       return acc;
     },
-    {} as Record<string, Visit[]>
+    {} as Record<string, Visit[]>,
   );
 
   const sortedDates = Object.keys(visitsByDate).sort(
-    (a, b) => new Date(a).getTime() - new Date(b).getTime()
+    (a, b) => new Date(a).getTime() - new Date(b).getTime(),
   );
 
   if (upcomingVisits.length === 0) {

@@ -1,28 +1,209 @@
 import {
   format,
-  parseISO,
-  subDays,
-  subWeeks,
-  subMonths,
   isAfter,
   isBefore,
   isWithinInterval,
+  parseISO,
+  subMonths,
+  subWeeks,
 } from "date-fns";
 import type {
-  FarmRegistration,
-  SalesRep,
-  RegistrationMetrics,
-  TimeSeriesData,
-  RegistrationType,
-  RegistrationStatus,
-  TimePeriod,
   ChartType,
+  FarmRegistration,
+  RegistrationMetrics,
+  RegistrationStatus,
+  RegistrationType,
+  SalesRep,
+  TimePeriod,
+  TimeSeriesData,
 } from "./constants";
 import {
   MOCK_FARM_REGISTRATIONS,
   MOCK_SALES_REPS,
   MOCK_TIME_SERIES_DATA,
 } from "./constants";
+
+// Add API transformation utilities
+import type { AdminFarmApiItem } from "@/features/admin/types";
+
+// Transform farm type to crop types mapping
+export const mapFarmTypeToCropTypes = (farmType: string): string[] => {
+  const farmTypeMap: Record<string, string[]> = {
+    broiler: ["Broiler Chicken"],
+    layer: ["Layer Chicken"],
+    swine: ["Swine", "Pig"],
+    cattle: ["Cattle", "Beef"],
+    dairy: ["Dairy Cattle"],
+    goat: ["Goat"],
+    sheep: ["Sheep"],
+    duck: ["Duck"],
+    quail: ["Quail"],
+    fish: ["Fish", "Aquaculture"],
+  };
+
+  const lowerFarmType = farmType.toLowerCase();
+  return farmTypeMap[lowerFarmType] || [farmType];
+};
+
+// Generate mock contact info since API doesn't provide it
+export const generateMockContactInfo = (farmerId: number) => ({
+  phone: `+63 9${String(farmerId).padStart(2, "0")}${Math.floor(
+    Math.random() * 1000000,
+  )
+    .toString()
+    .padStart(7, "0")}`,
+  email: `farmer${farmerId}@example.com`,
+});
+
+// Calculate mock monthly revenue based on farm size and type
+export const calculateMockRevenue = (
+  farmSize: number,
+  farmType: string,
+): number => {
+  const revenuePerHectare: Record<string, number> = {
+    broiler: 15000,
+    layer: 12000,
+    swine: 18000,
+    cattle: 8000,
+    dairy: 14000,
+    goat: 6000,
+    sheep: 5000,
+    duck: 10000,
+    quail: 7000,
+    fish: 16000,
+  };
+
+  const baseRevenue = revenuePerHectare[farmType.toLowerCase()] || 10000;
+  return Math.round(farmSize * baseRevenue * (0.8 + Math.random() * 0.4)); // ±20% variation
+};
+
+// Transform API data to FarmRegistration format
+export const transformApiDataToFarmRegistrations = (
+  apiData: AdminFarmApiItem[],
+): FarmRegistration[] => {
+  const registrations: FarmRegistration[] = [];
+
+  apiData.forEach((item) => {
+    // Each farmer can have multiple farm details, create a registration for each
+    item.farmer.farmer_details.forEach((farmDetail) => {
+      const salesRepName =
+        item.salesrep.first_name && item.salesrep.last_name
+          ? `${item.salesrep.first_name} ${item.salesrep.last_name}`
+          : `Sales Rep ${item.salesrep.id}`;
+
+      const farmerName = `${item.farmer.first_name} ${item.farmer.last_name}`;
+
+      // Build location address
+      const addressParts = [
+        farmDetail.location_barangay && farmDetail.location_barangay !== "224"
+          ? `Brgy. ${farmDetail.location_barangay}`
+          : null,
+        farmDetail.location_city,
+        farmDetail.location_province,
+      ].filter(Boolean);
+
+      const address =
+        addressParts.length > 0 ? addressParts.join(", ") : "Unknown Location";
+
+      // Determine registration type based on farm creation date (simplified logic)
+      const createdDate = new Date(farmDetail.created_at);
+      const isRecent =
+        Date.now() - createdDate.getTime() < 90 * 24 * 60 * 60 * 1000; // 90 days
+      const registrationType: "new" | "expansion" | "conversion" = isRecent
+        ? "new"
+        : "expansion";
+
+      // Determine status based on current_feed and days_on_feed
+      const daysOnFeed = parseInt(farmDetail.days_on_feed) || 0;
+      const status: "active" | "pending" | "inactive" =
+        daysOnFeed > 0 ? "active" : "pending";
+
+      const registration: FarmRegistration = {
+        id: `${item.farmer.id}-${farmDetail.id}`,
+        farmName: farmDetail.farm_name || `Farm ${farmDetail.id}`,
+        farmerName,
+        location: {
+          lat: farmDetail.latitude || 0,
+          lng: farmDetail.longitude || 0,
+          address,
+          region: farmDetail.location_province || "Unknown Region",
+          province: farmDetail.location_province || "Unknown Province",
+        },
+        registrationDate: farmDetail.created_at,
+        salesRep: salesRepName,
+        salesRepId: item.salesrep.id.toString(),
+        farmSize: farmDetail.farm_size || 0,
+        cropTypes: mapFarmTypeToCropTypes(farmDetail.farm_type),
+        registrationType,
+        status,
+        monthlyRevenue: calculateMockRevenue(
+          farmDetail.farm_size || 0,
+          farmDetail.farm_type,
+        ),
+        contactInfo: generateMockContactInfo(item.farmer.id),
+      };
+
+      registrations.push(registration);
+    });
+  });
+
+  return registrations;
+};
+
+// Transform API data to SalesRep format
+export const transformApiDataToSalesReps = (
+  apiData: AdminFarmApiItem[],
+): SalesRep[] => {
+  const salesRepMap = new Map<string, SalesRep>();
+
+  apiData.forEach((item) => {
+    const salesRepId = item.salesrep.id.toString();
+    const salesRepName =
+      item.salesrep.first_name && item.salesrep.last_name
+        ? `${item.salesrep.first_name} ${item.salesrep.last_name}`
+        : `Sales Rep ${item.salesrep.id}`;
+
+    const territory =
+      item.salesrep.salesrep_details.length > 0
+        ? item.salesrep.salesrep_details[0].territory
+        : "Unknown Territory";
+
+    if (!salesRepMap.has(salesRepId)) {
+      salesRepMap.set(salesRepId, {
+        id: salesRepId,
+        name: salesRepName,
+        territory,
+        registrationsThisMonth: 0,
+        totalRegistrations: 0,
+        targetRegistrations:
+          item.salesrep.salesrep_details.length > 0
+            ? Math.floor(
+                item.salesrep.salesrep_details[0].quota_monthly / 50000,
+              ) // Rough conversion
+            : 10, // Default target
+      });
+    }
+
+    const salesRep = salesRepMap.get(salesRepId)!;
+
+    // Count registrations
+    const farmerRegistrations = item.farmer.farmer_details.length;
+    salesRep.totalRegistrations += farmerRegistrations;
+
+    // Count recent registrations (this month)
+    const thisMonth = new Date();
+    thisMonth.setDate(1); // First day of current month
+
+    const recentRegistrations = item.farmer.farmer_details.filter((detail) => {
+      const createdDate = new Date(detail.created_at);
+      return createdDate >= thisMonth;
+    }).length;
+
+    salesRep.registrationsThisMonth += recentRegistrations;
+  });
+
+  return Array.from(salesRepMap.values());
+};
 
 export interface FilterOptions {
   registrationType?: RegistrationType | "all";
@@ -38,7 +219,7 @@ export interface FilterOptions {
 
 export const getFilteredRegistrations = (
   registrations: FarmRegistration[] = MOCK_FARM_REGISTRATIONS,
-  filters: FilterOptions = {}
+  filters: FilterOptions = {},
 ): FarmRegistration[] => {
   return registrations.filter((registration) => {
     // Registration Type Filter
@@ -105,36 +286,36 @@ export const getFilteredRegistrations = (
 };
 
 export const calculateRegistrationMetrics = (
-  registrations: FarmRegistration[] = MOCK_FARM_REGISTRATIONS
+  registrations: FarmRegistration[] = MOCK_FARM_REGISTRATIONS,
 ): RegistrationMetrics => {
   const now = new Date();
   const oneWeekAgo = subWeeks(now, 1);
   const oneMonthAgo = subMonths(now, 1);
 
   const thisWeekRegistrations = registrations.filter((reg) =>
-    isAfter(parseISO(reg.registrationDate), oneWeekAgo)
+    isAfter(parseISO(reg.registrationDate), oneWeekAgo),
   );
 
   const thisMonthRegistrations = registrations.filter((reg) =>
-    isAfter(parseISO(reg.registrationDate), oneMonthAgo)
+    isAfter(parseISO(reg.registrationDate), oneMonthAgo),
   );
 
   const newAccounts = registrations.filter(
-    (reg) => reg.registrationType === "new"
+    (reg) => reg.registrationType === "new",
   ).length;
   const expansions = registrations.filter(
-    (reg) => reg.registrationType === "expansion"
+    (reg) => reg.registrationType === "expansion",
   ).length;
   const conversions = registrations.filter(
-    (reg) => reg.registrationType === "conversion"
+    (reg) => reg.registrationType === "conversion",
   ).length;
 
   const activeRegistrations = registrations.filter(
-    (reg) => reg.status === "active"
+    (reg) => reg.status === "active",
   );
   const totalFarmSize = activeRegistrations.reduce(
     (sum, reg) => sum + reg.farmSize,
-    0
+    0,
   );
   const averageFarmSize =
     activeRegistrations.length > 0
@@ -143,7 +324,7 @@ export const calculateRegistrationMetrics = (
 
   const totalRevenue = activeRegistrations.reduce(
     (sum, reg) => sum + reg.monthlyRevenue,
-    0
+    0,
   );
 
   // Calculate penetration rate (mock calculation based on total potential farms)
@@ -164,7 +345,7 @@ export const calculateRegistrationMetrics = (
 };
 
 export const getRegistrationsByRegion = (
-  registrations: FarmRegistration[] = MOCK_FARM_REGISTRATIONS
+  registrations: FarmRegistration[] = MOCK_FARM_REGISTRATIONS,
 ): Record<string, number> => {
   return registrations.reduce(
     (acc, registration) => {
@@ -172,13 +353,13 @@ export const getRegistrationsByRegion = (
       acc[region] = (acc[region] || 0) + 1;
       return acc;
     },
-    {} as Record<string, number>
+    {} as Record<string, number>,
   );
 };
 
 export const getRegistrationsBySalesRep = (
   registrations: FarmRegistration[] = MOCK_FARM_REGISTRATIONS,
-  salesReps: SalesRep[] = MOCK_SALES_REPS
+  salesReps: SalesRep[] = MOCK_SALES_REPS,
 ): SalesRep[] => {
   const registrationCounts = registrations.reduce(
     (acc, registration) => {
@@ -186,7 +367,7 @@ export const getRegistrationsBySalesRep = (
       acc[repId] = (acc[repId] || 0) + 1;
       return acc;
     },
-    {} as Record<string, number>
+    {} as Record<string, number>,
   );
 
   return salesReps.map((rep) => ({
@@ -198,9 +379,8 @@ export const getRegistrationsBySalesRep = (
 export const getChartData = (
   chartType: ChartType,
   timePeriod: TimePeriod = "month",
-  timeSeriesData: TimeSeriesData[] = MOCK_TIME_SERIES_DATA
+  timeSeriesData: TimeSeriesData[] = MOCK_TIME_SERIES_DATA,
 ): Array<{ date: string; value: number; formattedDate: string }> => {
-  const now = new Date();
   let filteredData = timeSeriesData;
 
   // Filter data based on time period
@@ -276,7 +456,7 @@ export const getRegistrationTypeColor = (type: RegistrationType): string => {
 };
 
 export const getRegistrationTypeBadgeVariant = (
-  type: RegistrationType
+  type: RegistrationType,
 ): "default" | "secondary" | "destructive" | "outline" => {
   const variants = {
     new: "default" as const,
@@ -297,7 +477,7 @@ export const getStatusColor = (status: RegistrationStatus): string => {
 
 export const getRegistrationTrend = (
   current: number,
-  previous: number
+  previous: number,
 ): { percentage: number; isPositive: boolean } => {
   if (previous === 0) {
     return { percentage: current > 0 ? 100 : 0, isPositive: current > 0 };
@@ -316,7 +496,7 @@ export const getMapMarkerSize = (registrationCount: number): number => {
 };
 
 export const getMapMarkerColor = (
-  registrationType: RegistrationType
+  registrationType: RegistrationType,
 ): string => {
   const colors = {
     new: "#22c55e", // green-500

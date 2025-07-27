@@ -1,10 +1,4 @@
-import {
-  Calendar,
-  ChevronRight,
-  CircleFadingArrowUp,
-  Settings,
-  Wheat,
-} from "lucide-react";
+import { Calendar, ChevronRight, Settings, Wheat } from "lucide-react";
 import { useState } from "react";
 
 import { Badge } from "@/components/ui/badge";
@@ -17,24 +11,29 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import ExpandableCard from "@/components/ui/expandable-card";
-import {
-  FEED_TYPE_COLORS,
-  MOCK_CURRENT_FEED,
-  type FeedInfo,
-} from "./constants";
+import { FEED_STAGE_COLORS, FEED_STAGE_DISPLAY } from "@/features/farmer/types";
+import type { FarmerDashboardViewModel } from "@/services/field-iq-service";
 
-export const CurrentFeedInUse = () => {
-  const [feedInfo] = useState<FeedInfo>(MOCK_CURRENT_FEED);
+interface CurrentFeedInUseProps {
+  dashboardData?: FarmerDashboardViewModel;
+}
+
+export const CurrentFeedInUse: React.FC<CurrentFeedInUseProps> = ({
+  dashboardData,
+}) => {
   const [isDetailsOpen, setIsDetailsOpen] = useState(false);
 
+  // Extract used_feed data from API response
+  const feedInfo = dashboardData?.used_feed;
+
   const formatAgeRange = (start: number, end: number) => {
-    if (start === 0) {
+    if (start === 1) {
       return `Day 1 - ${end} days`;
     }
     return `${start} - ${end} days`;
   };
 
-  const formatLastUpdated = (dateString: string) => {
+  const formatDate = (dateString: string) => {
     const date = new Date(dateString);
     return date.toLocaleDateString("en-US", {
       year: "numeric",
@@ -43,7 +42,41 @@ export const CurrentFeedInUse = () => {
     });
   };
 
-  const feedTypeColorClass = FEED_TYPE_COLORS[feedInfo.type];
+  const getFeedStageDisplay = (stage: string) => {
+    return (
+      FEED_STAGE_DISPLAY[stage] ||
+      stage.replace("_", " ").replace(/\b\w/g, (l) => l.toUpperCase())
+    );
+  };
+
+  const feedStageColorClass = feedInfo?.feed_stage
+    ? FEED_STAGE_COLORS[feedInfo.feed_stage] ||
+      "bg-gray-100 text-gray-800 border-gray-200"
+    : "bg-gray-100 text-gray-800 border-gray-200";
+
+  // Show loading state if no data
+  if (!feedInfo) {
+    return (
+      <ExpandableCard
+        title="My Current Feed in Use"
+        summary={
+          <div className="flex items-center gap-2 text-muted-foreground">
+            <Wheat className="h-4 w-4" />
+            <span className="text-sm">Loading feed information...</span>
+          </div>
+        }
+        className="h-fit"
+      >
+        <div className="space-y-4">
+          <div className="rounded-lg p-4 border">
+            <div className="text-center text-muted-foreground">
+              <p className="text-sm">No feed data available</p>
+            </div>
+          </div>
+        </div>
+      </ExpandableCard>
+    );
+  }
 
   // Summary content - show feed name and status
   const summaryContent = (
@@ -52,14 +85,14 @@ export const CurrentFeedInUse = () => {
         <div className="flex items-center gap-2">
           <Wheat className="h-4 w-4 text-green-600" />
           <span className="text-sm font-medium text-foreground">
-            {feedInfo.name}
+            {feedInfo.feed_name}
           </span>
         </div>
         <Badge
           variant="outline"
-          className={`${feedTypeColorClass} font-medium capitalize text-xs`}
+          className={`${feedStageColorClass} font-medium capitalize text-xs`}
         >
-          {feedInfo.type}
+          {getFeedStageDisplay(feedInfo.feed_stage)}
         </Badge>
       </div>
       <div className="flex items-center gap-2">
@@ -81,17 +114,17 @@ export const CurrentFeedInUse = () => {
           <div className="flex items-start justify-between mb-3">
             <div className="flex-1">
               <h3 className="font-display font-medium text-foreground">
-                {feedInfo.name}
+                {feedInfo.feed_name}
               </h3>
               <p className="text-sm text-muted-foreground mb-2 font-medium">
-                {feedInfo.description}
+                {feedInfo.feed_goal}
               </p>
             </div>
             <Badge
               variant="outline"
-              className={`${feedTypeColorClass} font-medium capitalize`}
+              className={`${feedStageColorClass} font-medium capitalize`}
             >
-              {feedInfo.type}
+              {getFeedStageDisplay(feedInfo.feed_stage)}
             </Badge>
           </div>
 
@@ -103,7 +136,10 @@ export const CurrentFeedInUse = () => {
                   Age Range
                 </p>
                 <p className="text-sm font-medium font-display">
-                  {formatAgeRange(feedInfo.ageRangeStart, feedInfo.ageRangeEnd)}
+                  {formatAgeRange(
+                    feedInfo.age_range_start,
+                    feedInfo.age_range_end,
+                  )}
                 </p>
               </div>
             </div>
@@ -111,40 +147,23 @@ export const CurrentFeedInUse = () => {
               <Settings className="h-4 w-4 text-muted-foreground" />
               <div>
                 <p className="text-xs text-muted-foreground font-medium leading-none">
-                  Last Updated
+                  Start Date
                 </p>
                 <p className="text-sm font-medium font-display">
-                  {formatLastUpdated(feedInfo.lastUpdated)}
+                  {formatDate(feedInfo.start_date)}
                 </p>
               </div>
             </div>
           </div>
 
-          {/* Quick Nutrition Info */}
+          {/* Feed Program Info */}
           <div className="bg-background/50 rounded-md p-3 border">
             <p className="text-xs text-muted-foreground mb-2 font-medium">
-              Quick Nutrition
+              Feed Program Goal
             </p>
-            <div className="flex justify-between text-xs">
-              <span className="font-medium text-muted-foreground">
-                Protein:{" "}
-                <span className="font-display text-sm text-black">
-                  {feedInfo.nutritionInfo.protein}%
-                </span>
-              </span>
-              <span className="font-medium text-muted-foreground">
-                Energy:{" "}
-                <span className="font-display text-sm text-black">
-                  {feedInfo.nutritionInfo.energy} kcal/kg
-                </span>
-              </span>
-              <span className="font-medium text-muted-foreground">
-                Fiber:{" "}
-                <span className="font-display text-sm text-black">
-                  {feedInfo.nutritionInfo.fiber}%
-                </span>
-              </span>
-            </div>
+            <p className="text-sm font-medium text-foreground">
+              {feedInfo.feed_goal}
+            </p>
           </div>
 
           {/* Action Button */}
@@ -154,7 +173,7 @@ export const CurrentFeedInUse = () => {
             className="w-full mt-3 font-medium text-xs text-muted-foreground"
             onClick={() => setIsDetailsOpen(true)}
           >
-            View Details & Guidelines
+            View Details & Information
             <ChevronRight className="h-4 w-4 ml-1" />
           </Button>
         </div>
@@ -165,7 +184,7 @@ export const CurrentFeedInUse = () => {
             Active Feed Program
           </p>
           <span className="text-sm text-muted-foreground">
-            optimal for current growth stage
+            {getFeedStageDisplay(feedInfo.feed_stage)} stage
           </span>
         </div>
       </div>
@@ -174,9 +193,11 @@ export const CurrentFeedInUse = () => {
       <Dialog open={isDetailsOpen} onOpenChange={setIsDetailsOpen}>
         <DialogContent className="max-w-2xl">
           <DialogHeader>
-            <DialogTitle className="font-display">{feedInfo.name}</DialogTitle>
+            <DialogTitle className="font-display">
+              {feedInfo.feed_name}
+            </DialogTitle>
             <DialogDescription>
-              Complete feed information and feeding guidelines
+              Complete feed information and program details
             </DialogDescription>
           </DialogHeader>
 
@@ -188,9 +209,9 @@ export const CurrentFeedInUse = () => {
                 <div className="items-start flex gap-1">
                   <Wheat className="h-4 w-4 text-muted-foreground" />
                   <div className="">
-                    <p className="text-xs text-muted-foreground">Feed Type</p>
-                    <Badge className={`${feedTypeColorClass} capitalize`}>
-                      {feedInfo.type}
+                    <p className="text-xs text-muted-foreground">Feed Stage</p>
+                    <Badge className={`${feedStageColorClass} capitalize`}>
+                      {getFeedStageDisplay(feedInfo.feed_stage)}
                     </Badge>
                   </div>
                 </div>
@@ -200,8 +221,8 @@ export const CurrentFeedInUse = () => {
                     <p className="text-xs text-muted-foreground">Age Range</p>
                     <p className="font-medium text-sm font-display">
                       {formatAgeRange(
-                        feedInfo.ageRangeStart,
-                        feedInfo.ageRangeEnd,
+                        feedInfo.age_range_start,
+                        feedInfo.age_range_end,
                       )}
                     </p>
                   </div>
@@ -209,51 +230,38 @@ export const CurrentFeedInUse = () => {
               </div>
             </div>
 
-            {/* Detailed Nutrition */}
+            {/* Feed Program Goal */}
             <div className="space-y-1">
-              <h4 className="font-medium font-display">Nutritional Analysis</h4>
-              <div className="grid grid-cols-3 gap-2">
-                <div className="text-center p-2 rounded-md border">
-                  <p className="text-xl font-medium font-display">
-                    {feedInfo.nutritionInfo.protein}%
-                  </p>
-                  <p className="text-sm text-muted-foreground">Crude Protein</p>
-                </div>
-                <div className="text-center p-2 rounded-md border">
-                  <p className="text-xl font-medium font-display">
-                    {feedInfo.nutritionInfo.energy}
-                  </p>
-                  <p className="text-sm text-muted-foreground">ME (kcal/kg)</p>
-                </div>
-                <div className="text-center p-2 rounded-md border">
-                  <p className="text-xl font-medium font-display">
-                    {feedInfo.nutritionInfo.fiber}%
-                  </p>
-                  <p className="text-sm text-muted-foreground">Crude Fiber</p>
-                </div>
+              <h4 className="font-medium font-display">Program Goal</h4>
+              <div className="p-3 rounded-md border bg-blue-50">
+                <p className="text-sm text-blue-700 font-medium">
+                  {feedInfo.feed_goal}
+                </p>
               </div>
             </div>
 
-            {/* Feeding Guidelines */}
-            <div className="p-5 bg-blue-100 -mx-6 border-t border-blue-500 border-b">
-              <p className="text-sm text-blue-500 font-medium font-display">
-                {feedInfo.feedingGuidelines}
-              </p>
-            </div>
-
-            {/* Update Info */}
-            <div className="flex items-center justify-between p-5 -mx-6 bg-muted/50">
-              <div className="flex gap-2">
-                <CircleFadingArrowUp className="h-4 w-4 text-muted-foreground" />
+            {/* Program Info */}
+            <div className="p-5 bg-green-100 -mx-6 border-t border-green-500 border-b">
+              <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <p className="text-xs text-muted-foreground font-medium">
-                    Last updated
+                  <p className="text-xs text-green-600 font-medium">Feed ID</p>
+                  <p className="text-sm font-display font-medium text-green-700">
+                    #{feedInfo.feed_product_id}
                   </p>
-                  <p className="text-sm font-display font-medium">
-                    {formatLastUpdated(feedInfo.lastUpdated)}
+                </div>
+                <div>
+                  <p className="text-xs text-green-600 font-medium">
+                    Program Started
+                  </p>
+                  <p className="text-sm font-display font-medium text-green-700">
+                    {formatDate(feedInfo.start_date)}
                   </p>
                 </div>
               </div>
+            </div>
+
+            {/* Close Button */}
+            <div className="flex items-center justify-end p-5 -mx-6 bg-muted/50">
               <Button
                 variant="outline"
                 size="sm"

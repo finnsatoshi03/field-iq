@@ -34,6 +34,37 @@ export const authService = {
     }
   },
 
+  async resetPassword(email: string) {
+    let { data, error } = await supabase.auth.resetPasswordForEmail(email, {
+      redirectTo: `${window.location.origin}/auth/reset-password`,
+    });
+    if (error) {
+      throw error;
+    }
+    return data;
+  },
+
+  async updatePassword(newPassword: string) {
+    const { data, error } = await supabase.auth.updateUser({
+      password: newPassword,
+    });
+    if (error) {
+      throw error;
+    }
+    return data;
+  },
+
+  async getUserProfileById(userId: string) {
+    const { data, error } = await supabase
+      .from("user_profiles")
+      .select("*")
+      .eq("identity_id", userId);
+    if (error) {
+      throw error;
+    }
+    return data;
+  },
+
   async getCurrentUser() {
     const {
       data: { user },
@@ -54,6 +85,23 @@ export const authService = {
       throw error;
     }
     return session;
+  },
+
+  async setSession({
+    access_token,
+    refresh_token,
+  }: {
+    access_token: string;
+    refresh_token: string;
+  }) {
+    const { data, error } = await supabase.auth.setSession({
+      access_token,
+      refresh_token,
+    });
+    if (error) {
+      throw error;
+    }
+    return { data, error };
   },
 
   // Listen to auth state changes

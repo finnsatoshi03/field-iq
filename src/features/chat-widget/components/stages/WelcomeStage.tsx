@@ -4,7 +4,7 @@ import type { UserRole } from "@/lib/types";
 
 interface WelcomeStageProps {
   userRole: UserRole;
-  onOptionSelect: (optionId: string, type: "chat" | "report", intent: number) => void;
+  onOptionSelect: (optionId: string, type: "chat" | "report", intent: number | null) => void;
 }
 
 const buttonVariants = {
@@ -61,7 +61,7 @@ export const WelcomeStage = ({
               whileHover="hover"
               whileTap="tap"
               custom={index}
-              onClick={() => onOptionSelect(option.id, option.type, option.intent ?? 0)}
+              onClick={() => onOptionSelect(option.id, option.type, option.intent ?? null)}
               className="w-full flex items-center gap-1"
             >
               <span className="text-3xl">{option.emoji}</span>

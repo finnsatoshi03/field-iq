@@ -108,13 +108,14 @@ export const REPORT_OPTIONS = {
     { id: "farm-visit", intent: 8, label: "Farm Visit", emoji: "🤝" },
   ],
   "report-issue-sales": [
-    { id: "dealer-problems", label: "Dealer Problems", emoji: "🤝" },
+    { id: "dealer-problems", intent: 2, label: "Dealer Problems", emoji: "🤝" },
     {
       id: "product-or-field-issues",
+      intent: 3,
       label: "Product or Field Issues",
       emoji: "🌽",
     },
-    { id: "other-sales", label: "Other Issues", emoji: "🤖" },
+    // { id: "other-sales", label: "Other Issues", emoji: "🤖" },
   ],
   "report-issue": [
     { id: "dealer-issue", intent: 2, label: "Dealer Issue", emoji: "🏥" },
@@ -593,6 +594,7 @@ export const SUGGESTED_CHAT_TEMPLATES = {
 export const getChatModeForReportType = (
   reportType: keyof typeof REPORT_OPTIONS,
 ): ChatMode => {
+  console.log(reportType);
   return "report"; // All reports use report mode (has input, report-focused mood)
 };
 

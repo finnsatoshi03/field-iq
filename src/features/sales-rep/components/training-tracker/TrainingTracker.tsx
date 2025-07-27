@@ -11,6 +11,7 @@ import { cn } from "@/lib/utils";
 import {
   Book,
   ChevronRight,
+  Database,
   GraduationCap,
   Target,
   Trophy,
@@ -33,7 +34,7 @@ const TrainingTracker: React.FC<{ className?: string }> = ({ className }) => {
   const recentModules = [...inProgressModules, ...overdueModules].slice(0, 3);
   const earnedBadges = badges.filter((badge) => badge.earned);
 
-  // Summary content - show progress and badge count
+  // Summary content - show progress and badge count with mock data indicator
   const summaryContent = (
     <div className="flex items-center justify-between">
       <div className="flex items-center gap-4">
@@ -49,6 +50,12 @@ const TrainingTracker: React.FC<{ className?: string }> = ({ className }) => {
             {earnedBadges.length}/{badges.length} badges
           </span>
         </div>
+        <div className="flex items-center gap-1">
+          <Database className="h-3 w-3 text-orange-600 dark:text-orange-400" />
+          <span className="text-xs text-orange-600 dark:text-orange-400 font-medium">
+            Mock Data
+          </span>
+        </div>
       </div>
       {recentModules.length > 0 && (
         <Badge variant="outline" className="text-xs">
@@ -61,6 +68,20 @@ const TrainingTracker: React.FC<{ className?: string }> = ({ className }) => {
   // Full content
   const fullContent = (
     <div className="space-y-6">
+      {/* Mock Data Notice */}
+      <div className="bg-orange-50 dark:bg-orange-950/20 border border-orange-200 dark:border-orange-800 rounded-lg p-3">
+        <div className="flex items-center gap-2">
+          <Database className="h-4 w-4 text-orange-600 dark:text-orange-400" />
+          <span className="text-sm font-medium text-orange-800 dark:text-orange-200">
+            Using Static Data
+          </span>
+        </div>
+        <p className="text-xs text-orange-700 dark:text-orange-300 mt-1">
+          This component displays sample training data. Live training
+          integration coming soon.
+        </p>
+      </div>
+
       <div>
         <p className="text-xs text-muted-foreground">
           Track your learning journey and earn badges
@@ -68,7 +89,7 @@ const TrainingTracker: React.FC<{ className?: string }> = ({ className }) => {
       </div>
 
       {/* Achievement Badges Section */}
-      <div className="bg-muted/20 py-4 space-y-4">
+      <div className="bg-muted/20 pt-4 space-y-4 -mx-4 px-4">
         <div className="flex items-center justify-between">
           <h4 className="text-foreground font-display font-medium text-sm tracking-tight">
             Achievement Badges
@@ -115,6 +136,10 @@ const TrainingTracker: React.FC<{ className?: string }> = ({ className }) => {
               <DialogTitle className="flex items-center gap-2">
                 <Trophy className="h-5 w-5" />
                 Badge Collection
+                <Badge variant="secondary" className="text-xs ml-2">
+                  <Database className="h-3 w-3 mr-1" />
+                  Sample Data
+                </Badge>
               </DialogTitle>
             </DialogHeader>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mt-4">
@@ -179,6 +204,10 @@ const TrainingTracker: React.FC<{ className?: string }> = ({ className }) => {
                 <DialogTitle className="flex items-center gap-2">
                   <Book className="h-5 w-5" />
                   All Training Modules
+                  <Badge variant="secondary" className="text-xs ml-2">
+                    <Database className="h-3 w-3 mr-1" />
+                    Sample Data
+                  </Badge>
                 </DialogTitle>
               </DialogHeader>
               <div className="space-y-3 mt-4">

@@ -1,5 +1,6 @@
 import { cn } from "@/lib/utils";
-import React, { useMemo, useState } from "react";
+import { AlertTriangle, Loader2, MapPin } from "lucide-react";
+import React, { useEffect, useMemo, useState } from "react";
 import {
   DealerMap,
   FilterControls,
@@ -13,21 +14,26 @@ import type {
   SeverityLevel,
   ViewMode,
 } from "./constants";
-import { MOCK_DEALER_ISSUES, VIEW_MODES } from "./constants";
+import { VIEW_MODES } from "./constants";
+import { useAdminDealerIssues } from "./hooks";
 import {
   calculateIssueMetrics,
   calculateResolutionRate,
   filterDealersByIssueType,
   filterDealersBySeverity,
   sortDealersBySeverity,
+  transformApiDataToDealerIssues,
+  transformApiDataToDealerIssuesWithGeocoding,
 } from "./utils";
 
 interface DealerIssueTrackerProps {
   className?: string;
+  companyId: number;
 }
 
 const DealerIssueTracker: React.FC<DealerIssueTrackerProps> = ({
   className,
+  companyId,
 }) => {
   const [viewMode, setViewMode] = useState<ViewMode>(VIEW_MODES.MAP);
   const [selectedSeverity, setSelectedSeverity] = useState<
@@ -39,10 +45,56 @@ const DealerIssueTracker: React.FC<DealerIssueTrackerProps> = ({
   const [selectedDealer, setSelectedDealer] = useState<
     DealerIssue | undefined
   >();
+  const [processedDealers, setProcessedDealers] = useState<DealerIssue[]>([]);
+  const [isGeocoding, setIsGeocoding] = useState(false);
+
+  // Fetch data using our hook
+  const {
+    data: dealerIssuesData,
+    isLoading,
+    error,
+    refetch,
+  } = useAdminDealerIssues(companyId);
+
+  // Process data with geocoding when API data changes
+  useEffect(() => {
+    const processDealer = async () => {
+      if (dealerIssuesData?.data) {
+        setIsGeocoding(true);
+        try {
+          // First, quickly transform without geocoding for immediate display
+          const initialDealers = transformApiDataToDealerIssues(
+            dealerIssuesData.data,
+          );
+          setProcessedDealers(initialDealers);
+
+          // Then enhance with geocoding for dealers that need it
+          const geocodedDealers =
+            await transformApiDataToDealerIssuesWithGeocoding(
+              dealerIssuesData.data,
+            );
+          setProcessedDealers(geocodedDealers);
+        } catch (error) {
+          console.warn("Error during geocoding:", error);
+          // Fallback to basic transformation
+          const basicDealers = transformApiDataToDealerIssues(
+            dealerIssuesData.data,
+          );
+          setProcessedDealers(basicDealers);
+        } finally {
+          setIsGeocoding(false);
+        }
+      } else {
+        setProcessedDealers([]);
+      }
+    };
+
+    processDealer();
+  }, [dealerIssuesData]);
 
   // Filter and sort dealers
   const filteredDealers = useMemo(() => {
-    let dealers = MOCK_DEALER_ISSUES;
+    let dealers = processedDealers;
 
     if (selectedSeverity) {
       dealers = filterDealersBySeverity(dealers, selectedSeverity);
@@ -53,7 +105,7 @@ const DealerIssueTracker: React.FC<DealerIssueTrackerProps> = ({
     }
 
     return sortDealersBySeverity(dealers);
-  }, [selectedSeverity, selectedIssueType]);
+  }, [processedDealers, selectedSeverity, selectedIssueType]);
 
   const metrics = calculateIssueMetrics(filteredDealers);
   const resolutionRate = calculateResolutionRate(filteredDealers);
@@ -84,18 +136,106 @@ const DealerIssueTracker: React.FC<DealerIssueTrackerProps> = ({
         return (
           <DealerMap
             dealers={filteredDealers}
+            selectedDealer={selectedDealer}
             onDealerSelect={handleDealerSelect}
           />
         );
     }
   };
 
+  // Loading state
+  if (isLoading) {
+    return (
+      <div className="bg-card space-y-4 rounded-lg border border-border p-4">
+        <div className="flex items-center justify-between">
+          <h3 className="text-foreground font-display font-semibold text-base tracking-tight">
+            Dealer Issue Tracker
+          </h3>
+          <div className="flex items-center gap-2 text-muted-foreground">
+            <Loader2 className="h-4 w-4 animate-spin" />
+            <span className="text-sm">Loading...</span>
+          </div>
+        </div>
+
+        <div className="h-96 w-full flex items-center justify-center">
+          <div className="text-center text-muted-foreground">
+            <Loader2 className="h-8 w-8 animate-spin mx-auto mb-2" />
+            <p className="text-sm">Loading dealer issues...</p>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // Error state
+  if (error) {
+    return (
+      <div className="bg-card space-y-4 rounded-lg border border-border p-4">
+        <div className="flex items-center justify-between">
+          <h3 className="text-foreground font-display font-semibold text-base tracking-tight">
+            Dealer Issue Tracker
+          </h3>
+          <div className="flex items-center gap-2 text-muted-foreground">
+            <AlertTriangle className="h-4 w-4" />
+            <span className="text-sm">Error loading data</span>
+          </div>
+        </div>
+
+        <div className="h-96 w-full flex items-center justify-center">
+          <div className="text-center text-muted-foreground">
+            <p className="text-sm mb-2">
+              Failed to load dealer issues: {error.message}
+            </p>
+            <button
+              onClick={() => refetch()}
+              className="text-xs text-blue-600 hover:underline"
+            >
+              Try again
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // Empty state
+  if (processedDealers.length === 0) {
+    return (
+      <div className="bg-card space-y-4 rounded-lg border border-border p-4">
+        <div>
+          <h3 className="text-foreground font-display font-semibold text-base tracking-tight">
+            Dealer Issue Tracker
+          </h3>
+        </div>
+
+        <div className="h-96 w-full flex items-center justify-center">
+          <div className="text-center text-muted-foreground">
+            <AlertTriangle className="h-12 w-12 mx-auto mb-4 opacity-50" />
+            <h3 className="font-display font-medium text-foreground mb-2">
+              No dealer issues found
+            </h3>
+            <p className="text-sm">
+              Dealer issue data will appear here once available for company ID{" "}
+              {companyId}.
+            </p>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="bg-card space-y-4 rounded-lg border border-border p-4">
-      <div>
+      <div className="flex items-center justify-between">
         <h3 className="text-foreground font-display font-semibold text-base tracking-tight">
           Dealer Issue Tracker
         </h3>
+        {isGeocoding && (
+          <div className="flex items-center gap-2 text-muted-foreground">
+            <MapPin className="h-4 w-4 animate-pulse" />
+            <span className="text-xs">Locating addresses...</span>
+          </div>
+        )}
       </div>
 
       {/* Filters */}
@@ -131,6 +271,11 @@ const DealerIssueTracker: React.FC<DealerIssueTrackerProps> = ({
                     </h3>
                     <p className="text-xs text-muted-foreground">
                       Interactive map and issue tracking
+                      {isGeocoding && (
+                        <span className="ml-2 text-blue-600 dark:text-blue-400">
+                          • Geocoding addresses...
+                        </span>
+                      )}
                     </p>
                   </div>
                   <ViewToggle

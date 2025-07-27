@@ -1,14 +1,29 @@
-import { MapPin, Plus } from "lucide-react";
+import { Clock, MapPin, Plus } from "lucide-react";
 import React from "react";
-import type { Farm } from "../constants";
+import type { ProcessedFarm } from "../constants";
 import { formatDateTime } from "../utils";
 
 interface FarmItemProps {
-  farm: Farm;
+  farm: ProcessedFarm;
   index: number;
   showConnector: boolean;
   isDialog?: boolean;
 }
+
+const getFarmIcon = (status: ProcessedFarm["status"]) => {
+  switch (status) {
+    case "added":
+      return <Plus className="size-4 text-blue-600 dark:text-blue-400" />;
+    case "visited":
+      return (
+        <MapPin className="size-4 text-emerald-600 dark:text-emerald-400" />
+      );
+    case "overdue":
+      return <Clock className="size-4 text-red-600 dark:text-red-400" />;
+    default:
+      return <Plus className="size-4 text-blue-600 dark:text-blue-400" />;
+  }
+};
 
 const FarmItem: React.FC<FarmItemProps> = ({ farm, showConnector }) => {
   const { dateString, timeString } = formatDateTime(farm.datetime);
@@ -17,11 +32,7 @@ const FarmItem: React.FC<FarmItemProps> = ({ farm, showConnector }) => {
     <div className="flex items-center">
       <div className="flex flex-col items-center mr-3 relative">
         <div className="size-8 rounded-full flex-shrink-0 z-10 flex items-center justify-center bg-white">
-          {farm.status === "added" ? (
-            <Plus className="size-4 text-blue-600 dark:text-blue-400" />
-          ) : (
-            <MapPin className="size-4 text-emerald-600 dark:text-emerald-400" />
-          )}
+          {getFarmIcon(farm.status)}
         </div>
         {showConnector && (
           <div className="w-px h-8 bg-border absolute top-6 left-1/2 transform -translate-x-1/2" />

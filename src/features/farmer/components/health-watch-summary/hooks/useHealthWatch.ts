@@ -1,14 +1,103 @@
-import { useState, useMemo } from "react";
+import type { HealthWatch as ApiHealthWatch } from "@/features/farmer/types";
+import { useMemo, useState } from "react";
 import {
   type HealthIssue,
-  type TimePeriod,
+  type HealthSummary,
+  ISSUE_TYPES,
+  type IssueType,
   TIME_PERIODS,
-  MOCK_DAILY_ISSUES,
-  MOCK_WEEKLY_ISSUES,
+  type TimePeriod,
 } from "../constants";
-import { calculateHealthSummary } from "../utils";
 
-export const useHealthWatch = () => {
+// Transform API incident type to component format
+const transformApiIncidentType = (apiType: string): IssueType => {
+  switch (apiType) {
+    case "sickness":
+      return ISSUE_TYPES.SICK;
+    case "mortality":
+      return ISSUE_TYPES.MORTALITY;
+    case "feed_rejection":
+    case "notes":
+      return ISSUE_TYPES.NOTES;
+    default:
+      return ISSUE_TYPES.NOTES;
+  }
+};
+
+// Transform API severity based on affected count and requires_vet_visit
+const transformApiSeverity = (
+  affectedCount: number,
+  requiresVetVisit: boolean,
+): "low" | "medium" | "high" => {
+  if (requiresVetVisit || affectedCount >= 10) return "high";
+  if (affectedCount >= 5) return "medium";
+  return "low";
+};
+
+// Transform API data to component format
+const transformApiDataToIssues = (
+  apiHealthData?: ApiHealthWatch,
+): HealthIssue[] => {
+  if (!apiHealthData?.recent_issues) {
+    return [];
+  }
+
+  return apiHealthData.recent_issues.map((issue, index) => ({
+    id: index.toString(),
+    date: issue.date,
+    type: transformApiIncidentType(issue.incident_type),
+    count: issue.affected_count,
+    severity: transformApiSeverity(
+      issue.affected_count,
+      issue.requires_vet_visit,
+    ),
+    description: issue.symptoms,
+    notes: `${issue.suspected_cause} | Actions: ${issue.actions_taken}`,
+  }));
+};
+
+// Create summary from API data
+const createSummaryFromApiData = (
+  apiHealthData?: ApiHealthWatch,
+): HealthSummary => {
+  if (!apiHealthData) {
+    return {
+      totalIssues: 0,
+      sickCount: 0,
+      mortalityCount: 0,
+      notesCount: 0,
+      healthScore: 100,
+      trend: "stable" as const,
+      lastUpdated: new Date().toISOString().split("T")[0],
+    };
+  }
+
+  // Calculate trend based on health score
+  const getTrend = (score: number): "improving" | "stable" | "declining" => {
+    if (score >= 80) return "improving";
+    if (score >= 60) return "stable";
+    return "declining";
+  };
+
+  const totalIssues =
+    apiHealthData.issue_summary.sick +
+    apiHealthData.issue_summary.mortality +
+    apiHealthData.issue_summary.notes;
+
+  return {
+    totalIssues,
+    sickCount: apiHealthData.issue_summary.sick,
+    mortalityCount: apiHealthData.issue_summary.mortality,
+    notesCount: apiHealthData.issue_summary.notes,
+    healthScore: apiHealthData.health_score,
+    trend: getTrend(apiHealthData.health_score),
+    lastUpdated:
+      apiHealthData.recent_issues[0]?.date ||
+      new Date().toISOString().split("T")[0],
+  };
+};
+
+export const useHealthWatch = (apiHealthData?: ApiHealthWatch) => {
   const [timePeriod, setTimePeriod] = useState<TimePeriod>(TIME_PERIODS.DAILY);
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
   const [newIssue, setNewIssue] = useState<Partial<HealthIssue>>({
@@ -20,15 +109,22 @@ export const useHealthWatch = () => {
     notes: "",
   });
 
-  const issues = useMemo(() => {
-    return timePeriod === TIME_PERIODS.DAILY
-      ? MOCK_DAILY_ISSUES
-      : MOCK_WEEKLY_ISSUES;
-  }, [timePeriod]);
+  // Transform API data to issues
+  const allIssues = useMemo(() => {
+    return transformApiDataToIssues(apiHealthData);
+  }, [apiHealthData]);
 
+  // Filter issues based on time period (for now, just return all since API doesn't distinguish)
+  const issues = useMemo(() => {
+    // In the future, you might want to filter by time period
+    // For now, return all issues since API doesn't provide time-specific data
+    return allIssues;
+  }, [allIssues, timePeriod]);
+
+  // Create summary from API data
   const summary = useMemo(() => {
-    return calculateHealthSummary(issues);
-  }, [issues]);
+    return createSummaryFromApiData(apiHealthData);
+  }, [apiHealthData]);
 
   const handleAddIssue = () => {
     if (!newIssue.type || !newIssue.description) return;
@@ -43,7 +139,7 @@ export const useHealthWatch = () => {
       notes: newIssue.notes,
     };
 
-    // In a real app, this would be saved to the backend
+    // This would typically send data to the API
     console.log("Adding new issue:", issue);
 
     // Reset form

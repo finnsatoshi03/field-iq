@@ -82,10 +82,12 @@ export const ChatWindow = ({ isOpen, onClose }: ChatWindowProps) => {
     setReportSubType,
   ]);
 
-  const handleOptionSelect = (optionId: string, type: "chat" | "report", intent: number) => {
+  const handleOptionSelect = (optionId: string, type: "chat" | "report", intent: number | null) => {
     setSelectedOption(optionId);
-
-    setIntent(intent)
+    console.log(intent);
+    if (intent){
+      setIntent(intent)
+    }
 
     if (type === "report") {
       setReportType(optionId as keyof typeof REPORT_OPTIONS);
@@ -96,7 +98,7 @@ export const ChatWindow = ({ isOpen, onClose }: ChatWindowProps) => {
     }
   };
 
-  const handleReportSubmit = (reportSubType: string, intent: number) => {
+  const handleReportSubmit = (reportSubType: string, intent: number | null) => {
     // Instead of closing, proceed to chat with the appropriate mode
     setReportSubType(reportSubType);
     const mode = getChatModeForReportType(
@@ -104,8 +106,10 @@ export const ChatWindow = ({ isOpen, onClose }: ChatWindowProps) => {
     );
     setChatMode(mode);
     setStage("chat");
-    setIntent(intent)
-    
+    if (intent){
+      setIntent(intent)
+    }
+      console.log(intent);
     // Log the report submission for future use
     // console.log("Report submitted:", {
     //   reportType,
