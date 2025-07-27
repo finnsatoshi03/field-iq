@@ -11,7 +11,7 @@ export const useSignIn = () => {
   const queryClient = useQueryClient();
   const { setUser, setLoading } = useUserStore();
 
-  return useMutation({
+  const mutation = useMutation({
     mutationFn: (data: SignInData) => authService.signIn(data),
     onMutate: () => {
       // Set loading state
@@ -35,16 +35,11 @@ export const useSignIn = () => {
       queryClient.setQueryData(["auth", "session"], data.session);
       queryClient.setQueryData(["auth", "profile"], userProfileData);
 
-      // Show success message
-      toast.success("Sign in successful");
-
       // Navigate to appropriate dashboard based on role
       const defaultRoute = getDefaultDashboardRoute(userProfile.role);
       navigate({ to: defaultRoute });
     },
     onError: (error: any) => {
-      // Show error message
-      toast.error(error.message || "Sign in failed");
       console.error("Sign in failed:", error);
     },
     onSettled: () => {
@@ -52,4 +47,23 @@ export const useSignIn = () => {
       setLoading(false);
     },
   });
+
+  // Return a wrapped mutation that includes toast.promise
+  return {
+    ...mutation,
+    mutate: (data: SignInData) => {
+      const signInPromise = mutation.mutateAsync(data);
+
+      toast.promise(signInPromise, {
+        loading: "Signing in...",
+        success: "Successfully signed in!",
+        error: (error: any) => {
+          console.error("Sign in failed:", error);
+          return (
+            error.message || "Failed to sign in. Please check your credentials."
+          );
+        },
+      });
+    },
+  };
 };
