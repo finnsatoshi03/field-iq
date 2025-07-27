@@ -157,7 +157,8 @@ export const UserManager = ({ className }: UserManagerProps) => {
       const inviteParams: InviteUserParams = {
         email,
         options: {
-          ...(redirectTo && { redirectTo }),
+          // Always redirect invites to the dedicated invite route
+          redirectTo: redirectTo || `${window.location.origin}/invite`,
           ...(selectedType?.supportsRole && {
             data: {
               role: selectedRole,
@@ -787,7 +788,12 @@ export const UserManager = ({ className }: UserManagerProps) => {
                 type="url"
                 value={redirectTo}
                 onChange={(e) => setRedirectTo(e.target.value)}
-                placeholder="https://yourapp.com/dashboard"
+                disabled={linkType === "invite"}
+                placeholder={
+                  linkType === "invite"
+                    ? `${window.location.origin}/invite (default for invites)`
+                    : "https://yourapp.com/dashboard"
+                }
               />
             </div>
 
