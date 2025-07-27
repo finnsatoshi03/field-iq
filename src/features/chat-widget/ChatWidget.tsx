@@ -94,7 +94,7 @@ export const ChatWidget = () => {
     closeChat();
   };
 
-  // if (user?.role !== "sales_rep" && user?.role !== "farmer") return null;
+  if (user?.role !== "sales_rep" && user?.role !== "farmer") return null;
 
   return (
     <>
