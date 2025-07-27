@@ -106,6 +106,7 @@ export const useInvitePasswordSetup = () => {
         throw new Error("Password must be at least 8 characters long");
       }
 
+      // Update password
       const promise = authService.updatePassword(password);
 
       return toast.promise(promise, {
@@ -114,6 +115,22 @@ export const useInvitePasswordSetup = () => {
         error: (error: Error) => `Failed to setup account: ${error.message}`,
       });
     },
-    // Don't sign out for invite flow - let the component handle the next steps
+    onSuccess: async () => {
+      // After password update, refresh the session to ensure user stays logged in
+      try {
+        const session = await authService.getCurrentSession();
+        if (session) {
+          // Session is still valid, user can proceed to dashboard
+          return;
+        } else {
+          // If session is lost, try to refresh it
+          console.log(
+            "Session lost after password update, user will need to sign in",
+          );
+        }
+      } catch (error) {
+        console.error("Error checking session after password update:", error);
+      }
+    },
   });
 };

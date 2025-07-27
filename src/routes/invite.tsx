@@ -2,7 +2,9 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 
 import { UpdatePasswordAlertDialog } from "@/features/auth/components/update-password-alert-dialog";
+import { getDefaultDashboardRoute } from "@/lib/rbac";
 import { authService } from "@/services/auth-service";
+import { transformSupabaseUser, useUserStore } from "@/store/user-store";
 
 export const Route = createFileRoute("/invite")({
   // No beforeLoad auth check for invite route
@@ -12,7 +14,22 @@ export const Route = createFileRoute("/invite")({
 function InviteSetup() {
   const [showInviteSetup, setShowInviteSetup] = useState(false);
   const [userEmail, setUserEmail] = useState<string>();
+  const [userRole, setUserRole] = useState<string>();
   const [isProcessing, setIsProcessing] = useState(true);
+  const { setUser } = useUserStore();
+
+  // Manual auth sync function
+  const syncAuthState = async () => {
+    try {
+      const session = await authService.getCurrentSession();
+      if (session?.user) {
+        const userProfile = transformSupabaseUser(session.user);
+        setUser(userProfile);
+      }
+    } catch (error) {
+      console.error("Error syncing auth state:", error);
+    }
+  };
 
   useEffect(() => {
     // Parse hash parameters for invite flow
@@ -46,8 +63,12 @@ function InviteSetup() {
             // Get user info to show email in dialog
             const user = await authService.getCurrentUser();
             setUserEmail(user?.email);
+            setUserRole(user?.user_metadata?.role);
             setShowInviteSetup(true);
             setIsProcessing(false);
+
+            // Sync user store with the new session
+            await syncAuthState();
 
             // Clear the hash to clean up URL
             window.history.replaceState(null, "", window.location.pathname);
@@ -64,14 +85,37 @@ function InviteSetup() {
       // No valid invite parameters, redirect to sign-in
       window.location.href = "/auth/sign-in";
     }
-  }, []);
+  }, [setUser]);
 
   const handleInviteComplete = async () => {
     setShowInviteSetup(false);
-    // Sign out after password setup to force fresh login
-    await authService.signOut();
-    // Redirect to sign in
-    window.location.href = "/auth/sign-in";
+
+    try {
+      // Wait a moment for password update to complete and session to refresh
+      await new Promise((resolve) => setTimeout(resolve, 1000));
+
+      // Sync auth state first to get latest session info
+      await syncAuthState();
+
+      // Check if user is still authenticated after password setup
+      const session = await authService.getCurrentSession();
+      const user = await authService.getCurrentUser();
+
+      if (session && user) {
+        // User is still authenticated, redirect to their dashboard
+        const dashboardRoute = getDefaultDashboardRoute(
+          user.user_metadata?.role || userRole || "farmer",
+        );
+        window.location.href = dashboardRoute;
+      } else {
+        // Session was lost, redirect to sign-in
+        window.location.href = "/auth/sign-in";
+      }
+    } catch (error) {
+      console.error("Error checking session after password setup:", error);
+      // Fallback to sign-in on error
+      window.location.href = "/auth/sign-in";
+    }
   };
 
   if (isProcessing) {

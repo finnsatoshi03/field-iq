@@ -107,10 +107,11 @@ export const UpdatePasswordAlertDialog = ({
       },
       {
         onSuccess: () => {
-          // Wait a moment for the success toast, then complete
+          // Shorter delay for invite flow since route handles the main timing
+          const delay = type === "invite" ? 500 : 1500;
           setTimeout(() => {
             onComplete();
-          }, 1500);
+          }, delay);
         },
       },
     );
