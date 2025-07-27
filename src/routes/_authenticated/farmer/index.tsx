@@ -40,22 +40,22 @@ function FarmerDashboard() {
   }
 
   // Show error state
-  // if (error) {
-  //   return (
-  //     <Error
-  //       title="Failed to load dashboard"
-  //       message={
-  //         error.message ||
-  //         "We couldn't load your farmer dashboard. Please try again."
-  //       }
-  //       action={{
-  //         label: "Try Again",
-  //         onClick: handleRefresh,
-  //         icon: <RefreshCw className="h-4 w-4" />,
-  //       }}
-  //     />
-  //   );
-  // }
+  if (error) {
+    return (
+      <Error
+        title="Failed to load dashboard"
+        message={
+          error.message ||
+          "We couldn't load your farmer dashboard. Please try again."
+        }
+        action={{
+          label: "Try Again",
+          onClick: handleRefresh,
+          icon: <RefreshCw className="h-4 w-4" />,
+        }}
+      />
+    );
+  }
 
   return (
     <div className="flex-1 flex flex-col min-h-0 h-full">
