@@ -1,6 +1,6 @@
 import { AnimatePresence, motion } from "framer-motion";
 import { ArrowLeft, Minimize2, X } from "lucide-react";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 
 import { useUser } from "@/hooks/use-user";
 import { BYPASS_AUTH } from "@/lib/config";
@@ -61,6 +61,7 @@ export const ChatWindow = ({ isOpen, onClose }: ChatWindowProps) => {
     setChatMode,
     resetState,
   } = useChatWidgetStore();
+  const [intent, setIntent] = useState<number>(0);
 
   // Reset stage when chat opens (only if it's in welcome stage)
   useEffect(() => {
@@ -70,6 +71,7 @@ export const ChatWindow = ({ isOpen, onClose }: ChatWindowProps) => {
       setReportType("");
       setChatMode("normal");
       setReportSubType("");
+      setIntent(0);
     }
   }, [
     isOpen,
@@ -80,8 +82,16 @@ export const ChatWindow = ({ isOpen, onClose }: ChatWindowProps) => {
     setReportSubType,
   ]);
 
-  const handleOptionSelect = (optionId: string, type: "chat" | "report") => {
+  const handleOptionSelect = (
+    optionId: string,
+    type: "chat" | "report",
+    intent: number | null,
+  ) => {
     setSelectedOption(optionId);
+    console.log(intent);
+    if (intent) {
+      setIntent(intent);
+    }
 
     if (type === "report") {
       setReportType(optionId as keyof typeof REPORT_OPTIONS);
@@ -92,7 +102,7 @@ export const ChatWindow = ({ isOpen, onClose }: ChatWindowProps) => {
     }
   };
 
-  const handleReportSubmit = (reportSubType: string) => {
+  const handleReportSubmit = (reportSubType: string, intent: number | null) => {
     // Instead of closing, proceed to chat with the appropriate mode
     setReportSubType(reportSubType);
     const mode = getChatModeForReportType(
@@ -100,13 +110,16 @@ export const ChatWindow = ({ isOpen, onClose }: ChatWindowProps) => {
     );
     setChatMode(mode);
     setStage("chat");
-
+    if (intent) {
+      setIntent(intent);
+    }
+    console.log(intent);
     // Log the report submission for future use
-    console.log("Report submitted:", {
-      reportType,
-      reportSubType,
-      chatMode: mode,
-    });
+    // console.log("Report submitted:", {
+    //   reportType,
+    //   reportSubType,
+    //   chatMode: mode,
+    // });
   };
 
   const handleBackToWelcome = () => {
@@ -178,7 +191,7 @@ export const ChatWindow = ({ isOpen, onClose }: ChatWindowProps) => {
       case "welcome":
         return (
           <WelcomeStage
-            userRole={"farmer"}
+            userRole={user?.role ?? "farmer"}
             onOptionSelect={handleOptionSelect}
           />
         );
@@ -194,6 +207,7 @@ export const ChatWindow = ({ isOpen, onClose }: ChatWindowProps) => {
             reportContext={
               reportType ? { reportType, reportSubType } : undefined
             }
+            intent={intent}
           />
         );
       default:
