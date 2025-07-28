@@ -1,6 +1,6 @@
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
-import { Calendar, Clock, MapPin, Phone } from "lucide-react";
+import { Calendar, Clock, Hash, MapPin, Phone } from "lucide-react";
 import React from "react";
 import { type Visit } from "../constants";
 import {
@@ -46,6 +46,14 @@ const VisitCard: React.FC<{ visit: Visit }> = ({ visit }) => {
               </Badge>
             </div>
             <div className="space-y-1">
+              {visit.ticket_number && (
+                <div className="flex items-center gap-1">
+                  <Hash className="h-3 w-3 text-muted-foreground" />
+                  <span className="text-xs text-muted-foreground truncate">
+                    {visit.ticket_number}
+                  </span>
+                </div>
+              )}
               <div className="flex items-center gap-1">
                 <MapPin className="h-3 w-3 text-muted-foreground" />
                 <span className="text-xs text-muted-foreground truncate">

@@ -18,6 +18,7 @@ export type VisitType = (typeof VISIT_TYPES)[keyof typeof VISIT_TYPES];
 export interface Visit {
   id: string;
   farmName: string;
+  ticket_number?: string | null;
   location: string;
   scheduledDate: Date;
   status: VisitStatus;
@@ -54,6 +55,7 @@ export const mockVisits: Visit[] = [
   {
     id: "1",
     farmName: "Makiling Farm",
+    ticket_number: "TK-2024-001",
     location: "Laguna",
     scheduledDate: new Date("2024-01-15T09:00:00"),
     status: VISIT_STATUS.SCHEDULED,
@@ -67,6 +69,7 @@ export const mockVisits: Visit[] = [
   {
     id: "2",
     farmName: "Sunrise Agriculture",
+    ticket_number: "TK-2024-002",
     location: "Bataan",
     scheduledDate: new Date("2024-01-15T14:30:00"),
     status: VISIT_STATUS.SCHEDULED,
@@ -80,6 +83,7 @@ export const mockVisits: Visit[] = [
   {
     id: "3",
     farmName: "Golden Harvest Co.",
+    ticket_number: null,
     location: "Pampanga",
     scheduledDate: new Date("2024-01-12T10:00:00"),
     status: VISIT_STATUS.OVERDUE,
@@ -93,6 +97,7 @@ export const mockVisits: Visit[] = [
   {
     id: "4",
     farmName: "Verde Valley Farm",
+    ticket_number: "TK-2024-004",
     location: "Nueva Ecija",
     scheduledDate: new Date("2024-01-16T11:00:00"),
     status: VISIT_STATUS.SCHEDULED,
@@ -106,6 +111,7 @@ export const mockVisits: Visit[] = [
   {
     id: "5",
     farmName: "Pacific Agri Corp",
+    ticket_number: "TK-2024-005",
     location: "Tarlac",
     scheduledDate: new Date("2024-01-17T08:30:00"),
     status: VISIT_STATUS.SCHEDULED,
@@ -119,6 +125,7 @@ export const mockVisits: Visit[] = [
   {
     id: "6",
     farmName: "Mountain View Farms",
+    ticket_number: "TK-2024-006",
     location: "Benguet",
     scheduledDate: new Date("2024-01-10T13:00:00"),
     status: VISIT_STATUS.OVERDUE,

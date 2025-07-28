@@ -7,7 +7,7 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { cn } from "@/lib/utils";
-import { AlertTriangle, MapPin, Phone } from "lucide-react";
+import { AlertTriangle, Hash, MapPin, Phone } from "lucide-react";
 import React from "react";
 import { type Visit } from "../constants";
 import {
@@ -48,6 +48,14 @@ const VisitItem: React.FC<{ visit: Visit }> = ({ visit }) => {
                 </Badge>
               </div>
               <div className="space-y-1">
+                {visit.ticket_number && (
+                  <div className="flex items-center gap-1">
+                    <Hash className="h-3 w-3 text-muted-foreground" />
+                    <span className="text-xs text-muted-foreground">
+                      {visit.ticket_number}
+                    </span>
+                  </div>
+                )}
                 <div className="flex items-center gap-1">
                   <MapPin className="h-3 w-3 text-muted-foreground" />
                   <span className="text-xs text-muted-foreground">

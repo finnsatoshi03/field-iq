@@ -52,6 +52,7 @@ export interface FarmsResponse {
 export interface VisitScheduleItem {
   id: number;
   farmName: string;
+  ticket_number: string | null;
   location: string;
   status: "scheduled" | "completed" | "overdue";
   scheduledDate: string;
