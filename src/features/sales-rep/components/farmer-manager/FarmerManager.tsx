@@ -65,6 +65,7 @@ interface FarmerManagerProps {
 }
 
 export const FarmerManager = ({ className }: FarmerManagerProps) => {
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [isInviteDialogOpen, setIsInviteDialogOpen] = useState(false);
   const [linkType, setLinkType] = useState<EmailLinkType>("invite");
   const [email, setEmail] = useState("");
@@ -347,11 +348,7 @@ export const FarmerManager = ({ className }: FarmerManagerProps) => {
 
   return (
     <div className={cn("space-y-4", className)}>
-      <ExpandableCard
-        title="Farmer Manager"
-        summary={summaryContent}
-        className="sm:h-fit"
-      >
+      <ExpandableCard title="Farmer Manager" summary={summaryContent}>
         {fullContent}
       </ExpandableCard>
 
