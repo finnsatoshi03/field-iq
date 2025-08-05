@@ -47,6 +47,7 @@ import type {
   GenerateEmailLinkParams,
   InviteUserParams,
 } from "@/services/admin-service";
+import { useUserStore } from "@/store";
 import { toast } from "sonner";
 import { formatDate } from "../faq-manager/utils";
 
@@ -95,6 +96,7 @@ export const UserManager = ({ className }: UserManagerProps) => {
   const [redirectTo, setRedirectTo] = useState("");
   const [selectedRole, setSelectedRole] = useState<UserRole>("farmer");
 
+  const { user } = useUserStore();
   const { data: users = [], isLoading, error } = useGetUsers();
   const generateEmailLinkMutation = useGenerateEmailLink();
   const createUserMutation = useCreateUser();
@@ -143,7 +145,7 @@ export const UserManager = ({ className }: UserManagerProps) => {
         email,
         password,
         user_metadata: selectedType?.supportsRole
-          ? { role: selectedRole }
+          ? { role: selectedRole, created_by: user?.id ?? 0 }
           : undefined,
         email_confirm: true,
       };
@@ -162,6 +164,7 @@ export const UserManager = ({ className }: UserManagerProps) => {
           ...(selectedType?.supportsRole && {
             data: {
               role: selectedRole,
+              created_by: user?.id ?? 0,
             },
           }),
         },
@@ -188,6 +191,7 @@ export const UserManager = ({ className }: UserManagerProps) => {
         ...(selectedType?.supportsRole && {
           data: {
             role: selectedRole,
+            created_by: user?.id ?? 0,
           },
         }),
       };

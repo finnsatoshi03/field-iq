@@ -42,6 +42,7 @@ import type {
   GenerateEmailLinkParams,
   InviteUserParams,
 } from "@/services/admin-service";
+import { useUserStore } from "@/store";
 import { toast } from "sonner";
 import { formatDate } from "../../../admin/components/faq-manager/utils";
 
@@ -73,6 +74,7 @@ export const FarmerManager = ({ className }: FarmerManagerProps) => {
   const [password, setPassword] = useState("");
   const [redirectTo, setRedirectTo] = useState("");
 
+  const { user } = useUserStore();
   const { data: users = [], isLoading, error } = useGetUsers();
   const generateEmailLinkMutation = useGenerateEmailLink();
   const createUserMutation = useCreateUser();
@@ -118,7 +120,10 @@ export const FarmerManager = ({ className }: FarmerManagerProps) => {
       const userParams = {
         email,
         password,
-        user_metadata: { role: "farmer" as UserRole }, // Always farmer for sales reps
+        user_metadata: {
+          role: "farmer" as UserRole,
+          created_by: user?.id ?? 0,
+        }, // Always farmer for sales reps
         email_confirm: true,
       };
 
@@ -134,6 +139,7 @@ export const FarmerManager = ({ className }: FarmerManagerProps) => {
           redirectTo: redirectTo || `${window.location.origin}/invite`,
           data: {
             role: "farmer", // Always farmer
+            created_by: user?.id ?? 0,
           },
         },
       };
@@ -158,12 +164,14 @@ export const FarmerManager = ({ className }: FarmerManagerProps) => {
         ...(redirectTo && { redirectTo }),
         data: {
           role: "farmer", // Always farmer
+          created_by: user?.id ?? 0,
         },
       };
     } else {
       params.options = {
         data: {
           role: "farmer",
+          created_by: user?.id ?? 0,
         },
       };
     }
