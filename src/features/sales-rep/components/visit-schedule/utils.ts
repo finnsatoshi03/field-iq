@@ -8,6 +8,7 @@ export const transformApiDataToVisits = (
   return apiData.map((item) => ({
     id: item.id.toString(),
     farmName: item.farmName,
+    ticket_number: item.ticket_number,
     location: item.location,
     scheduledDate: new Date(item.scheduledDate),
     status: item.status as Visit["status"],

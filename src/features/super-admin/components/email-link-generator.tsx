@@ -39,6 +39,7 @@ const EMAIL_LINK_TYPES = [
     description: "Create a new user account",
     requiresPassword: true,
     supportsRole: true,
+    disabled: false,
   },
   {
     value: "invite" as EmailLinkType,
@@ -46,6 +47,7 @@ const EMAIL_LINK_TYPES = [
     description: "Invite user to join (passwordless)",
     requiresPassword: false,
     supportsRole: true,
+    disabled: false,
   },
   {
     value: "recovery" as EmailLinkType,
@@ -53,6 +55,7 @@ const EMAIL_LINK_TYPES = [
     description: "Reset user password",
     requiresPassword: false,
     supportsRole: false,
+    disabled: true, // Temporarily disabled
   },
   {
     value: "email_change_current" as EmailLinkType,
@@ -61,6 +64,7 @@ const EMAIL_LINK_TYPES = [
     requiresPassword: false,
     requiresNewEmail: true,
     supportsRole: false,
+    disabled: true, // Temporarily disabled
   },
   {
     value: "email_change_new" as EmailLinkType,
@@ -69,6 +73,7 @@ const EMAIL_LINK_TYPES = [
     requiresPassword: false,
     requiresNewEmail: true,
     supportsRole: false,
+    disabled: true, // Temporarily disabled
   },
 ];
 
@@ -147,7 +152,7 @@ export const EmailLinkGenerator = ({
       const inviteParams: InviteUserParams = {
         email,
         options: {
-          ...(redirectTo && { redirectTo }),
+          redirectTo: redirectTo || `${window.location.origin}/invite`,
           ...(selectedType?.supportsRole && {
             data: {
               role: selectedRole,
@@ -219,44 +224,51 @@ export const EmailLinkGenerator = ({
         </DialogHeader>
 
         <form onSubmit={handleSubmit} className="space-y-4">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <Label htmlFor="link-type">Link Type</Label>
-              <Select
-                value={linkType}
-                onValueChange={(value: string) =>
-                  setLinkType(value as EmailLinkType)
-                }
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder="Select link type" />
-                </SelectTrigger>
-                <SelectContent>
-                  {EMAIL_LINK_TYPES.map((type) => (
-                    <SelectItem key={type.value} value={type.value}>
-                      <div className="flex flex-col text-left leading-none">
-                        <span className="font-medium">{type.label}</span>
-                        <span className="text-xs text-muted-foreground">
-                          {type.description}
-                        </span>
-                      </div>
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
+          <div className="space-y-2">
+            <Label htmlFor="link-type">Link Type</Label>
+            <Select
+              value={linkType}
+              onValueChange={(value: string) =>
+                setLinkType(value as EmailLinkType)
+              }
+            >
+              <SelectTrigger>
+                <SelectValue placeholder="Select link type" />
+              </SelectTrigger>
+              <SelectContent>
+                {EMAIL_LINK_TYPES.map((type) => (
+                  <SelectItem
+                    key={type.value}
+                    value={type.value}
+                    disabled={type.disabled}
+                  >
+                    <div className="flex flex-col text-left leading-none truncate">
+                      <span
+                        className={`font-medium ${type.disabled ? "text-muted-foreground" : ""}`}
+                      >
+                        {type.label}
+                        {type.disabled && " (Temporarily Disabled)"}
+                      </span>
+                      <span className="text-xs text-muted-foreground truncate">
+                        {type.description}
+                      </span>
+                    </div>
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
 
-            <div className="space-y-2">
-              <Label htmlFor="email">Email Address</Label>
-              <Input
-                id="email"
-                type="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                placeholder="user@example.com"
-                required
-              />
-            </div>
+          <div className="space-y-2">
+            <Label htmlFor="email">Email Address</Label>
+            <Input
+              id="email"
+              type="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              placeholder="user@example.com"
+              required
+            />
           </div>
 
           {selectedType?.requiresPassword && (
@@ -322,7 +334,12 @@ export const EmailLinkGenerator = ({
               type="url"
               value={redirectTo}
               onChange={(e) => setRedirectTo(e.target.value)}
-              placeholder="https://yourapp.com/dashboard"
+              disabled={linkType === "invite"}
+              placeholder={
+                linkType === "invite"
+                  ? `${window.location.origin}/invite (default for invites)`
+                  : "https://yourapp.com/dashboard"
+              }
             />
           </div>
 

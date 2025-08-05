@@ -1,5 +1,5 @@
-import { ThumbsUp, ThumbsDown } from "lucide-react";
 import { motion } from "framer-motion";
+import { ThumbsDown, ThumbsUp } from "lucide-react";
 import { FaviconIcon } from "./FaviconIcon";
 
 interface ChatBubbleProps {
@@ -15,7 +15,7 @@ const getRelativeTime = (timestamp: Date): string => {
   const rtf = new Intl.RelativeTimeFormat("en", { numeric: "auto" });
   const now = new Date();
   const diffInSeconds = Math.floor(
-    (now.getTime() - timestamp.getTime()) / 1000
+    (now.getTime() - timestamp.getTime()) / 1000,
   );
 
   if (Math.abs(diffInSeconds) < 60) {
@@ -71,7 +71,7 @@ export const ChatBubble = ({
       className="flex gap-3"
     >
       {/* Avatar */}
-      <FaviconIcon className="text-gray-700 size-7" />
+      <FaviconIcon className="text-gray-700" />
 
       {/* Message Content */}
       <div className="max-w-[75%]">

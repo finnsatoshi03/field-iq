@@ -30,29 +30,42 @@ export const useChatMessages = (initialMessage: string) => {
       prev.map((msg) =>
         msg.id === messageId
           ? { ...msg, feedback: msg.feedback === type ? null : type }
-          : msg
-      )
+          : msg,
+      ),
     );
   };
 
-  const sendAIResponse = (userMessage: string) => {
+  const sendAIResponse = async (userMessage: string, intent: number) => {
     setIsTyping(true);
 
     // Simulate AI response with realistic delay
-    setTimeout(
-      () => {
-        setIsTyping(false);
-        const response: Message = {
-          id: Date.now() + 1,
-          message: getAIResponse(userMessage),
-          isUser: false,
-          timestamp: new Date(),
-          feedback: null,
-        };
-        setMessages((prev) => [...prev, response]);
-      },
-      1500 + Math.random() * 1000
-    ); // Random delay between 1.5-2.5s
+    // setTimeout(
+    //   async () => {
+    //     setIsTyping(false);
+    //     const response: Message = {
+    //       id: Date.now() + 1,
+    //       message: await getAIResponse(userMessage, intent),
+    //       isUser: false,
+    //       timestamp: new Date(),
+    //       feedback: null,
+    //     };
+    //     setMessages((prev) => [...prev, response]);
+    //   },
+    //   1500 + Math.random() * 1000
+    // ); // Random delay between 1.5-2.5s
+
+    const aiMessage = await getAIResponse(userMessage, intent);
+
+    const response: Message = {
+      id: Date.now() + 1,
+      message: aiMessage,
+      isUser: false,
+      timestamp: new Date(),
+      feedback: null,
+    };
+
+    setIsTyping(false);
+    setMessages((prev) => [...prev, response]);
   };
 
   return {

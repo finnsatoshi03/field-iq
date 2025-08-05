@@ -3,7 +3,7 @@ import { REPORT_OPTIONS } from "../../const";
 
 interface ReportStageProps {
   reportType: keyof typeof REPORT_OPTIONS;
-  onSubmit: (reportSubType: string) => void;
+  onSubmit: (reportSubType: string, intent: number) => void;
 }
 
 const buttonVariants = {
@@ -43,7 +43,7 @@ export const ReportStage = ({ reportType, onSubmit }: ReportStageProps) => {
               whileHover="hover"
               whileTap="tap"
               custom={index}
-              onClick={() => onSubmit(option.id)}
+              onClick={() => onSubmit(option.id, option.intent ?? 0)}
               className="w-full flex items-center gap-1"
             >
               <span className="text-3xl">{option.emoji}</span>

@@ -131,7 +131,7 @@ export const FarmerManager = ({ className }: FarmerManagerProps) => {
       const inviteParams: InviteUserParams = {
         email,
         options: {
-          ...(redirectTo && { redirectTo }),
+          redirectTo: redirectTo || `${window.location.origin}/invite`,
           data: {
             role: "farmer", // Always farmer
           },
@@ -459,7 +459,12 @@ export const FarmerManager = ({ className }: FarmerManagerProps) => {
                 type="url"
                 value={redirectTo}
                 onChange={(e) => setRedirectTo(e.target.value)}
-                placeholder="https://yourapp.com/farmer-dashboard"
+                disabled={linkType === "invite"}
+                placeholder={
+                  linkType === "invite"
+                    ? `${window.location.origin}/invite (default for invites)`
+                    : "https://yourapp.com/dashboard"
+                }
               />
             </div>
 

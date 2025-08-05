@@ -17,12 +17,14 @@ interface ChatStageProps {
     reportType: keyof typeof REPORT_OPTIONS;
     reportSubType: string;
   };
+  intent: number;
 }
 
 export const ChatStage = ({
   chatType,
   chatMode = "normal",
   reportContext,
+  intent,
 }: ChatStageProps) => {
   const { user } = useUser();
   const { messages, isTyping, addMessage, handleFeedback, sendAIResponse } =
@@ -77,10 +79,10 @@ export const ChatStage = ({
     setInputMessage("");
 
     // Send AI response after user message
-    sendAIResponse(userMessageContent);
+    sendAIResponse(userMessageContent, intent);
   };
 
-  const handleQuickChatSelect = (optionId: string, optionLabel: string) => {
+  const handleQuickChatSelect = (optionLabel: string) => {
     // Add user message from quick selection
     addMessage({
       id: Date.now(),
@@ -91,7 +93,7 @@ export const ChatStage = ({
     });
 
     // Send AI response based on selection
-    sendAIResponse(`Quick selection: ${optionId} - ${optionLabel}`);
+    // sendAIResponse(`Quick selection: ${optionId} - ${optionLabel}`);
   };
 
   const handleSuggestedChatSelect = (suggestion: string) => {
@@ -105,7 +107,7 @@ export const ChatStage = ({
     });
 
     // Send AI response based on suggestion
-    sendAIResponse(suggestion);
+    sendAIResponse(suggestion, intent);
   };
 
   const handleKeyPress = (e: React.KeyboardEvent) => {
