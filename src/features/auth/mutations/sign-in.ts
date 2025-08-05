@@ -18,26 +18,36 @@ export const useSignIn = () => {
       setLoading(true);
     },
     onSuccess: async (data) => {
-      // Get user profile data from the database
-      const userProfileData = await authService.getUserProfileById(
-        data.user.id,
-      );
+      try {
+        // Get user profile data from the database
+        const userProfileData = await authService.getUserProfileById(
+          data.user.id,
+        );
 
-      // Transform and store user in Zustand with merged profile data
-      const userProfile = transformSupabaseUser(
-        data.user,
-        userProfileData?.[0],
-      );
-      setUser(userProfile);
+        // Transform and store user in Zustand with merged profile data
+        const userProfile = transformSupabaseUser(
+          data.user,
+          userProfileData?.[0],
+        );
 
-      // Cache the user data in React Query
-      queryClient.setQueryData(["auth", "user"], data.user);
-      queryClient.setQueryData(["auth", "session"], data.session);
-      queryClient.setQueryData(["auth", "profile"], userProfileData);
+        setUser(userProfile);
 
-      // Navigate to appropriate dashboard based on role
-      const defaultRoute = getDefaultDashboardRoute(userProfile.role);
-      navigate({ to: defaultRoute });
+        // Cache the user data in React Query
+        queryClient.setQueryData(["auth", "user"], data.user);
+        queryClient.setQueryData(["auth", "session"], data.session);
+        queryClient.setQueryData(["auth", "profile"], userProfileData);
+
+        // Navigate to appropriate dashboard based on role
+        const defaultRoute = getDefaultDashboardRoute(userProfile.role);
+        navigate({ to: defaultRoute });
+      } catch (error) {
+        console.error("Error setting user profile:", error);
+        // Still navigate even if profile fetch fails
+        const userProfile = transformSupabaseUser(data.user);
+        setUser(userProfile);
+        const defaultRoute = getDefaultDashboardRoute(userProfile.role);
+        navigate({ to: defaultRoute });
+      }
     },
     onError: (error: any) => {
       console.error("Sign in failed:", error);

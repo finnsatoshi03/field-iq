@@ -108,4 +108,20 @@ export const authService = {
   onAuthStateChange(callback: (event: string, session: any) => void) {
     return supabase.auth.onAuthStateChange(callback);
   },
+
+  // Update user's company_id
+  async updateUserCompanyId(userId: string, companyId: number) {
+    const { data, error } = await supabase
+      .from("user_profiles")
+      .update({ company_id: companyId })
+      .eq("identity_id", userId)
+      .select()
+      .single();
+
+    if (error) {
+      throw error;
+    }
+
+    return data;
+  },
 };

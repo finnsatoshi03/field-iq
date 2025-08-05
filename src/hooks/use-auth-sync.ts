@@ -1,95 +1,54 @@
-import { useEffect } from "react";
-import { useQueryClient } from "@tanstack/react-query";
 import { authService } from "@/services/auth-service";
-import { useUserStore, transformSupabaseUser } from "@/store/user-store";
-import { BYPASS_AUTH } from "@/lib/config";
+import { transformSupabaseUser, useUserStore } from "@/store/user-store";
+import { useEffect, useState } from "react";
 
 export const useAuthSync = () => {
-  const queryClient = useQueryClient();
-  const { setUser, setLoading, signOut } = useUserStore();
+  const { user, setUser, isAuthenticated } = useUserStore();
+  const [isInitialized, setIsInitialized] = useState(false);
 
   useEffect(() => {
-    if (BYPASS_AUTH) return;
-
-    let mounted = true;
-
-    // Initialize auth state
-    const initializeAuth = async () => {
+    const syncAuthState = async () => {
       try {
-        setLoading(true);
+        // Get current user from Supabase
+        const supabaseUser = await authService.getCurrentUser();
 
-        // Get current session
-        const session = await authService.getCurrentSession();
+        if (supabaseUser) {
+          // Get user profile data
+          const userProfileData = await authService.getUserProfileById(
+            supabaseUser.id,
+          );
 
-        if (session?.user && mounted) {
-          const userProfile = transformSupabaseUser(session.user);
+          // Transform and set user in store
+          const userProfile = transformSupabaseUser(
+            supabaseUser,
+            userProfileData?.[0],
+          );
+
           setUser(userProfile);
-
-          // Cache in React Query
-          queryClient.setQueryData(["auth", "user"], session.user);
-          queryClient.setQueryData(["auth", "session"], session);
-        } else if (mounted) {
-          signOut();
+        } else {
+          // Only clear if we don't have a user in store already
+          if (user) {
+            setUser(null);
+          }
         }
       } catch (error) {
-        console.error("Auth initialization error:", error);
-        if (mounted) {
-          signOut();
+        console.error("Failed to sync auth state:", error);
+        // Only clear user on error if we don't have a user in store already
+        if (user) {
+          setUser(null);
         }
       } finally {
-        if (mounted) {
-          setLoading(false);
-        }
+        setIsInitialized(true);
       }
     };
 
-    // Set up auth state change listener
-    const { data: authListener } = authService.onAuthStateChange(
-      async (event, session) => {
-        if (!mounted) return;
+    // Only sync if user is not already set
+    if (!user) {
+      syncAuthState();
+    } else {
+      setIsInitialized(true);
+    }
+  }, []); // Only run once on mount
 
-        switch (event) {
-          case "SIGNED_IN":
-            if (session?.user) {
-              const userProfile = transformSupabaseUser(session.user);
-              setUser(userProfile);
-
-              // Update React Query cache
-              queryClient.setQueryData(["auth", "user"], session.user);
-              queryClient.setQueryData(["auth", "session"], session);
-            }
-            break;
-
-          case "SIGNED_OUT":
-            signOut();
-            // Clear React Query cache
-            queryClient.removeQueries({ queryKey: ["auth"] });
-            break;
-
-          case "TOKEN_REFRESHED":
-            if (session?.user) {
-              const userProfile = transformSupabaseUser(session.user);
-              setUser(userProfile);
-
-              // Update React Query cache
-              queryClient.setQueryData(["auth", "user"], session.user);
-              queryClient.setQueryData(["auth", "session"], session);
-            }
-            break;
-
-          default:
-            break;
-        }
-      }
-    );
-
-    // Initialize auth state
-    initializeAuth();
-
-    // Cleanup function
-    return () => {
-      mounted = false;
-      authListener?.subscription?.unsubscribe();
-    };
-  }, [queryClient, setUser, setLoading, signOut]);
+  return { isInitialized, user, isAuthenticated };
 };
