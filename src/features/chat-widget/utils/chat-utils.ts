@@ -55,53 +55,53 @@ export const getAPISuggestedChats = async (
 
     if (reportType === "report-sales") {
       if (reportSubType === "daily-sales" || reportSubType === "weekly-sales") {
-        templates.push(...SUGGESTED_CHAT_TEMPLATES.sales_performance);
+        // templates.push(...SUGGESTED_CHAT_TEMPLATES.sales_performance);
       }
       if (reportSubType === "client-visit") {
-        templates.push(...SUGGESTED_CHAT_TEMPLATES.client_relationship);
+        // templates.push(...SUGGESTED_CHAT_TEMPLATES.client_relationship);
       }
       if (reportSubType === "territory-update") {
-        templates.push(...SUGGESTED_CHAT_TEMPLATES.territory_management);
+        // templates.push(...SUGGESTED_CHAT_TEMPLATES.territory_management);
       }
     }
 
     if (reportType === "report-issue-sales") {
       if (reportSubType === "product-or-field-issues") {
-        templates.push(...SUGGESTED_CHAT_TEMPLATES.product_knowledge);
+        // templates.push(...SUGGESTED_CHAT_TEMPLATES.product_knowledge);
       }
       if (reportSubType === "dealer-problems") {
-        templates.push(...SUGGESTED_CHAT_TEMPLATES.client_relationship);
+        // templates.push(...SUGGESTED_CHAT_TEMPLATES.client_relationship);
       }
     }
 
     // Farmer-specific templates
     if (reportType === "report-issue") {
       if (reportSubType === "health-issue") {
-        templates.push(...SUGGESTED_CHAT_TEMPLATES.flock_health);
+        // templates.push(...SUGGESTED_CHAT_TEMPLATES.flock_health);
       }
       if (reportSubType === "feed-issue") {
-        templates.push(...SUGGESTED_CHAT_TEMPLATES.feed_management);
+        // templates.push(...SUGGESTED_CHAT_TEMPLATES.feed_management);
       }
       if (reportSubType === "equipment-issue") {
-        templates.push(...SUGGESTED_CHAT_TEMPLATES.equipment_maintenance);
+        // templates.push(...SUGGESTED_CHAT_TEMPLATES.equipment_maintenance);
       }
       if (reportSubType === "other-issue") {
-        templates.push(...SUGGESTED_CHAT_TEMPLATES.environmental_monitoring);
+        // templates.push(...SUGGESTED_CHAT_TEMPLATES.environmental_monitoring);
       }
     }
 
     if (reportType === "log-performance") {
-      if (
-        reportSubType === "egg-production" ||
-        reportSubType === "feed-consumption" ||
-        reportSubType === "flock-mortality" ||
-        reportSubType === "growth-metrics"
-      ) {
-        templates.push(...SUGGESTED_CHAT_TEMPLATES.performance_tracking);
-      }
-      if (reportSubType === "other-performance") {
-        templates.push(...SUGGESTED_CHAT_TEMPLATES.environmental_monitoring);
-      }
+      // if (
+      //   reportSubType === "egg-production" ||
+      //   reportSubType === "feed-consumption" ||
+      //   reportSubType === "flock-mortality" ||
+      //   reportSubType === "growth-metrics"
+      // ) {
+      //   templates.push(...SUGGESTED_CHAT_TEMPLATES.performance_tracking);
+      // }
+      // if (reportSubType === "other-performance") {
+      //   templates.push(...SUGGESTED_CHAT_TEMPLATES.environmental_monitoring);
+      // }
     }
 
     // Return a subset of templates (simulating AI selection)
