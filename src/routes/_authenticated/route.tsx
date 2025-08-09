@@ -7,7 +7,7 @@ import { authService } from "@/services/auth-service";
 
 import { CompanySetupModal } from "@/components/custom/CompanySetupModal";
 import { Header } from "@/components/custom/header";
-import { useUserStore } from "@/store/user-store";
+import { transformSupabaseUser, useUserStore } from "@/store/user-store";
 
 export const Route = createFileRoute("/_authenticated")({
   beforeLoad: async ({ location }) => {
@@ -52,8 +52,35 @@ export const Route = createFileRoute("/_authenticated")({
 });
 
 function AuthenticatedLayout() {
-  const { user, isAuthenticated } = useUserStore();
+  const { user, isAuthenticated, setUser, setLoading } = useUserStore();
   const [showCompanySetup, setShowCompanySetup] = useState(false);
+
+  // Initialize user/profile in store for sessions coming from passwordless or refresh
+  useEffect(() => {
+    let isMounted = true;
+    const initializeUserFromSession = async () => {
+      if (isAuthenticated) return;
+      try {
+        setLoading(true);
+        const supaUser = await authService.getCurrentUser();
+        if (!supaUser) return;
+        try {
+          const profileData = await authService.getUserProfileById(supaUser.id);
+          const merged = transformSupabaseUser(supaUser, profileData?.[0]);
+          if (isMounted) setUser(merged);
+        } catch {
+          const merged = transformSupabaseUser(supaUser);
+          if (isMounted) setUser(merged);
+        }
+      } finally {
+        setLoading(false);
+      }
+    };
+    void initializeUserFromSession();
+    return () => {
+      isMounted = false;
+    };
+  }, [isAuthenticated, setLoading, setUser]);
 
   useEffect(() => {
     // Show company setup modal if user is admin and has no company_id

@@ -1,15 +1,14 @@
-import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useMutation } from "@tanstack/react-query";
 import { useNavigate } from "@tanstack/react-router";
 import { toast } from "sonner";
 
 import { getDefaultDashboardRoute } from "@/lib/rbac";
 import { authService, type SignInData } from "@/services/auth-service";
-import { transformSupabaseUser, useUserStore } from "@/store/user-store";
+import { useUserStore } from "@/store/user-store";
 
 export const useSignIn = () => {
   const navigate = useNavigate();
-  const queryClient = useQueryClient();
-  const { setUser, setLoading } = useUserStore();
+  const { setLoading } = useUserStore();
 
   const mutation = useMutation({
     mutationFn: (data: SignInData) => authService.signIn(data),
@@ -18,36 +17,10 @@ export const useSignIn = () => {
       setLoading(true);
     },
     onSuccess: async (data) => {
-      try {
-        // Get user profile data from the database
-        const userProfileData = await authService.getUserProfileById(
-          data.user.id,
-        );
-
-        // Transform and store user in Zustand with merged profile data
-        const userProfile = transformSupabaseUser(
-          data.user,
-          userProfileData?.[0],
-        );
-
-        setUser(userProfile);
-
-        // Cache the user data in React Query
-        queryClient.setQueryData(["auth", "user"], data.user);
-        queryClient.setQueryData(["auth", "session"], data.session);
-        queryClient.setQueryData(["auth", "profile"], userProfileData);
-
-        // Navigate to appropriate dashboard based on role
-        const defaultRoute = getDefaultDashboardRoute(userProfile.role);
-        navigate({ to: defaultRoute });
-      } catch (error) {
-        console.error("Error setting user profile:", error);
-        // Still navigate even if profile fetch fails
-        const userProfile = transformSupabaseUser(data.user);
-        setUser(userProfile);
-        const defaultRoute = getDefaultDashboardRoute(userProfile.role);
-        navigate({ to: defaultRoute });
-      }
+      // Simply navigate based on role from auth payload; route layout will initialize user/profile
+      const role = (data.user as any)?.user_metadata?.role || "sales_rep";
+      const defaultRoute = getDefaultDashboardRoute(role);
+      navigate({ to: defaultRoute });
     },
     onError: (error: any) => {
       console.error("Sign in failed:", error);
