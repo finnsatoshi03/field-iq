@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { getAIResponse } from "../utils/chat-utils";
+import { useAIChat } from "../utils/chat-utils";
 
 export interface Message {
   id: number;
@@ -10,6 +10,7 @@ export interface Message {
 }
 
 export const useChatMessages = (initialMessage: string) => {
+  const { sendMessage } = useAIChat();
   const [messages, setMessages] = useState<Message[]>([
     {
       id: 1,
@@ -54,7 +55,7 @@ export const useChatMessages = (initialMessage: string) => {
     //   1500 + Math.random() * 1000
     // ); // Random delay between 1.5-2.5s
 
-    const aiMessage = await getAIResponse(userMessage, intent);
+    const aiMessage = await sendMessage(userMessage, intent);
 
     const response: Message = {
       id: Date.now() + 1,

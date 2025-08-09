@@ -1,9 +1,7 @@
-import { useUser } from "@/hooks";
-import {
-  type ChatMode,
-  REPORT_OPTIONS,
-  SUGGESTED_CHAT_TEMPLATES,
-} from "../const";
+import { FIELD_IQ_API_CONFIG } from "@/lib/config";
+import type { UserRole } from "@/lib/types";
+import { useUserStore } from "@/store/user-store";
+import { type ChatMode, REPORT_OPTIONS } from "../const";
 
 export const getInitialMessage = (
   type: string,
@@ -52,57 +50,57 @@ export const getAPISuggestedChats = async (
     await new Promise((resolve) => setTimeout(resolve, 500));
 
     // For now, return template suggestions based on context
-    const templates = [];
+    const templates: string[] = [];
 
     if (reportType === "report-sales") {
       if (reportSubType === "daily-sales" || reportSubType === "weekly-sales") {
-        templates.push(...SUGGESTED_CHAT_TEMPLATES.sales_performance);
+        // templates.push(...SUGGESTED_CHAT_TEMPLATES.sales_performance);
       }
       if (reportSubType === "client-visit") {
-        templates.push(...SUGGESTED_CHAT_TEMPLATES.client_relationship);
+        // templates.push(...SUGGESTED_CHAT_TEMPLATES.client_relationship);
       }
       if (reportSubType === "territory-update") {
-        templates.push(...SUGGESTED_CHAT_TEMPLATES.territory_management);
+        // templates.push(...SUGGESTED_CHAT_TEMPLATES.territory_management);
       }
     }
 
     if (reportType === "report-issue-sales") {
       if (reportSubType === "product-or-field-issues") {
-        templates.push(...SUGGESTED_CHAT_TEMPLATES.product_knowledge);
+        // templates.push(...SUGGESTED_CHAT_TEMPLATES.product_knowledge);
       }
       if (reportSubType === "dealer-problems") {
-        templates.push(...SUGGESTED_CHAT_TEMPLATES.client_relationship);
+        // templates.push(...SUGGESTED_CHAT_TEMPLATES.client_relationship);
       }
     }
 
     // Farmer-specific templates
     if (reportType === "report-issue") {
       if (reportSubType === "health-issue") {
-        templates.push(...SUGGESTED_CHAT_TEMPLATES.flock_health);
+        // templates.push(...SUGGESTED_CHAT_TEMPLATES.flock_health);
       }
       if (reportSubType === "feed-issue") {
-        templates.push(...SUGGESTED_CHAT_TEMPLATES.feed_management);
+        // templates.push(...SUGGESTED_CHAT_TEMPLATES.feed_management);
       }
       if (reportSubType === "equipment-issue") {
-        templates.push(...SUGGESTED_CHAT_TEMPLATES.equipment_maintenance);
+        // templates.push(...SUGGESTED_CHAT_TEMPLATES.equipment_maintenance);
       }
       if (reportSubType === "other-issue") {
-        templates.push(...SUGGESTED_CHAT_TEMPLATES.environmental_monitoring);
+        // templates.push(...SUGGESTED_CHAT_TEMPLATES.environmental_monitoring);
       }
     }
 
     if (reportType === "log-performance") {
-      if (
-        reportSubType === "egg-production" ||
-        reportSubType === "feed-consumption" ||
-        reportSubType === "flock-mortality" ||
-        reportSubType === "growth-metrics"
-      ) {
-        templates.push(...SUGGESTED_CHAT_TEMPLATES.performance_tracking);
-      }
-      if (reportSubType === "other-performance") {
-        templates.push(...SUGGESTED_CHAT_TEMPLATES.environmental_monitoring);
-      }
+      // if (
+      //   reportSubType === "egg-production" ||
+      //   reportSubType === "feed-consumption" ||
+      //   reportSubType === "flock-mortality" ||
+      //   reportSubType === "growth-metrics"
+      // ) {
+      //   templates.push(...SUGGESTED_CHAT_TEMPLATES.performance_tracking);
+      // }
+      // if (reportSubType === "other-performance") {
+      //   templates.push(...SUGGESTED_CHAT_TEMPLATES.environmental_monitoring);
+      // }
     }
 
     // Return a subset of templates (simulating AI selection)
@@ -113,12 +111,26 @@ export const getAPISuggestedChats = async (
   }
 };
 
+const getChatEndpointByRole = (role: UserRole): string => {
+  const baseUrl = FIELD_IQ_API_CONFIG.baseUrl;
+
+  switch (role) {
+    case "farmer":
+      return `${baseUrl}${FIELD_IQ_API_CONFIG.endpoints.farmer.chat}`;
+    case "sales_rep":
+      return `${baseUrl}${FIELD_IQ_API_CONFIG.endpoints.sales_rep.chat}`;
+    default:
+      throw new Error(`Chat is not available for role: ${role}`);
+  }
+};
+
 export const getAIResponse = async (
   userMessage: string,
   intent: number,
+  userRole: UserRole,
+  userId?: number,
+  chatId?: number,
 ): Promise<string> => {
-  const { user } = useUser();
-  const userId = user?.profileId;
   // Simple response logic based on keywords
 
   // // Handle quick selections
@@ -137,8 +149,15 @@ export const getAIResponse = async (
   //   return "Chicken health is crucial for productivity. Are you noticing any specific symptoms in your flock?";
   // }
 
+  // Validate that the user role is allowed to access chat
+  if (userRole !== "farmer" && userRole !== "sales_rep") {
+    throw new Error(`Chat is not available for role: ${userRole}`);
+  }
+
   try {
-    const response = await fetch("http://127.0.0.1:8000/farmer/chat", {
+    const endpoint = getChatEndpointByRole(userRole);
+
+    const response = await fetch(endpoint, {
       method: "POST",
       headers: {
         Accept: "application/json",
@@ -146,8 +165,8 @@ export const getAIResponse = async (
       },
       body: JSON.stringify({
         prompt: userMessage,
-        user_id: userId,
-        chat_id: 18,
+        user_id: userId || 1,
+        chat_id: chatId || 18,
         intent_id: intent,
       }),
     });
@@ -164,4 +183,43 @@ export const getAIResponse = async (
   }
 
   // return "I understand your concern. Let me help you with that. Could you provide more details so I can give you the most accurate assistance?";
+};
+
+/**
+ * Hook to get AI response using the authenticated user's role
+ * Only farmers and sales_reps can access the chat functionality
+ */
+export const useAIChat = () => {
+  const { user } = useUserStore();
+
+  const sendMessage = async (
+    userMessage: string,
+    intent: number,
+    chatId?: number,
+  ): Promise<string> => {
+    if (!user) {
+      throw new Error("User must be authenticated to use chat");
+    }
+
+    if (user.role !== "farmer" && user.role !== "sales_rep") {
+      throw new Error(`Chat is not available for role: ${user.role}`);
+    }
+
+    return getAIResponse(
+      userMessage,
+      intent,
+      user.role,
+      user.profileId || undefined,
+      chatId,
+    );
+  };
+
+  const canUseChat = user?.role === "farmer" || user?.role === "sales_rep";
+
+  return {
+    sendMessage,
+    canUseChat,
+    userRole: user?.role,
+    userId: user?.profileId,
+  };
 };
