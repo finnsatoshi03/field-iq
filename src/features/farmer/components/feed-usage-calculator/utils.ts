@@ -5,7 +5,7 @@ import {
 } from "./constants";
 
 export const calculateFeedUsage = (
-  inputs: CalculatorInputs
+  inputs: CalculatorInputs,
 ): FeedUsageCalculation => {
   const {
     numberOfAnimals,
@@ -63,20 +63,24 @@ export const calculateFeedUsage = (
   };
 };
 
-export const formatWeight = (kg: number): string => {
-  if (kg < 1) {
-    return `${Math.round(kg * 1000)}g`;
+export const formatWeight = (kg?: number | null): string => {
+  const value = typeof kg === "number" ? kg : Number(kg);
+  if (!Number.isFinite(value)) return "—";
+  if (value < 1) {
+    return `${Math.round(value * 1000)}g`;
   }
-  return `${kg.toFixed(1)}kg`;
+  return `${value.toFixed(1)}kg`;
 };
 
-export const formatCurrency = (amount: number): string => {
+export const formatCurrency = (amount?: number | null): string => {
+  const value = typeof amount === "number" ? amount : Number(amount);
+  const safe = Number.isFinite(value) ? value : 0;
   return new Intl.NumberFormat("en-PH", {
     style: "currency",
     currency: "PHP",
     minimumFractionDigits: 0,
     maximumFractionDigits: 0,
-  }).format(amount);
+  }).format(safe);
 };
 
 export const formatBags = (bags: number): string => {
@@ -90,7 +94,7 @@ export const formatDays = (days: number): string => {
 
 export const getOptimalReorderPoint = (
   weeklyConsumption: number,
-  bagSize: number
+  bagSize: number,
 ): number => {
   // Suggest reordering when you have 1.5 weeks of feed left
   const optimalDays = 10;
@@ -101,7 +105,7 @@ export const getOptimalReorderPoint = (
 export const calculateSavings = (
   currentUsage: number,
   optimizedUsage: number,
-  bagCost: number
+  bagCost: number,
 ): number => {
   const difference = currentUsage - optimizedUsage;
   return difference * bagCost;
@@ -131,7 +135,7 @@ export const validateInputs = (inputs: CalculatorInputs): string[] => {
 
 export const getConsumptionInfo = (
   animalType: "broiler" | "layer",
-  feedStage: string
+  feedStage: string,
 ) => {
   const consumptionData = ANIMAL_TYPE_CONSUMPTION[animalType];
   return consumptionData[feedStage as keyof typeof consumptionData];

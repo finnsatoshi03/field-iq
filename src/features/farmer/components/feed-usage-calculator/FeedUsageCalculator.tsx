@@ -29,6 +29,40 @@ export const FeedUsageCalculator: React.FC<FeedUsageCalculatorProps> = ({
   // Extract feed calculation data from API response
   const feedCalcData = dashboardData?.feed_calculation_log;
 
+  const formatInteger = (value?: number | string | null): string => {
+    const numericValue =
+      typeof value === "number" ? value : value != null ? Number(value) : NaN;
+    if (!Number.isFinite(numericValue)) return "—";
+    return Math.round(numericValue).toLocaleString();
+  };
+
+  const safeFormatDateTime = (dateString?: string | null): string => {
+    if (!dateString) return "—";
+    const date = new Date(dateString);
+    if (Number.isNaN(date.getTime())) return "—";
+    return date.toLocaleDateString("en-US", {
+      year: "numeric",
+      month: "long",
+      day: "numeric",
+      hour: "2-digit",
+      minute: "2-digit",
+    });
+  };
+
+  // Safely compute bags needed per week with fallbacks
+  const getBagsNeededPerWeek = (): number => {
+    if (!feedCalcData) return 0;
+    const raw = (feedCalcData as any).bags_needed_per_week;
+    const parsed = typeof raw === "number" ? raw : Number(raw);
+    if (Number.isFinite(parsed)) return parsed;
+    const weekly = Number((feedCalcData as any).weekly_consumption_kg);
+    const bagSize = Number((feedCalcData as any).bag_size_kg);
+    if (Number.isFinite(weekly) && Number.isFinite(bagSize) && bagSize > 0) {
+      return weekly / bagSize;
+    }
+    return 0;
+  };
+
   // Normalize animal type from API format to component format
   const normalizeAnimalType = (apiType: string): "broiler" | "layer" => {
     return apiType === "broilers" ? "broiler" : "layer";
@@ -52,7 +86,10 @@ export const FeedUsageCalculator: React.FC<FeedUsageCalculatorProps> = ({
   const getStockProgress = () => {
     if (!feedCalcData) return 0;
     const maxDays = 14; // 2 weeks
-    return Math.min((feedCalcData.reorder_point_days / maxDays) * 100, 100);
+    const days = Number((feedCalcData as any)?.reorder_point_days);
+    if (!Number.isFinite(days) || days <= 0) return 0;
+    const percent = (days / maxDays) * 100;
+    return Math.max(0, Math.min(percent, 100));
   };
 
   // Show loading state if no data
@@ -86,13 +123,14 @@ export const FeedUsageCalculator: React.FC<FeedUsageCalculatorProps> = ({
         <div className="flex items-center gap-2">
           <Wheat className="h-4 w-4 text-blue-600" />
           <span className="text-sm font-medium text-foreground">
-            {feedCalcData.bags_needed_per_week.toFixed(1)} bags/week
+            {getBagsNeededPerWeek().toFixed(1)} bags/week
           </span>
         </div>
         <div className="flex items-center gap-2">
           <Package className="h-4 w-4 text-muted-foreground" />
           <span className="text-xs text-muted-foreground">
-            {feedCalcData.current_stock_bags} bags in stock
+            {formatInteger((feedCalcData as any)?.current_stock_bags)} bags in
+            stock
           </span>
         </div>
       </div>
@@ -123,7 +161,7 @@ export const FeedUsageCalculator: React.FC<FeedUsageCalculatorProps> = ({
           <div className="grid grid-cols-2 gap-2">
             <div className="text-center col-span-2 rounded-md p-2 bg-muted/50">
               <div className="text-2xl font-medium font-display">
-                {feedCalcData.bags_needed_per_week.toFixed(1)}
+                {getBagsNeededPerWeek().toFixed(1)}
               </div>
               <p className="text-xs text-muted-foreground flex items-center justify-center gap-1 font-medium">
                 <Wheat className="size-4 text-blue-600" />
@@ -162,7 +200,7 @@ export const FeedUsageCalculator: React.FC<FeedUsageCalculatorProps> = ({
             <div className="rounded-md p-2 bg-gray-50 border border-gray-200">
               <p className="font-medium text-xs text-gray-600">Animals</p>
               <p className="text-lg font-medium font-display text-gray-700">
-                {feedCalcData.number_of_animals.toLocaleString()}
+                {formatInteger((feedCalcData as any)?.number_of_animals)}
               </p>
             </div>
           </div>
@@ -190,10 +228,14 @@ export const FeedUsageCalculator: React.FC<FeedUsageCalculatorProps> = ({
               <div className="space-y-1">
                 <div className="flex items-center justify-between text-sm">
                   <span className="text-muted-foreground text-xs font-medium">
-                    {formatDays(feedCalcData.reorder_point_days)} remaining
+                    {formatDays(
+                      Number((feedCalcData as any)?.reorder_point_days ?? 0),
+                    )}{" "}
+                    remaining
                   </span>
                   <span className="font-display font-medium">
-                    {feedCalcData.current_stock_bags} bags in stock
+                    {formatInteger((feedCalcData as any)?.current_stock_bags)}{" "}
+                    bags in stock
                   </span>
                 </div>
                 <Progress value={getStockProgress()} />
@@ -211,8 +253,8 @@ export const FeedUsageCalculator: React.FC<FeedUsageCalculatorProps> = ({
                     Recommended Action
                   </p>
                   <p className="text-xs text-muted-foreground">
-                    Order {Math.ceil(feedCalcData.bags_needed_per_week)} bags to
-                    maintain optimal stock levels
+                    Order {Math.ceil(getBagsNeededPerWeek())} bags to maintain
+                    optimal stock levels
                   </p>
                 </div>
               </div>
@@ -254,7 +296,7 @@ export const FeedUsageCalculator: React.FC<FeedUsageCalculatorProps> = ({
                     Number of Animals
                   </p>
                   <p className="text-lg font-display font-medium">
-                    {feedCalcData.number_of_animals.toLocaleString()}
+                    {formatInteger((feedCalcData as any)?.number_of_animals)}
                   </p>
                 </div>
                 <div>
@@ -262,19 +304,22 @@ export const FeedUsageCalculator: React.FC<FeedUsageCalculatorProps> = ({
                     Feed Frequency
                   </p>
                   <p className="text-lg font-display font-medium">
-                    {feedCalcData.feed_frequency}x per day
+                    {formatInteger((feedCalcData as any)?.feed_frequency)}x per
+                    day
                   </p>
                 </div>
                 <div>
                   <p className="text-sm text-muted-foreground">Animal Type</p>
                   <p className="text-lg font-display font-medium capitalize">
-                    {normalizeAnimalType(feedCalcData.animal_type)}
+                    {normalizeAnimalType(
+                      String((feedCalcData as any)?.animal_type || "layer"),
+                    )}
                   </p>
                 </div>
                 <div>
                   <p className="text-sm text-muted-foreground">Feed Stage</p>
                   <p className="text-lg font-display font-medium capitalize">
-                    {feedCalcData.feed_stage}
+                    {String((feedCalcData as any)?.feed_stage || "—")}
                   </p>
                 </div>
               </div>
@@ -341,7 +386,7 @@ export const FeedUsageCalculator: React.FC<FeedUsageCalculatorProps> = ({
                 <div>
                   <p className="text-sm text-blue-600">Bags per Week</p>
                   <p className="text-xl font-display font-medium text-blue-700">
-                    {feedCalcData.bags_needed_per_week.toFixed(1)}
+                    {getBagsNeededPerWeek().toFixed(1)}
                   </p>
                 </div>
                 <div>
@@ -399,13 +444,7 @@ export const FeedUsageCalculator: React.FC<FeedUsageCalculatorProps> = ({
             {/* Last Updated */}
             <div className="text-center text-xs text-muted-foreground border-t pt-4">
               Last updated:{" "}
-              {new Date(feedCalcData.updated_at).toLocaleDateString("en-US", {
-                year: "numeric",
-                month: "long",
-                day: "numeric",
-                hour: "2-digit",
-                minute: "2-digit",
-              })}
+              {safeFormatDateTime((feedCalcData as any)?.updated_at)}
             </div>
           </div>
         </DialogContent>
