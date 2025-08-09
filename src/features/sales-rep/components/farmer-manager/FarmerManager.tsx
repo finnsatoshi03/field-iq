@@ -35,7 +35,6 @@ import {
   useGetUsers,
   useInviteUserByEmail,
 } from "@/features/auth/mutations/admin-mutations";
-import { FIELD_IQ_API_URL } from "@/lib/config";
 import type { UserRole } from "@/lib/types";
 import { cn } from "@/lib/utils";
 import type {
@@ -147,7 +146,7 @@ export const FarmerManager = ({ className }: FarmerManagerProps) => {
       const inviteParams: InviteUserParams = {
         email,
         options: {
-          redirectTo: redirectTo || `${FIELD_IQ_API_URL}/invite`,
+          redirectTo: redirectTo || `https://fieldiq.ph/invite`,
           data: {
             role: "farmer", // Always farmer
             created_by: user?.id || null,
@@ -535,7 +534,7 @@ export const FarmerManager = ({ className }: FarmerManagerProps) => {
                 disabled={linkType === "invite"}
                 placeholder={
                   linkType === "invite"
-                    ? `${FIELD_IQ_API_URL}/invite (default for invites)`
+                    ? `https://fieldiq.ph/invite (default for invites)`
                     : "https://yourapp.com/dashboard"
                 }
               />

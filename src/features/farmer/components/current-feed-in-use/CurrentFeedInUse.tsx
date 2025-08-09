@@ -33,8 +33,10 @@ export const CurrentFeedInUse: React.FC<CurrentFeedInUseProps> = ({
     return `${start} - ${end} days`;
   };
 
-  const formatDate = (dateString: string) => {
+  const formatDate = (dateString?: string | null) => {
+    if (!dateString) return "—";
     const date = new Date(dateString);
+    if (Number.isNaN(date.getTime())) return "—";
     return date.toLocaleDateString("en-US", {
       year: "numeric",
       month: "short",
@@ -42,11 +44,13 @@ export const CurrentFeedInUse: React.FC<CurrentFeedInUseProps> = ({
     });
   };
 
-  const getFeedStageDisplay = (stage: string) => {
-    return (
-      FEED_STAGE_DISPLAY[stage] ||
-      stage.replace("_", " ").replace(/\b\w/g, (l) => l.toUpperCase())
-    );
+  const getFeedStageDisplay = (stage?: string | null) => {
+    if (!stage || typeof stage !== "string") return "Unknown";
+    const mapped = FEED_STAGE_DISPLAY[stage];
+    if (mapped) return mapped;
+    return stage
+      .replace(/_/g, " ")
+      .replace(/\b\w/g, (letter) => letter.toUpperCase());
   };
 
   const feedStageColorClass = feedInfo?.feed_stage
