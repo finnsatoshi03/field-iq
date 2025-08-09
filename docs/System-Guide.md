@@ -166,100 +166,169 @@ User Tools (internal)
 
 Who has access
 
-- Available to Sales Reps and Farmers. Admins and Super Admins do not see the chat.
+- Sales Reps and Farmers only. Admins and Super Admins do not see the chat.
 
 How to open
 
-- Click the chat bubble in the page corner. You’ll see a short welcome and suggested prompts.
+- Click the chat bubble. You’ll see a welcome screen with suggestions.
 
-How it behaves
+How the frontend chat is organized
 
-- The chat asks for one missing detail at a time (date format, product/feed name, location, etc.).
-- It confirms when a log is complete; otherwise it will ask for the next needed detail.
-- Product/feed names are validated against the catalog; dates should be in YYYY/MM/DD.
+- Stages: welcome → chat → report
+- Modes: normal (free chat), report (guided logging), quick (selection‑based)
 
-### Sales Rep: Chat categories and what they do
+Frontend categories and options come from the app’s chat menu. The assistant still follows the same rules from the prompts: it asks for one missing detail at a time, validates product/feed names, and expects dates in YYYY/MM/DD.
 
-1. Sales Activity Log
+### Sales Rep: Frontend categories
 
-- Purpose: Record a sale you just made.
-- It will collect: date (YYYY/MM/DD), product sold (exact name), total amount, quantity, location/branch, farm name.
-- What you say: “Sold 50 bags of Broiler Starter at San Isidro, Farm Delta, total ₱85,000 yesterday.”
-- What happens: If any item is missing, the chat asks for it; then confirms the sale is recorded.
+Top‑level options
 
-2. Farm Visit Log (Planned or Completed)
+- Ask Question (free chat)
+- Report Issue (guided)
+- Log Performance (guided)
 
-- Purpose: Add a planned visit or confirm a completed one.
-- It will collect: visit type (planned/completed), date (YYYY/MM/DD), location, farm name, purpose; (optional) ticket number if you have one (format TKT-000(ID)-(NUMBER)).
-- What you say: “Planned visit at San Pedro Farm on 2025/08/12 for product review.”
-- What happens: It asks for any missing details and then confirms once recorded.
+Report → Log Performance
 
-3. Dealer Issue Log
+- Sales Report (intent 7): Daily/weekly sales activity logging.
+- Farm Visit (intent 8): Planned/completed visits; date, location, farm, purpose, optional ticket.
 
-- Purpose: Report dealer problems to follow up (stockout, pricing problem, delivery delay).
-- It will collect: problem summary, problem type, location, dealer name; optionally product affected.
-- What you say: “Delivery delay at Luzon Feeds, San Juan. Broiler Finisher affected.”
-- What happens: It clarifies missing fields, tags the issue, and confirms when saved.
+Report → Report Issue
 
-4. Feed/Product Issue Log
-
-- Purpose: Capture issues that seem feed- or product-related in the field.
-- It will collect: short description, problem, feed name, location, farm name; may ask about birds affected/age only if you mentioned them.
-- What you say: “Farm Delta reports feed refusal with Poultry Advantage Starter at Brgy. Sto Nino.”
-- What happens: It classifies as feed- or product-related, asks for any missing details, and confirms logging.
-
-5. Advisory, Guides, and Help (General Questions)
-
-- Purpose: Quick answers, product matching, performance checks, downloading feeding guides, or routing help requests.
-- Examples:
-  - “Match a starter feed for 2-week broilers.” → Product match, benchmarks, and switching guidance.
-  - “Download feeding guide.” → Provides a PDF/video guide link details.
-  - “I need vet assistance.” → Routes as a help request (vet/technical/support).
+- Dealer Problems (intent 2): Stockout, pricing, delivery delays → dealer name, location, summary.
+- Product or Field Issues (intent 3): Feed/product issues in the field → feed name, farm/location, problem.
 
 Tips
 
-- If the assistant asks for a date, use YYYY/MM/DD (e.g., 2025/08/11).
-- Use exact product names from the catalog when possible. If unsure, the chat will try to help you pick the right one.
+- Use exact product names when possible.
+- Use YYYY/MM/DD for dates.
 
-### Farmer: Chat categories and what they do
+Detailed flows
 
-1. Health Incident Log
+Sales Report (intent 7)
 
-- Purpose: Report sickness, mortality, or feed rejection.
-- It will collect: incident type (sickness/mortality/feed_rejection), date (YYYY/MM/DD), number affected, symptoms, suspected cause, immediate actions, any feed info.
-- What you say: “May namatay kahapon 2025/08/10, 5 birds, matamlay at may sipon.”
-- What happens: You’ll get guidance and a vet reminder; missing details are asked one by one; then the log is confirmed.
+- Collects: sale date (YYYY/MM/DD), product sold (exact catalog name), total amount (₱), quantity (units/bags), location/branch, farm name, short description.
+- Validations: product name must match catalog; date must be YYYY/MM/DD; amounts are numeric; quantity provided as a number/units.
+- Assistant behavior: asks for one missing field at a time; replies with a professional confirmation when complete.
+- Example (you): “Sold 50 bags of Broiler Starter at San Isidro, Farm Delta, total ₱85,000 on 2025/08/11.”
+- Example (assistant): “Got it. Logging a sales activity for Broiler Starter (50 bags) at San Isidro, Farm Delta, total ₱85,000 on 2025/08/11. Anything else to add?”
+- Stored as: sales activity log.
+- Reference: @prompts/ask_salesrep_sales_log.json.
 
-2. Performance Report Log (Daily/Weekly)
+Farm Visit (intent 8)
 
-- Purpose: Record performance numbers regularly.
-- It can include: average weight, mortality count, bags used, feed intake, eggs/day, shell quality issues, feed intake status, general health.
-- What you say: “Weekly report: 1.6 kg average weight, 2 mortality, 25 bags, intake normal.”
-- What happens: The chat summarizes, asks for any key missing info, and confirms the report is saved.
+- Collects: visit type (planned/completed), date, location, farm name, purpose; optional ticket number (format TKT-000(ID)-(NUMBER)).
+- Validations: date format; ticket number only if it matches the pattern; purpose required.
+- Assistant behavior: asks for any missing item; summarizes before saving.
+- Example (you): “Planned visit tomorrow 2025/08/12 to San Pedro Farm for product review.”
+- Example (assistant): “Planning a visit on 2025/08/12 to San Pedro Farm for product review. Do you want to add a ticket number?”
+- Stored as: farm visit log.
+- Reference: @prompts/ask_salesrep_farm_log.json.
 
-3. DIY Practice Log
+Dealer Problems (intent 2)
 
-- Purpose: Share a home/DIY practice for feeding or health.
-- It classifies: safe, caution, or for R&D review; next step may be review or professional advice.
-- What you say: “Naglalagay kami ng herbal mix once a week for appetite.”
-- What happens: You’ll get a friendly, safety‑minded response and the practice is logged with the right tag.
+- Collects: dealer name, location, problem summary, problem type (stockout, pricing, delivery), optional product affected; internal notes.
+- Validations: requires dealer name, location, problem and type; asks for one missing detail at a time.
+- Assistant behavior: acknowledges, clarifies, then confirms logging.
+- Example (you): “Delivery delay at Luzon Feeds, San Juan. Broiler Finisher affected.”
+- Example (assistant): “Logging a delivery delay at Luzon Feeds (San Juan), product affected: Broiler Finisher. Any additional details I should include?”
+- Stored as: dealer issue log.
+- Reference: @prompts/ask_salesrep_dealer_log.json.
 
-4. Feed Advisory & Product Matching
+Product or Field Issues (intent 3)
 
-- Purpose: Ask for the right feed, benchmarks, or switching timing.
-- It provides: product match (if any), expected benchmarks (weight/FCR/laying rate), and when to switch feeds.
-- What you say: “Ano ang recommended next feed after 21 days for broilers?”
-- What happens: You get a clear answer and reasoning tailored to your stage and goals.
+- Collects: short description, problem, feed name (must be asked if missing), farm name, location; only record birds affected/age if you explicitly provided them.
+- Validations: do not infer bird counts/age; ask if missing critical info; classify as feed‑ or product‑related.
+- Assistant behavior: supportive tone; one missing info at a time; confirms when complete.
+- Example (you): “Feed refusal with Poultry Advantage Starter at Brgy. Sto Nino, Farm Delta.”
+- Example (assistant): “Thanks for reporting. I’ll log a feed‑related issue for Poultry Advantage Starter at Farm Delta (Brgy. Sto Nino). When did this start? (YYYY/MM/DD)”
+- Stored as: product/feed issue log.
+- Reference: @prompts/ask_salesrep_product_field_log.json.
 
-Tips
+Ask Question (intent 0)
 
-- For dates, use YYYY/MM/DD.
-- If you didn’t mention numbers (like affected birds), the assistant won’t guess—expect a follow‑up question.
+- Purpose: general Q&A, product matching, performance checks, download guides, or asking for help.
+- Behaviors: may classify your intent, answer directly, or route you into the right guided flow.
+- Examples: “Match a starter feed for 2‑week broilers.” “Download feeding guide.” “I need vet assistance.”
+- Reference: @prompts/ask_sales_rep_general_questions.json, @prompts/ask_salesrep_intent.json.
 
-Limitations & good practice
+### Farmer: Frontend categories
 
-- If a response seems off, rephrase with one extra detail (date, farm, area, or product).
-- The chat guides your next step, but use your dashboard pages to review and confirm before taking action.
+Top‑level options
+
+- Ask Question (free chat)
+- Report Health Issues (intent 2)
+- Ask if Safe (intent 3)
+- Log Farm Performance (intent 7)
+
+What they cover
+
+- Report Health Issues (2): Sickness, mortality, feed rejection; collects date, affected count, symptoms.
+- Ask if Safe (3): DIY/safety checks or feed guidance.
+- Log Farm Performance (7): Weight, mortality, feed intake, eggs/day, shell quality, intake status.
+
+Detailed flows
+
+Report Health Issues (intent 2)
+
+- Collects: incident type (sickness, mortality, feed rejection), date (YYYY/MM/DD), affected count, symptoms, suspected cause, immediate actions, any feed info.
+- Validations: asks one missing item at a time; dates must be YYYY/MM/DD; always includes a vet disclaimer.
+- Assistant behavior: gives immediate, practical guidance; then confirms logging when complete.
+- Example (you): “May namatay kahapon 2025/08/10, 5 birds, matamlay at may sipon.”
+- Example (assistant): “Salamat sa detalye. Ire‑record ko ang mortality incident (2025/08/10, 5 birds). Magpahinga ang apektado, hiwalay sila, at kumunsulta sa vet. May binanggit bang pakain o batch code?”
+- Stored as: health incident log.
+- Reference: @prompts/ask_farmer_health_log.json.
+
+Log Farm Performance (intent 7)
+
+- Collects: average weight, mortality count, bags used, feed intake, eggs/day, shell quality issues, feed intake status, general health; plus summary notes.
+- Validations: asks only for missing fields; confirms a clear summary.
+- Assistant behavior: warm, farmer‑friendly tone; confirms when saved.
+- Example (you): “Weekly report: 1.6 kg average weight, 2 mortality, 25 bags, intake normal.”
+- Example (assistant): “Sige. Ire‑record ko: 1.6 kg average weight, 2 mortality, 25 bags used, intake normal. May dagdag ka pa bang detalye?”
+- Stored as: performance report log.
+- Reference: @prompts/ask_farmer_log.json.
+
+Ask if Safe (intent 3) — DIY or Feed Safety
+
+- Collects: exact DIY practice; classifies as safe, caution, or for R&D review; suggests next step (await review, validated safe, or seek professional advice).
+- Validations: safety‑minded language; does not over‑promise; keeps a record for research.
+- Assistant behavior: supportive and careful; ends with a vet/tech consultation reminder if needed.
+- Example (you): “Naglalagay kami ng herbal mix once a week para sa appetite.”
+- Example (assistant): “Salamat sa pagbahagi. Ilalagay ko ito bilang DIY practice (for R&D review). Bantayan ang intake at kalagayan, at kumunsulta sa vet kung may pagbabago.”
+- Stored as: DIY practice submission.
+- Reference: @prompts/ask_farmer_diy_log.json, @prompts/ask_farmer_general_questions.json.
+
+Ask Question (intent 0)
+
+- Purpose: general questions, feed advisory, product matching, switching guidance.
+- Behaviors: may classify your intent; provide benchmarks (weight/FCR/laying), next‑feed timing, and product match when applicable.
+- Reference: @prompts/ask_farmer_general_questions.json, @prompts/ask_farmer_intent.json.
+
+### Suggested prompts in the UI
+
+- The UI suggests short starters depending on what you pick (e.g., sales daily summary, territory update, health issue, feed consumption, etc.). These are just shortcuts to help you phrase entries.
+
+### Intent → prompt reference (for maintainers)
+
+Sales Rep
+
+- 7 Sales Report → ask_salesrep_sales_log.json
+- 8 Farm Visit → ask_salesrep_farm_log.json
+- 2 Dealer Problems → ask_salesrep_dealer_log.json
+- 3 Product or Field Issues → ask_salesrep_product_field_log.json
+- 0 Ask Question → ask_sales_rep_general_questions.json + ask_salesrep_intent.json
+
+Farmer
+
+- 2 Report Health Issues → ask_farmer_health_log.json
+- 7 Log Farm Performance → ask_farmer_log.json
+- 3 Ask if Safe → ask_farmer_diy_log.json and ask_farmer_general_questions.json (feed advisory)
+- 0 Ask Question → ask_farmer_general_questions.json + ask_farmer_intent.json
+
+Notes
+
+- “Ask Question” is free chat and may route to the right flow based on your message.
+- Feed advisory responses include product matching, benchmarks, and transition guidance when relevant.
 
 ---
 
