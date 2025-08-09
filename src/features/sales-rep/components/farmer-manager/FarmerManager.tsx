@@ -35,6 +35,7 @@ import {
   useGetUsers,
   useInviteUserByEmail,
 } from "@/features/auth/mutations/admin-mutations";
+import { FIELD_IQ_API_URL } from "@/lib/config";
 import type { UserRole } from "@/lib/types";
 import { cn } from "@/lib/utils";
 import type {
@@ -45,6 +46,7 @@ import type {
 import { useUserStore } from "@/store";
 import { toast } from "sonner";
 import { formatDate } from "../../../admin/components/faq-manager/utils";
+import { useFeedProducts } from "./hooks/useFeedProducts";
 
 const EMAIL_LINK_TYPES = [
   {
@@ -73,9 +75,13 @@ export const FarmerManager = ({ className }: FarmerManagerProps) => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [redirectTo, setRedirectTo] = useState("");
+  const [selectedFeedProductId, setSelectedFeedProductId] =
+    useState<string>("");
 
   const { user } = useUserStore();
   const { data: users = [], isLoading, error } = useGetUsers();
+  const { data: feedProducts = [], isLoading: isLoadingFeedProducts } =
+    useFeedProducts({ onlyActive: true });
   const generateEmailLinkMutation = useGenerateEmailLink();
   const createUserMutation = useCreateUser();
   const inviteUserMutation = useInviteUserByEmail();
@@ -109,6 +115,10 @@ export const FarmerManager = ({ className }: FarmerManagerProps) => {
     e.preventDefault();
 
     if (!email) return;
+    if (!selectedFeedProductId) {
+      toast.error("Please select a feed product");
+      return;
+    }
 
     // For signup, use createUser mutation
     if (linkType === "signup") {
@@ -123,6 +133,7 @@ export const FarmerManager = ({ className }: FarmerManagerProps) => {
         user_metadata: {
           role: "farmer" as UserRole,
           created_by: user?.id || null,
+          feed_product_id: Number(selectedFeedProductId),
         }, // Always farmer for sales reps
         email_confirm: true,
       };
@@ -136,10 +147,11 @@ export const FarmerManager = ({ className }: FarmerManagerProps) => {
       const inviteParams: InviteUserParams = {
         email,
         options: {
-          redirectTo: redirectTo || `${window.location.origin}/invite`,
+          redirectTo: redirectTo || `${FIELD_IQ_API_URL}/invite`,
           data: {
             role: "farmer", // Always farmer
             created_by: user?.id || null,
+            feed_product_id: Number(selectedFeedProductId),
           },
         },
       };
@@ -165,6 +177,7 @@ export const FarmerManager = ({ className }: FarmerManagerProps) => {
         data: {
           role: "farmer", // Always farmer
           created_by: user?.id || null,
+          feed_product_id: Number(selectedFeedProductId),
         },
       };
     } else {
@@ -172,6 +185,7 @@ export const FarmerManager = ({ className }: FarmerManagerProps) => {
         data: {
           role: "farmer",
           created_by: user?.id || null,
+          feed_product_id: Number(selectedFeedProductId),
         },
       };
     }
@@ -184,6 +198,7 @@ export const FarmerManager = ({ className }: FarmerManagerProps) => {
     setPassword("");
     setRedirectTo("");
     setLinkType("invite");
+    setSelectedFeedProductId("");
   };
 
   const handleSuccess = () => {
@@ -412,6 +427,50 @@ export const FarmerManager = ({ className }: FarmerManagerProps) => {
 
           <form onSubmit={handleSubmit} className="space-y-4">
             <div className="space-y-2">
+              <Label htmlFor="feed-product">Feed Product</Label>
+              <Select
+                value={selectedFeedProductId}
+                onValueChange={(value: string) =>
+                  setSelectedFeedProductId(value)
+                }
+                disabled={isLoadingFeedProducts}
+                required
+              >
+                <SelectTrigger
+                  id="feed-product"
+                  aria-label="Select feed product"
+                >
+                  <SelectValue
+                    placeholder={
+                      isLoadingFeedProducts
+                        ? "Loading products..."
+                        : "Select a feed product"
+                    }
+                  />
+                </SelectTrigger>
+                <SelectContent>
+                  {feedProducts.length === 0 ? (
+                    <div className="px-2 py-1.5 text-sm text-muted-foreground">
+                      No feed products found
+                    </div>
+                  ) : (
+                    feedProducts.map((p) => (
+                      <SelectItem key={p.id} value={String(p.id)}>
+                        <div className="flex items-center justify-between w-full">
+                          <span className="font-medium">{p.name}</span>
+                          {p.category ? (
+                            <span className="ml-2 text-xs text-muted-foreground">
+                              {p.category}
+                            </span>
+                          ) : null}
+                        </div>
+                      </SelectItem>
+                    ))
+                  )}
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="space-y-2">
               <Label htmlFor="link-type">Invitation Type</Label>
               <Select
                 value={linkType}
@@ -476,7 +535,7 @@ export const FarmerManager = ({ className }: FarmerManagerProps) => {
                 disabled={linkType === "invite"}
                 placeholder={
                   linkType === "invite"
-                    ? `${window.location.origin}/invite (default for invites)`
+                    ? `${FIELD_IQ_API_URL}/invite (default for invites)`
                     : "https://yourapp.com/dashboard"
                 }
               />
@@ -485,7 +544,7 @@ export const FarmerManager = ({ className }: FarmerManagerProps) => {
             <div className="flex gap-2">
               <Button
                 type="submit"
-                disabled={isPending || !email}
+                disabled={isPending || !email || !selectedFeedProductId}
                 className="flex-1"
               >
                 <Send className="mr-2 h-4 w-4" />

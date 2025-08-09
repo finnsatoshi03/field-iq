@@ -40,6 +40,7 @@ import {
   useGetUsers,
   useInviteUserByEmail,
 } from "@/features/auth/mutations/admin-mutations";
+import { FIELD_IQ_API_URL } from "@/lib/config";
 import type { UserRole } from "@/lib/types";
 import { cn } from "@/lib/utils";
 import type {
@@ -160,7 +161,7 @@ export const UserManager = ({ className }: UserManagerProps) => {
         email,
         options: {
           // Always redirect invites to the dedicated invite route
-          redirectTo: redirectTo || `${window.location.origin}/invite`,
+          redirectTo: redirectTo || `${FIELD_IQ_API_URL}/invite`,
           ...(selectedType?.supportsRole && {
             data: {
               role: selectedRole,
@@ -801,7 +802,7 @@ export const UserManager = ({ className }: UserManagerProps) => {
                 disabled={linkType === "invite"}
                 placeholder={
                   linkType === "invite"
-                    ? `${window.location.origin}/invite (default for invites)`
+                    ? `${FIELD_IQ_API_URL}/invite (default for invites)`
                     : "https://yourapp.com/dashboard"
                 }
               />
