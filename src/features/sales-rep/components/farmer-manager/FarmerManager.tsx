@@ -146,7 +146,7 @@ export const FarmerManager = ({ className }: FarmerManagerProps) => {
       const inviteParams: InviteUserParams = {
         email,
         options: {
-          redirectTo: redirectTo || `https://fieldiq.ph/invite`,
+          redirectTo: redirectTo || `${window.location.pathname}/invite`,
           data: {
             role: "farmer", // Always farmer
             created_by: user?.id || null,
@@ -534,7 +534,7 @@ export const FarmerManager = ({ className }: FarmerManagerProps) => {
                 disabled={linkType === "invite"}
                 placeholder={
                   linkType === "invite"
-                    ? `https://fieldiq.ph/invite (default for invites)`
+                    ? `${window.location.pathname}/invite (default for invites)`
                     : "https://yourapp.com/dashboard"
                 }
               />
