@@ -21,7 +21,7 @@ export const ROUTE_PERMISSIONS: Record<string, UserRole[]> = {
  */
 export const hasRoutePermission = (
   userRole: UserRole,
-  routePath: string
+  routePath: string,
 ): boolean => {
   const allowedRoles = ROUTE_PERMISSIONS[routePath];
 
@@ -38,7 +38,7 @@ export const hasRoutePermission = (
  */
 export const hasRoleHierarchy = (
   userRole: UserRole,
-  requiredRole: UserRole
+  requiredRole: UserRole,
 ): boolean => {
   return ROLE_HIERARCHY[userRole] >= ROLE_HIERARCHY[requiredRole];
 };

@@ -173,30 +173,10 @@ export const getAIResponse = async (
 
     const data = await response.json();
 
-    // Log the full response for debugging
-    console.log("AI Chat API Response:", data);
-
-    // Handle API response - ensure we return a string
-    if (data.data && data.data.response) {
-      // If response is an object with message field, extract the message
-      if (
-        typeof data.data.response === "object" &&
-        data.data.response.message
-      ) {
-        return data.data.response.message;
-      }
-      // If response is already a string, return it
-      if (typeof data.data.response === "string") {
-        return data.data.response;
-      }
-      // If response is an object but not with expected structure, stringify it
-      if (typeof data.data.response === "object") {
-        console.warn("Unexpected API response format:", data.data.response);
-        return JSON.stringify(data.data.response);
-      }
-    }
-
-    return "Received a response, but it was not in the expected format.";
+    return (
+      data.data.response ||
+      "Received a response, but it was not in the expected format."
+    );
   } catch (error) {
     console.error("Error fetching AI response:", error);
     return "Sorry I can't answer your question right now. Can you please try again later.";

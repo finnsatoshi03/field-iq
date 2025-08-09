@@ -26,7 +26,7 @@ import {
   Users,
   UserX,
 } from "lucide-react";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 
 import ExpandableCard from "@/components/ui/expandable-card";
 import {
@@ -122,7 +122,7 @@ export const FarmerManager = ({ className }: FarmerManagerProps) => {
         password,
         user_metadata: {
           role: "farmer" as UserRole,
-          created_by: user?.id ?? 0,
+          created_by: user?.id || null,
         }, // Always farmer for sales reps
         email_confirm: true,
       };
@@ -139,7 +139,7 @@ export const FarmerManager = ({ className }: FarmerManagerProps) => {
           redirectTo: redirectTo || `${window.location.origin}/invite`,
           data: {
             role: "farmer", // Always farmer
-            created_by: user?.id ?? 0,
+            created_by: user?.id || null,
           },
         },
       };
@@ -164,14 +164,14 @@ export const FarmerManager = ({ className }: FarmerManagerProps) => {
         ...(redirectTo && { redirectTo }),
         data: {
           role: "farmer", // Always farmer
-          created_by: user?.id ?? 0,
+          created_by: user?.id || null,
         },
       };
     } else {
       params.options = {
         data: {
           role: "farmer",
-          created_by: user?.id ?? 0,
+          created_by: user?.id || null,
         },
       };
     }
@@ -191,14 +191,20 @@ export const FarmerManager = ({ className }: FarmerManagerProps) => {
     setIsInviteDialogOpen(false);
   };
 
-  // Listen for successful mutation
-  if (
-    generateEmailLinkMutation.isSuccess ||
-    createUserMutation.isSuccess ||
-    inviteUserMutation.isSuccess
-  ) {
-    handleSuccess();
-  }
+  // Listen for successful mutation using useEffect
+  useEffect(() => {
+    if (
+      generateEmailLinkMutation.isSuccess ||
+      createUserMutation.isSuccess ||
+      inviteUserMutation.isSuccess
+    ) {
+      handleSuccess();
+    }
+  }, [
+    generateEmailLinkMutation.isSuccess,
+    createUserMutation.isSuccess,
+    inviteUserMutation.isSuccess,
+  ]);
 
   // Check if any mutation is pending
   const isPending =

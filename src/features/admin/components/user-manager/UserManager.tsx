@@ -32,7 +32,7 @@ import {
   Users,
   UserX,
 } from "lucide-react";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 
 import {
   useCreateUser,
@@ -145,7 +145,7 @@ export const UserManager = ({ className }: UserManagerProps) => {
         email,
         password,
         user_metadata: selectedType?.supportsRole
-          ? { role: selectedRole, created_by: user?.id ?? 0 }
+          ? { role: selectedRole, created_by: user?.id || null }
           : undefined,
         email_confirm: true,
       };
@@ -164,7 +164,7 @@ export const UserManager = ({ className }: UserManagerProps) => {
           ...(selectedType?.supportsRole && {
             data: {
               role: selectedRole,
-              created_by: user?.id ?? 0,
+              created_by: user?.id || null,
             },
           }),
         },
@@ -191,7 +191,7 @@ export const UserManager = ({ className }: UserManagerProps) => {
         ...(selectedType?.supportsRole && {
           data: {
             role: selectedRole,
-            created_by: user?.id ?? 0,
+            created_by: user?.id || null,
           },
         }),
       };
@@ -213,14 +213,20 @@ export const UserManager = ({ className }: UserManagerProps) => {
     setIsInviteDialogOpen(false);
   };
 
-  // Listen for successful mutation
-  if (
-    generateEmailLinkMutation.isSuccess ||
-    createUserMutation.isSuccess ||
-    inviteUserMutation.isSuccess
-  ) {
-    handleSuccess();
-  }
+  // Listen for successful mutation using useEffect
+  useEffect(() => {
+    if (
+      generateEmailLinkMutation.isSuccess ||
+      createUserMutation.isSuccess ||
+      inviteUserMutation.isSuccess
+    ) {
+      handleSuccess();
+    }
+  }, [
+    generateEmailLinkMutation.isSuccess,
+    createUserMutation.isSuccess,
+    inviteUserMutation.isSuccess,
+  ]);
 
   // Check if any mutation is pending
   const isPending =
