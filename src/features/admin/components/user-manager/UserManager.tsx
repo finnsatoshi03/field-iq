@@ -160,7 +160,7 @@ export const UserManager = ({ className }: UserManagerProps) => {
         email,
         options: {
           // Always redirect invites to the dedicated invite route
-          redirectTo: redirectTo || `${window.location.pathname}/invite`,
+          redirectTo: redirectTo || "https://www.fieldiq.ph/invite",
           ...(selectedType?.supportsRole && {
             data: {
               role: selectedRole,
