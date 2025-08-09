@@ -39,34 +39,41 @@ export const useChatMessages = (initialMessage: string) => {
   const sendAIResponse = async (userMessage: string, intent: number) => {
     setIsTyping(true);
 
-    // Simulate AI response with realistic delay
-    // setTimeout(
-    //   async () => {
-    //     setIsTyping(false);
-    //     const response: Message = {
-    //       id: Date.now() + 1,
-    //       message: await getAIResponse(userMessage, intent),
-    //       isUser: false,
-    //       timestamp: new Date(),
-    //       feedback: null,
-    //     };
-    //     setMessages((prev) => [...prev, response]);
-    //   },
-    //   1500 + Math.random() * 1000
-    // ); // Random delay between 1.5-2.5s
+    try {
+      const aiMessage = await sendMessage(userMessage, intent);
 
-    const aiMessage = await sendMessage(userMessage, intent);
+      // Ensure the message is always a string
+      const messageText =
+        typeof aiMessage === "string"
+          ? aiMessage
+          : typeof aiMessage === "object" && aiMessage !== null
+            ? JSON.stringify(aiMessage)
+            : "Unable to process response";
 
-    const response: Message = {
-      id: Date.now() + 1,
-      message: aiMessage,
-      isUser: false,
-      timestamp: new Date(),
-      feedback: null,
-    };
+      const response: Message = {
+        id: Date.now() + 1,
+        message: messageText,
+        isUser: false,
+        timestamp: new Date(),
+        feedback: null,
+      };
 
-    setIsTyping(false);
-    setMessages((prev) => [...prev, response]);
+      setIsTyping(false);
+      setMessages((prev) => [...prev, response]);
+    } catch (error) {
+      console.error("Error sending AI response:", error);
+
+      const errorResponse: Message = {
+        id: Date.now() + 1,
+        message: "Sorry, I encountered an error. Please try again.",
+        isUser: false,
+        timestamp: new Date(),
+        feedback: null,
+      };
+
+      setIsTyping(false);
+      setMessages((prev) => [...prev, errorResponse]);
+    }
   };
 
   return {
