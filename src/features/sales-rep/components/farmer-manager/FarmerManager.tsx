@@ -66,6 +66,7 @@ const EMAIL_LINK_TYPES = [
 
 interface FarmerManagerProps {
   className?: string;
+  companyId?: number;
 }
 
 export const FarmerManager = ({ className }: FarmerManagerProps) => {

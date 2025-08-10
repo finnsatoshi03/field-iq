@@ -85,9 +85,10 @@ const USER_ROLES = [
 
 interface UserManagerProps {
   className?: string;
+  companyId?: number;
 }
 
-export const UserManager = ({ className }: UserManagerProps) => {
+export const UserManager = ({ className, companyId }: UserManagerProps) => {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [isInviteDialogOpen, setIsInviteDialogOpen] = useState(false);
   const [linkType, setLinkType] = useState<EmailLinkType>("invite");
@@ -97,7 +98,8 @@ export const UserManager = ({ className }: UserManagerProps) => {
   const [selectedRole, setSelectedRole] = useState<UserRole>("farmer");
 
   const { user } = useUserStore();
-  const { data: users = [], isLoading, error } = useGetUsers();
+  const { data: users = [], isLoading, error } = useGetUsers(companyId);
+
   const generateEmailLinkMutation = useGenerateEmailLink();
   const createUserMutation = useCreateUser();
   const inviteUserMutation = useInviteUserByEmail();

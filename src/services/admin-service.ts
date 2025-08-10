@@ -61,6 +61,39 @@ export const adminService = {
     return data.users as AdminUser[];
   },
 
+  // Get users by company_id (requires admin privileges)
+  async getUsersByCompanyId(companyId: number): Promise<AdminUser[]> {
+    // First get all users from Supabase Auth
+    const { data: authUsers, error: authError } =
+      await supabaseAdmin.auth.admin.listUsers();
+
+    if (authError) {
+      throw authError;
+    }
+
+    // Get user profiles for the specific company
+    const { data: userProfiles, error: profileError } = await supabaseAdmin
+      .from("user_profiles")
+      .select("identity_id")
+      .eq("company_id", companyId);
+
+    if (profileError) {
+      throw profileError;
+    }
+
+    // Create a set of user IDs that belong to this company
+    const companyUserIds = new Set(
+      userProfiles?.map((profile) => profile.identity_id) || [],
+    );
+
+    // Filter auth users to only include those in the company
+    const companyUsers = authUsers.users.filter((user) =>
+      companyUserIds.has(user.id),
+    );
+
+    return companyUsers as AdminUser[];
+  },
+
   // Get user by ID
   async getUserById(userId: string): Promise<AdminUser> {
     const { data, error } = await supabaseAdmin.auth.admin.getUserById(userId);

@@ -49,7 +49,7 @@ function AdminDashboard() {
             </div>
           </div>
           <div className="xl:col-span-1 space-y-6">
-            <UserManager />
+            <UserManager companyId={companyId} />
             <FarmRegistrationTracker companyId={companyId} />
             <CompetitorIntelligence />
             <FeedPerformanceTracker companyId={companyId} />

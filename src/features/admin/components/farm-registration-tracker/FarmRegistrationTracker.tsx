@@ -77,12 +77,8 @@ const FarmRegistrationTracker: React.FC<FarmRegistrationTrackerProps> = ({
   } = useAdminFarms(companyId);
 
   // Transform API data to component format
-  const allRegistrations = farmsData
-    ? transformApiDataToFarmRegistrations(farmsData.data)
-    : [];
-  const allSalesReps = farmsData
-    ? transformApiDataToSalesReps(farmsData.data)
-    : [];
+  const allRegistrations = transformApiDataToFarmRegistrations(farmsData?.data);
+  const allSalesReps = transformApiDataToSalesReps(farmsData?.data);
 
   const registrations = getFilteredRegistrations(allRegistrations, filters);
   const metrics = calculateRegistrationMetrics(registrations);

@@ -79,9 +79,13 @@ export const calculateMockRevenue = (
 
 // Transform API data to FarmRegistration format
 export const transformApiDataToFarmRegistrations = (
-  apiData: AdminFarmApiItem[],
+  apiData: AdminFarmApiItem[] | null | undefined,
 ): FarmRegistration[] => {
   const registrations: FarmRegistration[] = [];
+
+  if (!apiData || !Array.isArray(apiData)) {
+    return registrations;
+  }
 
   apiData.forEach((item) => {
     // Each farmer can have multiple farm details, create a registration for each
@@ -152,9 +156,13 @@ export const transformApiDataToFarmRegistrations = (
 
 // Transform API data to SalesRep format
 export const transformApiDataToSalesReps = (
-  apiData: AdminFarmApiItem[],
+  apiData: AdminFarmApiItem[] | null | undefined,
 ): SalesRep[] => {
   const salesRepMap = new Map<string, SalesRep>();
+
+  if (!apiData || !Array.isArray(apiData)) {
+    return [];
+  }
 
   apiData.forEach((item) => {
     const salesRepId = item.salesrep.id.toString();

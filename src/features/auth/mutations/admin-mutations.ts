@@ -16,15 +16,32 @@ export const adminQueryKeys = {
 };
 
 // Get users query
-export const useGetUsers = () => {
+export const useGetUsers = (companyId?: number) => {
   const { isDev, isAdmin, isSalesRep } = useUser();
 
   return useQuery({
-    queryKey: adminQueryKeys.users,
+    queryKey: companyId
+      ? [...adminQueryKeys.users, companyId]
+      : adminQueryKeys.users,
     queryFn: () => {
       if (!isDev && !isAdmin && !isSalesRep) {
         throw new Error("Access denied. Dev role required.");
       }
+
+      // If companyId is provided, use the company-specific method
+      if (companyId) {
+        return adminService
+          .getUsersByCompanyId(companyId)
+          .then((users) =>
+            users.filter(
+              (user) =>
+                user.user_metadata.role !== "admin" &&
+                user.user_metadata.role !== "dev",
+            ),
+          );
+      }
+
+      // Otherwise use the original method
       if (isAdmin) {
         return adminService
           .getUsers()
@@ -51,7 +68,8 @@ export const useGetUsers = () => {
       return adminService.getUsers();
     },
     staleTime: 1000 * 60 * 5, // 5 minutes
-    enabled: isDev || isAdmin || isSalesRep, // Only enable query if user has dev role
+    enabled:
+      (isDev || isAdmin || isSalesRep) && (companyId ? companyId > 0 : true), // Only enable query if user has dev role and companyId is valid
   });
 };
 
