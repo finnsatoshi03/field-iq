@@ -45,7 +45,10 @@ function SalesDashboard() {
             </div>
           </div>
           <div className="lg:col-span-1 xl:col-span-1 space-y-6 sm:grid sm:grid-cols-2 gap-6 md:block">
-            <FarmerManager className="sm:col-span-2" />
+            <FarmerManager
+              className="sm:col-span-2"
+              companyId={user?.company_id}
+            />
             <DealerAlertLog className="sm:col-span-1" userId={userId} />
             <TrainingTracker className="sm:col-span-1" />
           </div>

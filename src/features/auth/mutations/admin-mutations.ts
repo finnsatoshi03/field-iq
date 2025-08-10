@@ -12,6 +12,7 @@ import {
 // Query keys
 export const adminQueryKeys = {
   users: ["admin", "users"] as const,
+  farmers: ["admin", "farmers"] as const,
   user: (id: string) => ["admin", "user", id] as const,
 };
 
@@ -70,6 +71,32 @@ export const useGetUsers = (companyId?: number) => {
     staleTime: 1000 * 60 * 5, // 5 minutes
     enabled:
       (isDev || isAdmin || isSalesRep) && (companyId ? companyId > 0 : true), // Only enable query if user has dev role and companyId is valid
+  });
+};
+
+// Get farmers by company ID query
+export const useGetFarmersByCompanyId = (companyId?: number) => {
+  const { isDev, isAdmin, isSalesRep } = useUser();
+
+  return useQuery({
+    queryKey: companyId
+      ? [...adminQueryKeys.farmers, companyId]
+      : adminQueryKeys.farmers,
+    queryFn: () => {
+      if (!isDev && !isAdmin && !isSalesRep) {
+        throw new Error("Access denied. Dev role required.");
+      }
+
+      if (!companyId) {
+        throw new Error("Company ID is required to fetch farmers.");
+      }
+
+      return adminService.getFarmersByCompanyId(companyId);
+    },
+    staleTime: 1000 * 60 * 5, // 5 minutes
+    enabled: Boolean(
+      (isDev || isAdmin || isSalesRep) && companyId && companyId > 0,
+    ),
   });
 };
 

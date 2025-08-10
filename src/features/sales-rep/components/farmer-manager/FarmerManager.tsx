@@ -32,7 +32,7 @@ import ExpandableCard from "@/components/ui/expandable-card";
 import {
   useCreateUser,
   useGenerateEmailLink,
-  useGetUsers,
+  useGetFarmersByCompanyId,
   useInviteUserByEmail,
 } from "@/features/auth/mutations/admin-mutations";
 import type { UserRole } from "@/lib/types";
@@ -69,7 +69,7 @@ interface FarmerManagerProps {
   companyId?: number;
 }
 
-export const FarmerManager = ({ className }: FarmerManagerProps) => {
+export const FarmerManager = ({ className, companyId }: FarmerManagerProps) => {
   const [isInviteDialogOpen, setIsInviteDialogOpen] = useState(false);
   const [linkType, setLinkType] = useState<EmailLinkType>("invite");
   const [email, setEmail] = useState("");
@@ -79,7 +79,11 @@ export const FarmerManager = ({ className }: FarmerManagerProps) => {
     useState<string>("");
 
   const { user } = useUserStore();
-  const { data: users = [], isLoading, error } = useGetUsers();
+  const {
+    data: farmersData = [],
+    isLoading,
+    error,
+  } = useGetFarmersByCompanyId(companyId);
   const { data: feedProducts = [], isLoading: isLoadingFeedProducts } =
     useFeedProducts({ onlyActive: true });
   const generateEmailLinkMutation = useGenerateEmailLink();
@@ -88,28 +92,28 @@ export const FarmerManager = ({ className }: FarmerManagerProps) => {
 
   const selectedType = EMAIL_LINK_TYPES.find((type) => type.value === linkType);
 
-  // Filter only farmers and calculate metrics
-  const farmers = useMemo(() => {
-    return users.filter((user) => user.user_metadata?.role === "farmer");
-  }, [users]);
-
+  // Calculate metrics from farmers data
   const metrics = useMemo(() => {
-    const total = farmers.length;
-    const active = farmers.filter((user) => user.last_sign_in_at).length;
-    const pending = farmers.filter((user) => !user.last_sign_in_at).length;
+    const total = farmersData.length;
+    const active = farmersData.filter(
+      (farmer) => farmer.last_sign_in_at,
+    ).length;
+    const pending = farmersData.filter(
+      (farmer) => !farmer.last_sign_in_at,
+    ).length;
 
     return { total, active, pending };
-  }, [farmers]);
+  }, [farmersData]);
 
   // Get recent farmers (last 5)
   const recentFarmers = useMemo(() => {
-    return farmers
+    return farmersData
       .sort(
         (a, b) =>
           new Date(b.created_at).getTime() - new Date(a.created_at).getTime(),
       )
       .slice(0, 5);
-  }, [farmers]);
+  }, [farmersData]);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();

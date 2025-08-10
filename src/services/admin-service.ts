@@ -94,6 +94,58 @@ export const adminService = {
     return companyUsers as AdminUser[];
   },
 
+  // Get farmers by company_id using company_farmers table (requires admin privileges)
+  async getFarmersByCompanyId(companyId: number): Promise<AdminUser[]> {
+    // First get all users from Supabase Auth
+    const { data: authUsers, error: authError } =
+      await supabaseAdmin.auth.admin.listUsers();
+
+    if (authError) {
+      throw authError;
+    }
+
+    // Get company farmers for the specific company
+    const { data: companyFarmersData, error: companyFarmersError } =
+      await supabaseAdmin
+        .from("company_farmers")
+        .select("farmer_user_profile_id")
+        .eq("company_id", companyId);
+
+    if (companyFarmersError) {
+      throw companyFarmersError;
+    }
+
+    // Get user profiles for the farmer IDs
+    const farmerProfileIds =
+      companyFarmersData?.map((cf) => cf.farmer_user_profile_id) || [];
+
+    if (farmerProfileIds.length === 0) {
+      return [];
+    }
+
+    const { data: userProfiles, error: profileError } = await supabaseAdmin
+      .from("user_profiles")
+      .select("identity_id")
+      .in("id", farmerProfileIds);
+
+    if (profileError) {
+      throw profileError;
+    }
+
+    // Create a set of farmer user IDs that belong to this company
+    const companyFarmerIds = new Set(
+      userProfiles?.map((profile) => profile.identity_id) || [],
+    );
+
+    // Filter auth users to only include farmers in the company
+    const filteredFarmers = authUsers.users.filter(
+      (user) =>
+        companyFarmerIds.has(user.id) && user.user_metadata?.role === "farmer",
+    );
+
+    return filteredFarmers as AdminUser[];
+  },
+
   // Get user by ID
   async getUserById(userId: string): Promise<AdminUser> {
     const { data, error } = await supabaseAdmin.auth.admin.getUserById(userId);
