@@ -345,5 +345,3 @@ Troubleshooting
 - I can’t find someone I invited: Check the Users/Team list or resend the invite.
 - My map/list looks empty: Clear filters or expand the date range.
 - I think I’m seeing the wrong dashboard: Ask an Admin to review your role.
-
-Note: In‑app chat help can be added later for step‑by‑step guidance.

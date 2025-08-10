@@ -79,24 +79,9 @@ const EMAIL_LINK_TYPES = [
 
 const USER_ROLES = [
   {
-    value: "farmer" as UserRole,
-    label: "Farmer",
-    description: "Field operations and crop management",
-  },
-  {
-    value: "sales_rep" as UserRole,
-    label: "Sales Representative",
-    description: "Client relations and sales activities",
-  },
-  {
     value: "admin" as UserRole,
     label: "Administrator",
     description: "Full system administration access",
-  },
-  {
-    value: "dev" as UserRole,
-    label: "Developer",
-    description: "Development and system maintenance",
   },
 ];
 
@@ -114,7 +99,7 @@ export const EmailLinkGenerator = ({
   const [password, setPassword] = useState("");
   const [newEmail, setNewEmail] = useState("");
   const [redirectTo, setRedirectTo] = useState("");
-  const [selectedRole, setSelectedRole] = useState<UserRole>("farmer");
+  const [selectedRole, setSelectedRole] = useState<UserRole>("admin");
 
   const generateEmailLinkMutation = useGenerateEmailLink();
   const createUserMutation = useCreateUser();
@@ -152,7 +137,7 @@ export const EmailLinkGenerator = ({
       const inviteParams: InviteUserParams = {
         email,
         options: {
-          redirectTo: redirectTo || `${window.location.origin}/invite`,
+          redirectTo: redirectTo || `https://www.fieldiq.ph/invite`,
           ...(selectedType?.supportsRole && {
             data: {
               role: selectedRole,
@@ -200,7 +185,7 @@ export const EmailLinkGenerator = ({
     setNewEmail("");
     setRedirectTo("");
     setLinkType("invite");
-    setSelectedRole("farmer");
+    setSelectedRole("admin");
   };
 
   // Check if any mutation is pending
@@ -218,8 +203,8 @@ export const EmailLinkGenerator = ({
             Email Link Generator
           </DialogTitle>
           <DialogDescription>
-            Generate authentication email links for any email address with
-            optional role assignment. Links will be copied to your clipboard.
+            Generate authentication email links for admin user invitations.
+            Links will be copied to your clipboard.
           </DialogDescription>
         </DialogHeader>
 
@@ -337,7 +322,7 @@ export const EmailLinkGenerator = ({
               disabled={linkType === "invite"}
               placeholder={
                 linkType === "invite"
-                  ? `${window.location.origin}/invite (default for invites)`
+                  ? `https://www.fieldiq.ph/invite (default for invites)`
                   : "https://yourapp.com/dashboard"
               }
             />
