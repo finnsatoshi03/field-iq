@@ -62,7 +62,11 @@ export const adminService = {
   },
 
   // Get users by company_id (requires admin privileges)
-  async getUsersByCompanyId(companyId: number): Promise<AdminUser[]> {
+  async getUsersByCompanyId(companyId: number | null): Promise<AdminUser[]> {
+    if (!companyId) {
+      return [];
+    }
+
     // First get all users from Supabase Auth
     const { data: authUsers, error: authError } =
       await supabaseAdmin.auth.admin.listUsers();
@@ -95,7 +99,11 @@ export const adminService = {
   },
 
   // Get farmers by company_id using company_farmers table (requires admin privileges)
-  async getFarmersByCompanyId(companyId: number): Promise<AdminUser[]> {
+  async getFarmersByCompanyId(companyId: number | null): Promise<AdminUser[]> {
+    if (!companyId) {
+      return [];
+    }
+
     // First get all users from Supabase Auth
     const { data: authUsers, error: authError } =
       await supabaseAdmin.auth.admin.listUsers();

@@ -17,7 +17,7 @@ export const adminQueryKeys = {
 };
 
 // Get users query
-export const useGetUsers = (companyId?: number) => {
+export const useGetUsers = (companyId?: number | null) => {
   const { isDev, isAdmin, isSalesRep } = useUser();
 
   return useQuery({
@@ -75,7 +75,7 @@ export const useGetUsers = (companyId?: number) => {
 };
 
 // Get farmers by company ID query
-export const useGetFarmersByCompanyId = (companyId?: number) => {
+export const useGetFarmersByCompanyId = (companyId?: number | null) => {
   const { isDev, isAdmin, isSalesRep } = useUser();
 
   return useQuery({

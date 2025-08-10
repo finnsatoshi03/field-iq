@@ -81,7 +81,7 @@ const USER_ROLES = [
 
 interface UserManagerProps {
   className?: string;
-  companyId?: number;
+  companyId?: number | null;
 }
 
 export const UserManager = ({ className, companyId }: UserManagerProps) => {
@@ -94,9 +94,13 @@ export const UserManager = ({ className, companyId }: UserManagerProps) => {
   const [selectedRole, setSelectedRole] = useState<UserRole>("sales_rep");
 
   const { user } = useUserStore();
-  const { data: users = [], isLoading, error } = useGetUsers(companyId);
+  const {
+    data: users = [],
+    isLoading,
+    error,
+  } = useGetUsers(companyId || undefined);
   const { data: farmers = [], isLoading: isLoadingFarmers } =
-    useGetFarmersByCompanyId(companyId);
+    useGetFarmersByCompanyId(companyId || undefined);
 
   const generateEmailLinkMutation = useGenerateEmailLink();
   const createUserMutation = useCreateUser();

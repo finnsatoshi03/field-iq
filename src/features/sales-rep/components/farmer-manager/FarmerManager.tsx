@@ -66,7 +66,7 @@ const EMAIL_LINK_TYPES = [
 
 interface FarmerManagerProps {
   className?: string;
-  companyId?: number;
+  companyId?: number | null;
 }
 
 export const FarmerManager = ({ className, companyId }: FarmerManagerProps) => {
@@ -83,7 +83,7 @@ export const FarmerManager = ({ className, companyId }: FarmerManagerProps) => {
     data: farmersData = [],
     isLoading,
     error,
-  } = useGetFarmersByCompanyId(companyId);
+  } = useGetFarmersByCompanyId(companyId || undefined);
   const { data: feedProducts = [], isLoading: isLoadingFeedProducts } =
     useFeedProducts({ onlyActive: true });
   const generateEmailLinkMutation = useGenerateEmailLink();
