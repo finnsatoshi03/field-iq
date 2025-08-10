@@ -37,6 +37,7 @@ import { useEffect, useMemo, useState } from "react";
 import {
   useCreateUser,
   useGenerateEmailLink,
+  useGetFarmersByCompanyId,
   useGetUsers,
   useInviteUserByEmail,
 } from "@/features/auth/mutations/admin-mutations";
@@ -72,11 +73,6 @@ const EMAIL_LINK_TYPES = [
 
 const USER_ROLES = [
   {
-    value: "farmer" as UserRole,
-    label: "Farmer",
-    description: "Field operations and crop management",
-  },
-  {
     value: "sales_rep" as UserRole,
     label: "Sales Representative",
     description: "Client relations and sales activities",
@@ -95,10 +91,12 @@ export const UserManager = ({ className, companyId }: UserManagerProps) => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [redirectTo, setRedirectTo] = useState("");
-  const [selectedRole, setSelectedRole] = useState<UserRole>("farmer");
+  const [selectedRole, setSelectedRole] = useState<UserRole>("sales_rep");
 
   const { user } = useUserStore();
   const { data: users = [], isLoading, error } = useGetUsers(companyId);
+  const { data: farmers = [], isLoading: isLoadingFarmers } =
+    useGetFarmersByCompanyId(companyId);
 
   const generateEmailLinkMutation = useGenerateEmailLink();
   const createUserMutation = useCreateUser();
@@ -109,17 +107,15 @@ export const UserManager = ({ className, companyId }: UserManagerProps) => {
   // Calculate metrics from real user data
   const metrics = useMemo(() => {
     const total = users.length;
-    const farmers = users.filter(
-      (user) => user.user_metadata?.role === "farmer",
-    ).length;
+    const farmersCount = farmers.length;
     const salesReps = users.filter(
       (user) => user.user_metadata?.role === "sales_rep",
     ).length;
     const active = users.filter((user) => user.last_sign_in_at).length;
     const inactive = users.filter((user) => !user.last_sign_in_at).length;
 
-    return { total, farmers, salesReps, active, inactive };
-  }, [users]);
+    return { total, farmers: farmersCount, salesReps, active, inactive };
+  }, [users, farmers]);
 
   // Get recent users (last 5)
   const recentUsers = useMemo(() => {
@@ -207,7 +203,7 @@ export const UserManager = ({ className, companyId }: UserManagerProps) => {
     setPassword("");
     setRedirectTo("");
     setLinkType("invite");
-    setSelectedRole("farmer");
+    setSelectedRole("sales_rep");
   };
 
   const handleSuccess = () => {
@@ -355,69 +351,149 @@ export const UserManager = ({ className, companyId }: UserManagerProps) => {
           </div>
         </div>
 
-        {/* Recent Users */}
+        {/* Sales Representatives */}
         <div className="bg-background rounded-lg p-4 border border-border">
           <div className="flex items-center justify-between mb-4">
-            <h4 className="font-medium text-foreground">Recent Users</h4>
+            <h4 className="font-medium text-foreground">
+              Sales Representatives
+            </h4>
             <Badge
               variant="outline"
               className="font-medium rounded-full border-border bg-background text-foreground text-xs"
             >
-              {metrics.total} Total
+              {metrics.salesReps} Total
             </Badge>
           </div>
 
           {/* Mini User Previews */}
           <div className="space-y-3">
-            {recentUsers.map((user) => (
-              <div
-                key={user.id}
-                className="bg-background rounded-lg p-3 border border-border hover:bg-muted/30 transition-colors"
-              >
-                <div className="flex items-start justify-between mb-2">
-                  <div className="flex items-center gap-2">
-                    <div className="w-6 h-6 bg-muted rounded-full flex items-center justify-center flex-shrink-0">
-                      <span className="text-xs font-medium text-foreground">
-                        {user.email.charAt(0).toUpperCase()}
-                      </span>
-                    </div>
-                    <div>
-                      <p className="text-sm font-medium text-foreground">
-                        {user.email}
-                      </p>
-                      <div className="flex items-center gap-1">
-                        {getUserRoleIcon(user.user_metadata?.role)}
-                        <p className="text-xs text-muted-foreground">
-                          {user.user_metadata?.role === "farmer"
-                            ? "Farmer"
-                            : user.user_metadata?.role === "sales_rep"
-                              ? "Sales Representative"
-                              : "User"}
+            {recentUsers
+              .filter((user) => user.user_metadata?.role === "sales_rep")
+              .map((user) => (
+                <div
+                  key={user.id}
+                  className="bg-background rounded-lg p-3 border border-border hover:bg-muted/30 transition-colors"
+                >
+                  <div className="flex items-start justify-between mb-2">
+                    <div className="flex items-center gap-2">
+                      <div className="w-6 h-6 bg-muted rounded-full flex items-center justify-center flex-shrink-0">
+                        <span className="text-xs font-medium text-foreground">
+                          {user.email.charAt(0).toUpperCase()}
+                        </span>
+                      </div>
+                      <div>
+                        <p className="text-sm font-medium text-foreground">
+                          {user.email}
                         </p>
+                        <div className="flex items-center gap-1">
+                          {getUserRoleIcon(user.user_metadata?.role)}
+                          <p className="text-xs text-muted-foreground">
+                            {user.user_metadata?.role === "farmer"
+                              ? "Farmer"
+                              : user.user_metadata?.role === "sales_rep"
+                                ? "Sales Representative"
+                                : "User"}
+                          </p>
+                        </div>
                       </div>
                     </div>
+                    <Badge
+                      variant="outline"
+                      className={`text-xs ${getUserStatusColor(user.last_sign_in_at)}`}
+                    >
+                      {getUserStatusIcon(user.last_sign_in_at)}
+                      <span className="ml-1">
+                        {user.last_sign_in_at ? "Active" : "Pending"}
+                      </span>
+                    </Badge>
                   </div>
-                  <Badge
-                    variant="outline"
-                    className={`text-xs ${getUserStatusColor(user.last_sign_in_at)}`}
-                  >
-                    {getUserStatusIcon(user.last_sign_in_at)}
-                    <span className="ml-1">
-                      {user.last_sign_in_at ? "Active" : "Pending"}
-                    </span>
-                  </Badge>
+                  <div className="text-xs text-muted-foreground">
+                    Joined: {formatDate(user.created_at)}
+                  </div>
                 </div>
-                <div className="text-xs text-muted-foreground">
-                  Joined: {formatDate(user.created_at)}
-                </div>
-              </div>
-            ))}
+              ))}
           </div>
 
           <div className="flex items-center gap-2 mt-4 pt-3 border-t border-border">
             <Users className="size-4 text-muted-foreground" />
             <span className="text-sm text-muted-foreground font-medium">
-              Team management and access control
+              Sales representative management
+            </span>
+          </div>
+        </div>
+
+        {/* Farmers */}
+        <div className="bg-background rounded-lg p-4 border border-border">
+          <div className="flex items-center justify-between mb-4">
+            <h4 className="font-medium text-foreground">Company Farmers</h4>
+            <Badge
+              variant="outline"
+              className="font-medium rounded-full border-border bg-background text-foreground text-xs"
+            >
+              {metrics.farmers} Total
+            </Badge>
+          </div>
+
+          {/* Mini Farmer Previews */}
+          <div className="space-y-3">
+            {isLoadingFarmers ? (
+              <div className="space-y-3">
+                {[...Array(3)].map((_, i) => (
+                  <div
+                    key={i}
+                    className="bg-background rounded-lg p-3 border border-border animate-pulse"
+                  >
+                    <div className="h-4 bg-muted rounded mb-2"></div>
+                    <div className="h-3 bg-muted rounded"></div>
+                  </div>
+                ))}
+              </div>
+            ) : farmers.length === 0 ? (
+              <div className="text-center py-4 text-muted-foreground">
+                <Shield className="h-8 w-8 mx-auto mb-2 opacity-50" />
+                <p className="text-sm">No farmers found</p>
+                <p className="text-xs">Created by sales representatives</p>
+              </div>
+            ) : (
+              farmers.slice(0, 3).map((farmer) => (
+                <div
+                  key={farmer.id}
+                  className="bg-background rounded-lg p-3 border border-border hover:bg-muted/30 transition-colors"
+                >
+                  <div className="flex items-start justify-between mb-2">
+                    <div className="flex items-center gap-2">
+                      <div className="w-6 h-6 bg-green-100 dark:bg-green-900/20 rounded-full flex items-center justify-center flex-shrink-0">
+                        <Shield className="h-3 w-3 text-green-600" />
+                      </div>
+                      <div>
+                        <p className="text-sm font-medium text-foreground">
+                          {farmer.email}
+                        </p>
+                        <p className="text-xs text-muted-foreground">Farmer</p>
+                      </div>
+                    </div>
+                    <Badge
+                      variant="outline"
+                      className={`text-xs ${getUserStatusColor(farmer.last_sign_in_at)}`}
+                    >
+                      {getUserStatusIcon(farmer.last_sign_in_at)}
+                      <span className="ml-1">
+                        {farmer.last_sign_in_at ? "Active" : "Pending"}
+                      </span>
+                    </Badge>
+                  </div>
+                  <div className="text-xs text-muted-foreground">
+                    Joined: {formatDate(farmer.created_at)}
+                  </div>
+                </div>
+              ))
+            )}
+          </div>
+
+          <div className="flex items-center gap-2 mt-4 pt-3 border-t border-border">
+            <Shield className="size-4 text-muted-foreground" />
+            <span className="text-sm text-muted-foreground font-medium">
+              Farmer visibility and oversight
             </span>
           </div>
         </div>
@@ -439,7 +515,7 @@ export const UserManager = ({ className, companyId }: UserManagerProps) => {
             User Manager
           </h3>
           <p className="text-muted-foreground text-xs">
-            Invite and manage farmers and sales representatives
+            Manage sales representatives and view farmers under your company
           </p>
         </div>
         <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
@@ -454,37 +530,21 @@ export const UserManager = ({ className, companyId }: UserManagerProps) => {
                 User Management Dashboard
               </DialogTitle>
               <DialogDescription>
-                Invite and manage farmers and sales representatives
+                Manage sales representatives and view farmers under your company
               </DialogDescription>
             </DialogHeader>
 
             <div className="space-y-4 flex-1 flex flex-col min-h-0">
               {/* Quick Actions */}
               <div className="-mx-6 px-6 py-4 bg-muted/30">
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                  <Button
-                    onClick={() => {
-                      setLinkType("invite");
-                      setSelectedRole("farmer");
-                      setIsInviteDialogOpen(true);
-                    }}
-                    className="h-auto p-4 flex flex-col items-center gap-2 bg-background hover:bg-muted/50 text-foreground border-border"
-                  >
-                    <Shield className="h-6 w-6" />
-                    <span className="font-medium">Invite Farmer</span>
-                    <span className="text-xs text-muted-foreground">
-                      Send invitation email
-                    </span>
-                  </Button>
-
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <Button
                     onClick={() => {
                       setLinkType("invite");
                       setSelectedRole("sales_rep");
                       setIsInviteDialogOpen(true);
                     }}
-                    variant="outline"
-                    className="h-auto p-4 flex flex-col items-center gap-2 border-border text-foreground hover:bg-muted/50"
+                    className="h-auto p-4 flex flex-col items-center gap-2 bg-background hover:bg-muted/50 text-foreground border-border"
                   >
                     <TrendingUp className="h-6 w-6" />
                     <span className="font-medium">Invite Sales Rep</span>
@@ -507,6 +567,23 @@ export const UserManager = ({ className, companyId }: UserManagerProps) => {
                       Generate signup link
                     </span>
                   </Button>
+                </div>
+
+                {/* Note about farmer management */}
+                <div className="mt-4 p-3 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg">
+                  <div className="flex items-start gap-2">
+                    <Shield className="h-4 w-4 text-blue-600 mt-0.5 flex-shrink-0" />
+                    <div className="text-sm">
+                      <p className="font-medium text-blue-900 dark:text-blue-100">
+                        Farmer Management
+                      </p>
+                      <p className="text-blue-700 dark:text-blue-300 text-xs">
+                        Sales representatives are responsible for creating and
+                        managing farmers. You can view all farmers under your
+                        company below.
+                      </p>
+                    </div>
+                  </div>
                 </div>
               </div>
 
@@ -609,6 +686,83 @@ export const UserManager = ({ className, companyId }: UserManagerProps) => {
                     </CardContent>
                   </Card>
 
+                  {/* Farmers List */}
+                  <Card className="border-border bg-background">
+                    <CardHeader>
+                      <CardTitle className="text-base flex items-center gap-2">
+                        <Shield className="h-4 w-4" />
+                        Company Farmers
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      {isLoadingFarmers ? (
+                        <div className="space-y-3">
+                          {[...Array(5)].map((_, i) => (
+                            <div
+                              key={i}
+                              className="flex items-center gap-3 p-3 rounded-lg border border-border animate-pulse"
+                            >
+                              <div className="w-8 h-8 bg-muted rounded-full"></div>
+                              <div className="flex-1 space-y-2">
+                                <div className="h-4 bg-muted rounded w-3/4"></div>
+                                <div className="h-3 bg-muted rounded w-1/2"></div>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      ) : (
+                        <div className="space-y-3">
+                          {farmers.length === 0 ? (
+                            <div className="text-center py-8">
+                              <Shield className="h-12 w-12 text-muted-foreground mx-auto mb-4 opacity-50" />
+                              <h3 className="font-display font-medium text-foreground mb-2">
+                                No farmers found
+                              </h3>
+                              <p className="text-sm text-muted-foreground mb-4">
+                                Farmers will appear here once created by sales
+                                representatives.
+                              </p>
+                            </div>
+                          ) : (
+                            farmers.slice(0, 5).map((farmer) => (
+                              <div
+                                key={farmer.id}
+                                className="flex items-center justify-between p-3 rounded-lg border border-border hover:bg-muted/30 transition-colors"
+                              >
+                                <div className="flex items-center gap-3">
+                                  <div className="w-8 h-8 bg-green-100 dark:bg-green-900/20 rounded-full flex items-center justify-center">
+                                    <Shield className="h-4 w-4 text-green-600" />
+                                  </div>
+                                  <div>
+                                    <p className="text-sm font-medium text-foreground">
+                                      {farmer.email}
+                                    </p>
+                                    <p className="text-xs text-muted-foreground">
+                                      Farmer
+                                    </p>
+                                  </div>
+                                </div>
+                                <Badge
+                                  variant="outline"
+                                  className={getUserStatusColor(
+                                    farmer.last_sign_in_at,
+                                  )}
+                                >
+                                  {getUserStatusIcon(farmer.last_sign_in_at)}
+                                  <span className="ml-1">
+                                    {farmer.last_sign_in_at
+                                      ? "Active"
+                                      : "Pending"}
+                                  </span>
+                                </Badge>
+                              </div>
+                            ))
+                          )}
+                        </div>
+                      )}
+                    </CardContent>
+                  </Card>
+
                   {/* User Statistics */}
                   <Card className="border-border bg-background">
                     <CardHeader>
@@ -689,7 +843,7 @@ export const UserManager = ({ className, companyId }: UserManagerProps) => {
       {/* Footer */}
       <div className="px-4 bg-muted/20 py-4">
         <div className="text-xs text-muted-foreground">
-          Team management and access control
+          Sales representative management and farmer visibility
         </div>
       </div>
 
@@ -702,8 +856,8 @@ export const UserManager = ({ className, companyId }: UserManagerProps) => {
               {selectedType?.label} Link Generator
             </DialogTitle>
             <DialogDescription>
-              Generate authentication email links for user management. Links
-              will be copied to your clipboard.
+              Generate authentication email links for sales representatives.
+              Links will be copied to your clipboard.
             </DialogDescription>
           </DialogHeader>
 
