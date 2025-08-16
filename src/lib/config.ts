@@ -25,6 +25,8 @@ export const FIELD_IQ_API_CONFIG = {
     // Admin API Endpoints
     admin: {
       sales: "/admin/sales",
+      sales_goals: "/admin/sales-goals",
+      sales_goals_current: "/admin/sales-goals/current",
       dealer_issues: "/admin/dealers/issue",
       farms: "/admin/farms",
       farm_performance: "/admin/farm/performance",

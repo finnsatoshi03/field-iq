@@ -8,9 +8,15 @@ import type {
   AdminSalesResponse,
   CreateFaqRequest,
   CreateFaqResponse,
+  CreateSalesGoalRequest,
+  CreateSalesGoalResponse,
+  CurrentSalesGoalResponse,
   DeleteFaqResponse,
+  SalesGoalsResponse,
   UpdateFaqRequest,
   UpdateFaqResponse,
+  UpdateSalesGoalRequest,
+  UpdateSalesGoalResponse,
 } from "@/features/admin/types";
 import type { FarmerDashboardData } from "@/features/farmer/types";
 import type {
@@ -356,6 +362,80 @@ export const fieldIQService = {
   async deleteAdminFaq(faqId: number): Promise<DeleteFaqResponse> {
     const response = await apiClient.delete<DeleteFaqResponse>(
       `${FIELD_IQ_API_CONFIG.endpoints.admin.faqs}/${faqId}`,
+    );
+
+    if (response.error) {
+      throw new Error(response.error);
+    }
+
+    if (!response.data) {
+      throw new Error("No data received from server");
+    }
+
+    return response.data;
+  },
+
+  // Sales Goals
+  async getSalesGoals(companyId: number): Promise<SalesGoalsResponse> {
+    const response = await apiClient.get<SalesGoalsResponse>(
+      `${FIELD_IQ_API_CONFIG.endpoints.admin.sales_goals}?company_id=${companyId}`,
+    );
+
+    if (response.error) {
+      throw new Error(response.error);
+    }
+
+    if (!response.data) {
+      throw new Error("No data received from server");
+    }
+
+    return response.data;
+  },
+
+  async getCurrentSalesGoal(
+    companyId: number,
+  ): Promise<CurrentSalesGoalResponse> {
+    const response = await apiClient.get<CurrentSalesGoalResponse>(
+      `${FIELD_IQ_API_CONFIG.endpoints.admin.sales_goals_current}?company_id=${companyId}`,
+    );
+
+    if (response.error) {
+      throw new Error(response.error);
+    }
+
+    if (!response.data) {
+      throw new Error("No data received from server");
+    }
+
+    return response.data;
+  },
+
+  async createSalesGoal(
+    goalData: CreateSalesGoalRequest,
+  ): Promise<CreateSalesGoalResponse> {
+    const response = await apiClient.post<CreateSalesGoalResponse>(
+      FIELD_IQ_API_CONFIG.endpoints.admin.sales_goals,
+      goalData,
+    );
+
+    if (response.error) {
+      throw new Error(response.error);
+    }
+
+    if (!response.data) {
+      throw new Error("No data received from server");
+    }
+
+    return response.data;
+  },
+
+  async updateSalesGoal(
+    goalId: number,
+    goalData: UpdateSalesGoalRequest,
+  ): Promise<UpdateSalesGoalResponse> {
+    const response = await apiClient.put<UpdateSalesGoalResponse>(
+      `${FIELD_IQ_API_CONFIG.endpoints.admin.sales_goals}/${goalId}`,
+      goalData,
     );
 
     if (response.error) {

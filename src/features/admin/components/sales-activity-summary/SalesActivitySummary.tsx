@@ -1,9 +1,18 @@
-import { AlertTriangle, Loader2 } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { useUserStore } from "@/store";
+import { AlertTriangle, Loader2, Target, TrendingUp } from "lucide-react";
 import { useState } from "react";
-import { SalesChart, ViewToggle } from "./components";
+import { toast } from "sonner";
+import { SalesChart, SalesGoalDialog, ViewToggle } from "./components";
 import type { ViewMode } from "./constants";
 import { VIEW_MODES } from "./constants";
-import { useAdminSales } from "./hooks";
+import {
+  useAdminSales,
+  useCreateSalesGoal,
+  useCurrentSalesGoal,
+  useUpdateSalesGoal,
+} from "./hooks";
 import {
   calculateSalesMetrics,
   getChartData,
@@ -18,9 +27,11 @@ interface SalesActivitySummaryProps {
 const SalesActivitySummary: React.FC<SalesActivitySummaryProps> = ({
   companyId,
 }) => {
+  const { user } = useUserStore();
   const [viewMode, setViewMode] = useState<ViewMode>(VIEW_MODES.REGION);
+  const [goalDialogOpen, setGoalDialogOpen] = useState(false);
 
-  // Fetch data using our hook
+  // Fetch data using our hooks
   const {
     data: salesData,
     isLoading,
@@ -28,8 +39,65 @@ const SalesActivitySummary: React.FC<SalesActivitySummaryProps> = ({
     refetch,
   } = useAdminSales(companyId);
 
+  const { data: currentGoalData, isLoading: goalLoading } =
+    useCurrentSalesGoal(companyId);
+
+  const createGoalMutation = useCreateSalesGoal();
+  const updateGoalMutation = useUpdateSalesGoal();
+
+  const currentGoal = currentGoalData?.data;
+
   const handleViewChange = (newView: ViewMode) => {
     setViewMode(newView);
+  };
+
+  const handleSaveGoal = async (goalData: {
+    target_amount: number;
+    period_start: string;
+    period_end: string;
+  }) => {
+    if (!user?.id) {
+      toast.error("User information not available");
+      return;
+    }
+
+    try {
+      if (currentGoal) {
+        // Update existing goal
+        const updatePromise = updateGoalMutation.mutateAsync({
+          goalId: currentGoal.id,
+          goalData: { target_amount: goalData.target_amount },
+          companyId,
+        });
+
+        toast.promise(updatePromise, {
+          loading: "Updating sales goal...",
+          success: "Sales goal updated successfully!",
+          error: "Failed to update sales goal",
+        });
+
+        await updatePromise;
+      } else {
+        // Create new goal
+        const createPromise = createGoalMutation.mutateAsync({
+          company_id: companyId,
+          target_amount: goalData.target_amount,
+          period_start: goalData.period_start,
+          period_end: goalData.period_end,
+          created_by: Number(user.id),
+        });
+
+        toast.promise(createPromise, {
+          loading: "Creating sales goal...",
+          success: "Sales goal created successfully!",
+          error: "Failed to create sales goal",
+        });
+
+        await createPromise;
+      }
+    } catch (error) {
+      console.error("Error saving sales goal:", error);
+    }
   };
 
   // Loading state
@@ -104,6 +172,14 @@ const SalesActivitySummary: React.FC<SalesActivitySummaryProps> = ({
   const salesMetrics = calculateSalesMetrics(transformedData);
   const chartData = sortChartData(getChartData(transformedData, viewMode));
 
+  // Calculate goal progress
+  const goalProgress = currentGoal
+    ? Math.min(
+        (salesMetrics.totalClosedSales / currentGoal.target_amount) * 100,
+        100,
+      )
+    : 0;
+
   // Empty state
   if (transformedData.length === 0) {
     return (
@@ -117,7 +193,22 @@ const SalesActivitySummary: React.FC<SalesActivitySummaryProps> = ({
               Sales volume influenced or closed
             </p>
           </div>
-          <ViewToggle currentView={viewMode} onViewChange={handleViewChange} />
+          <div className="flex items-center gap-2">
+            <ViewToggle
+              currentView={viewMode}
+              onViewChange={handleViewChange}
+            />
+            <Button
+              onClick={() => setGoalDialogOpen(true)}
+              size="sm"
+              variant="outline"
+              className="gap-2"
+              disabled={goalLoading}
+            >
+              <Target className="h-4 w-4" />
+              {currentGoal ? "Update Goal" : "Set Goal"}
+            </Button>
+          </div>
         </div>
 
         <div className="h-96 w-full flex items-center justify-center">
@@ -132,6 +223,18 @@ const SalesActivitySummary: React.FC<SalesActivitySummaryProps> = ({
             </p>
           </div>
         </div>
+
+        {/* Sales Goal Dialog */}
+        <SalesGoalDialog
+          isOpen={goalDialogOpen}
+          onClose={() => setGoalDialogOpen(false)}
+          onSave={handleSaveGoal}
+          currentGoal={currentGoal}
+          isLoading={
+            createGoalMutation.isPending || updateGoalMutation.isPending
+          }
+          mode={currentGoal ? "update" : "create"}
+        />
       </div>
     );
   }
@@ -148,8 +251,93 @@ const SalesActivitySummary: React.FC<SalesActivitySummaryProps> = ({
               Sales volume influenced or closed
             </p>
           </div>
-          <ViewToggle currentView={viewMode} onViewChange={handleViewChange} />
+          <div className="flex items-center gap-2">
+            <ViewToggle
+              currentView={viewMode}
+              onViewChange={handleViewChange}
+            />
+            <Button
+              onClick={() => setGoalDialogOpen(true)}
+              size="sm"
+              variant="outline"
+              className="gap-2"
+              disabled={goalLoading}
+            >
+              <Target className="h-4 w-4" />
+              {currentGoal ? "Update Goal" : "Set Goal"}
+            </Button>
+          </div>
         </div>
+
+        {/* Sales Goal Progress - show only if goal exists */}
+        {currentGoal && (
+          <div className="mb-6 p-4 bg-gradient-to-r from-blue-50 to-green-50 rounded-lg border border-blue-200">
+            <div className="flex items-center justify-between mb-2">
+              <div className="flex items-center gap-2">
+                <Target className="h-5 w-5 text-blue-600" />
+                <h4 className="font-semibold text-gray-900">
+                  Sales Goal Progress
+                </h4>
+              </div>
+              <Badge
+                variant={
+                  goalProgress >= 100
+                    ? "default"
+                    : goalProgress >= 75
+                      ? "secondary"
+                      : "outline"
+                }
+                className={`font-medium ${
+                  goalProgress >= 100
+                    ? "bg-green-100 text-green-800"
+                    : goalProgress >= 75
+                      ? "bg-yellow-100 text-yellow-800"
+                      : "bg-red-100 text-red-800"
+                }`}
+              >
+                {goalProgress.toFixed(1)}% Complete
+              </Badge>
+            </div>
+
+            <div className="grid grid-cols-3 gap-4 mb-3">
+              <div className="text-center">
+                <div className="text-2xl font-bold text-green-600 font-display">
+                  ₱{salesMetrics.totalClosedSales.toLocaleString()}
+                </div>
+                <div className="text-xs text-gray-600">Current Sales</div>
+              </div>
+              <div className="text-center">
+                <div className="text-2xl font-bold text-blue-600 font-display">
+                  ₱{currentGoal.target_amount.toLocaleString()}
+                </div>
+                <div className="text-xs text-gray-600">Target Amount</div>
+              </div>
+              <div className="text-center">
+                <div className="text-2xl font-bold text-purple-600 font-display flex items-center justify-center gap-1">
+                  <TrendingUp className="h-5 w-5" />₱
+                  {(
+                    currentGoal.target_amount - salesMetrics.totalClosedSales
+                  ).toLocaleString()}
+                </div>
+                <div className="text-xs text-gray-600">Remaining</div>
+              </div>
+            </div>
+
+            {/* Progress Bar */}
+            <div className="w-full bg-gray-200 rounded-full h-3">
+              <div
+                className={`h-3 rounded-full transition-all duration-300 ${
+                  goalProgress >= 100
+                    ? "bg-green-500"
+                    : goalProgress >= 75
+                      ? "bg-yellow-500"
+                      : "bg-blue-500"
+                }`}
+                style={{ width: `${Math.min(goalProgress, 100)}%` }}
+              />
+            </div>
+          </div>
+        )}
 
         {/* Summary moved to top */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4 mb-6">
@@ -225,6 +413,16 @@ const SalesActivitySummary: React.FC<SalesActivitySummaryProps> = ({
       <div className="h-96">
         <SalesChart data={chartData} height={384} />
       </div>
+
+      {/* Sales Goal Dialog */}
+      <SalesGoalDialog
+        isOpen={goalDialogOpen}
+        onClose={() => setGoalDialogOpen(false)}
+        onSave={handleSaveGoal}
+        currentGoal={currentGoal}
+        isLoading={createGoalMutation.isPending || updateGoalMutation.isPending}
+        mode={currentGoal ? "update" : "create"}
+      />
     </div>
   );
 };

@@ -210,3 +210,48 @@ export interface UpdateFaqResponse {
 export interface DeleteFaqResponse {
   message: string;
 }
+
+// Sales Goal Types
+export interface SalesGoal {
+  id: number;
+  company_id: number;
+  target_amount: number;
+  period_start: string;
+  period_end: string;
+  created_by: number;
+  created_at: string;
+  updated_at: string;
+  status?: "active" | "locked" | "future";
+}
+
+export interface SalesGoalsResponse {
+  message: string;
+  data: SalesGoal[];
+}
+
+export interface CurrentSalesGoalResponse {
+  message: string;
+  data: SalesGoal | null;
+}
+
+export interface CreateSalesGoalRequest {
+  company_id: number;
+  target_amount: number;
+  period_start: string;
+  period_end: string;
+  created_by: number;
+}
+
+export interface UpdateSalesGoalRequest {
+  target_amount?: number;
+}
+
+export interface CreateSalesGoalResponse {
+  message: string;
+  data: SalesGoal;
+}
+
+export interface UpdateSalesGoalResponse {
+  message: string;
+  data: SalesGoal;
+}
