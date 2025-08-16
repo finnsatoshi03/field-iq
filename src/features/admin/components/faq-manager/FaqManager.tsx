@@ -46,9 +46,17 @@ import {
   type FilterOptions,
 } from "./utils";
 
-const FaqManager = () => {
-  // API hooks
-  const { data: faqResponse, isLoading, isError, error } = useAdminFaqs();
+interface FaqManagerProps {
+  companyId: number;
+}
+
+const FaqManager = ({ companyId }: FaqManagerProps) => {
+  const {
+    data: faqResponse,
+    isLoading,
+    isError,
+    error,
+  } = useAdminFaqs(companyId);
   const createFaqMutation = useCreateFaq();
   const updateFaqMutation = useUpdateFaq();
   const deleteFaqMutation = useDeleteFaq();

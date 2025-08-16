@@ -297,9 +297,9 @@ export const fieldIQService = {
   },
 
   // Admin FAQs
-  async getAdminFaqs(): Promise<AdminFaqsResponse> {
+  async getAdminFaqs(companyId: number): Promise<AdminFaqsResponse> {
     const response = await apiClient.get<AdminFaqsResponse>(
-      FIELD_IQ_API_CONFIG.endpoints.admin.faqs,
+      `${FIELD_IQ_API_CONFIG.endpoints.admin.faqs}?company_id=${companyId}`,
     );
 
     if (response.error) {

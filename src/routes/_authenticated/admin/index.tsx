@@ -1,5 +1,4 @@
 import {
-  CompetitorIntelligence,
   DealerIssueTracker,
   FaqManager,
   FarmRegistrationTracker,
@@ -45,13 +44,13 @@ function AdminDashboard() {
               <DealerIssueTracker companyId={companyId} />
             </div>
             <div className="lg:col-span-2 xl:col-span-2">
-              <FaqManager />
+              <FaqManager companyId={companyId} />
             </div>
           </div>
           <div className="xl:col-span-1 space-y-6">
             <UserManager companyId={companyId} />
             <FarmRegistrationTracker companyId={companyId} />
-            <CompetitorIntelligence />
+            {/* <CompetitorIntelligence /> */}
             <FeedPerformanceTracker companyId={companyId} />
           </div>
         </div>
