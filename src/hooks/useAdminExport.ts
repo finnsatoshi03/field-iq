@@ -77,7 +77,7 @@ export const useAdminExport = ({ companyId }: UseAdminExportParams) => {
         faqs: faqsData?.data || [],
         users: [...(usersData || []), ...(farmersData || [])], // Combine users and farmers
         farmRegistrations: farmsData?.data || [],
-        feedPerformance: feedPerformanceData?.data || [],
+        feedPerformance: feedPerformanceData?.data?.metrics || [],
       };
 
       // Generate filename if not provided
@@ -106,7 +106,7 @@ export const useAdminExport = ({ companyId }: UseAdminExportParams) => {
       faqs: faqsData?.data?.length || 0,
       users: (usersData?.length || 0) + (farmersData?.length || 0),
       farmRegistrations: farmsData?.data?.length || 0,
-      feedPerformance: feedPerformanceData?.data?.length || 0,
+      feedPerformance: feedPerformanceData?.data?.metrics?.length || 0,
     };
   };
 

@@ -195,19 +195,24 @@ export class ExcelExportService {
    */
   private static createFeedPerformanceSheet(feedData: any[]) {
     const formattedData = feedData.map((item) => ({
-      "Farm Name": item.farm_name || "N/A",
-      "Feed Type": item.feed_type || "N/A",
-      "Feed Quantity": item.feed_quantity ? `${item.feed_quantity} kg` : "N/A",
-      "Performance Rating": item.performance_rating || "N/A",
-      "Feed Efficiency": item.feed_efficiency
-        ? `${item.feed_efficiency}%`
+      "Farm Name": item.farmName || "N/A",
+      "Product Name": item.productName || "N/A",
+      Region: item.region || "N/A",
+      Province: item.province || "N/A",
+      "Batch Size": item.batchSize || "N/A",
+      "Days on Feed": item.daysOnFeed || "N/A",
+      FCR: item.fcr || "N/A",
+      "Weight Gain": item.weightGain ? `${item.weightGain} kg` : "N/A",
+      "Mortality Rate": item.mortality ? `${item.mortality}%` : "N/A",
+      "Average Weight": item.avgWeight ? `${item.avgWeight} kg` : "N/A",
+      "Feed Intake": item.feedIntake ? `${item.feedIntake} kg` : "N/A",
+      "Weather Condition": item.weatherCondition || "N/A",
+      "Management Score": item.managementScore || "N/A",
+      "Record Date": item.recordDate
+        ? new Date(item.recordDate).toLocaleDateString()
         : "N/A",
-      "Cost per KG": item.cost_per_kg ? `₱${item.cost_per_kg}` : "N/A",
-      "Date Recorded": item.date_recorded
-        ? new Date(item.date_recorded).toLocaleDateString()
-        : "N/A",
-      "Growth Rate": item.growth_rate ? `${item.growth_rate}%` : "N/A",
-      Notes: item.notes || "N/A",
+      "Reported By": item.reportedBy || "N/A",
+      Verified: item.verified ? "Yes" : "No",
     }));
 
     return utils.json_to_sheet(formattedData);
