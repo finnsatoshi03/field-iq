@@ -38,11 +38,11 @@ const MonthlySalesChart: React.FC<MonthlySalesChartProps> = ({ userId }) => {
   if (isLoading) {
     return (
       <ExpandableCard
-        title="My Monthly Sales Influence"
+        title="Monthly Sales Performance"
         summary={
           <div className="flex items-center gap-2 text-muted-foreground">
             <Loader2 className="h-4 w-4 animate-spin" />
-            <span className="text-sm">Loading sales data...</span>
+            <span className="text-sm">Loading...</span>
           </div>
         }
         className="sm:h-fit"
@@ -50,7 +50,7 @@ const MonthlySalesChart: React.FC<MonthlySalesChartProps> = ({ userId }) => {
         <div className="h-72 w-full flex items-center justify-center">
           <div className="text-center text-muted-foreground">
             <Loader2 className="h-8 w-8 animate-spin mx-auto mb-2" />
-            <p className="text-sm">Loading chart data...</p>
+            <p className="text-sm">Loading sales data...</p>
           </div>
         </div>
       </ExpandableCard>
@@ -61,7 +61,7 @@ const MonthlySalesChart: React.FC<MonthlySalesChartProps> = ({ userId }) => {
   if (error) {
     return (
       <ExpandableCard
-        title="My Monthly Sales Influence"
+        title="Monthly Sales Performance"
         summary={
           <div className="flex items-center gap-2 text-muted-foreground">
             <TrendingUp className="h-4 w-4" />
@@ -258,7 +258,7 @@ const MonthlySalesChart: React.FC<MonthlySalesChartProps> = ({ userId }) => {
 
   return (
     <ExpandableCard
-      title="My Monthly Sales Influence"
+      title="Monthly Sales Performance"
       summary={summaryContent}
       className="sm:h-fit"
     >

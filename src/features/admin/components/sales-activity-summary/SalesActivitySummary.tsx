@@ -274,9 +274,7 @@ const SalesActivitySummary: React.FC<SalesActivitySummaryProps> = ({
             <div className="flex items-center justify-between mb-2">
               <div className="flex items-center gap-2">
                 <Target className="h-5 w-5 text-blue-600" />
-                <h4 className="font-semibold text-gray-900">
-                  Goal Progress
-                </h4>
+                <h4 className="font-semibold text-gray-900">Goal Progress</h4>
               </div>
               <Badge
                 variant={
@@ -345,7 +343,7 @@ const SalesActivitySummary: React.FC<SalesActivitySummaryProps> = ({
               <div className="flex items-center gap-2">
                 <div className="w-2 h-2 rounded-full bg-chart-1" />
                 <span className="text-xs font-semibold text-muted-foreground font-sans">
-                  Total Prospects
+                  Volume Influenced
                 </span>
               </div>
               <span className="text-2xl font-bold text-foreground font-sans">
@@ -358,7 +356,7 @@ const SalesActivitySummary: React.FC<SalesActivitySummaryProps> = ({
               <div className="flex items-center gap-2">
                 <div className="w-2 h-2 rounded-full bg-chart-2" />
                 <span className="text-xs font-semibold text-muted-foreground font-sans">
-                  Sales Made
+                  Closed Sales
                 </span>
               </div>
               <span className="text-2xl font-bold text-foreground font-sans">

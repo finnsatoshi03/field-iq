@@ -80,10 +80,10 @@ export class ExcelExportService {
     const formattedData = salesData.map((item) => ({
       "Sales Rep": item.sales_rep_name || item.name || "N/A",
       Region: item.region || "N/A",
-      "Total Prospects": item.influenced_volume_amount
+      "Volume Influenced": item.influenced_volume_amount
         ? `₱${item.influenced_volume_amount.toLocaleString()}`
         : "₱0",
-      "Sales Made": item.closed_sales_amount
+      "Closed Sales": item.closed_sales_amount
         ? `₱${item.closed_sales_amount.toLocaleString()}`
         : "₱0",
       "Success Rate":
