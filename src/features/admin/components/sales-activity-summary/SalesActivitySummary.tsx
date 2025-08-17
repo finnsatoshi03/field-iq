@@ -107,10 +107,10 @@ const SalesActivitySummary: React.FC<SalesActivitySummaryProps> = ({
         <div className="flex items-center justify-between mb-4">
           <div>
             <h3 className="text-foreground font-display font-semibold text-base tracking-tight">
-              Sales Activity Summary
+              Sales Dashboard
             </h3>
             <p className="text-muted-foreground text-sm font-sans">
-              Sales volume influenced or closed
+              Track your sales performance and goals
             </p>
           </div>
           <div className="flex items-center gap-2 text-muted-foreground">
@@ -136,10 +136,10 @@ const SalesActivitySummary: React.FC<SalesActivitySummaryProps> = ({
         <div className="flex items-center justify-between mb-4">
           <div>
             <h3 className="text-foreground font-display font-semibold text-base tracking-tight">
-              Sales Activity Summary
+              Sales Dashboard
             </h3>
             <p className="text-muted-foreground text-sm font-sans">
-              Sales volume influenced or closed
+              Track your sales performance and goals
             </p>
           </div>
           <div className="flex items-center gap-2 text-muted-foreground">
@@ -187,10 +187,10 @@ const SalesActivitySummary: React.FC<SalesActivitySummaryProps> = ({
         <div className="flex items-center justify-between mb-4">
           <div>
             <h3 className="text-foreground font-display font-semibold text-base tracking-tight">
-              Sales Activity Summary
+              Sales Dashboard
             </h3>
             <p className="text-muted-foreground text-sm font-sans">
-              Sales volume influenced or closed
+              Track your sales performance and goals
             </p>
           </div>
           <div className="flex items-center gap-2">
@@ -215,11 +215,10 @@ const SalesActivitySummary: React.FC<SalesActivitySummaryProps> = ({
           <div className="text-center text-muted-foreground">
             <AlertTriangle className="h-12 w-12 mx-auto mb-4 opacity-50" />
             <h3 className="font-display font-medium text-foreground mb-2">
-              No sales data available
+              No sales data yet
             </h3>
             <p className="text-sm">
-              Sales data will appear here once available for company ID{" "}
-              {companyId}.
+              Sales data will appear here once you have sales activities.
             </p>
           </div>
         </div>
@@ -245,10 +244,10 @@ const SalesActivitySummary: React.FC<SalesActivitySummaryProps> = ({
         <div className="flex items-center justify-between mb-4">
           <div>
             <h3 className="text-foreground font-display font-semibold text-base tracking-tight">
-              Sales Activity Summary
+              Sales Dashboard
             </h3>
             <p className="text-muted-foreground text-sm font-sans">
-              Sales volume influenced or closed
+              Track your sales performance and goals
             </p>
           </div>
           <div className="flex items-center gap-2">
@@ -276,7 +275,7 @@ const SalesActivitySummary: React.FC<SalesActivitySummaryProps> = ({
               <div className="flex items-center gap-2">
                 <Target className="h-5 w-5 text-blue-600" />
                 <h4 className="font-semibold text-gray-900">
-                  Sales Goal Progress
+                  Goal Progress
                 </h4>
               </div>
               <Badge
@@ -304,13 +303,13 @@ const SalesActivitySummary: React.FC<SalesActivitySummaryProps> = ({
                 <div className="text-2xl font-bold text-green-600 font-display">
                   ₱{salesMetrics.totalClosedSales.toLocaleString()}
                 </div>
-                <div className="text-xs text-gray-600">Current Sales</div>
+                <div className="text-xs text-gray-600">Sales Made</div>
               </div>
               <div className="text-center">
                 <div className="text-2xl font-bold text-blue-600 font-display">
                   ₱{currentGoal.target_amount.toLocaleString()}
                 </div>
-                <div className="text-xs text-gray-600">Target Amount</div>
+                <div className="text-xs text-gray-600">Goal Amount</div>
               </div>
               <div className="text-center">
                 <div className="text-2xl font-bold text-purple-600 font-display flex items-center justify-center gap-1">
@@ -319,7 +318,7 @@ const SalesActivitySummary: React.FC<SalesActivitySummaryProps> = ({
                     currentGoal.target_amount - salesMetrics.totalClosedSales
                   ).toLocaleString()}
                 </div>
-                <div className="text-xs text-gray-600">Remaining</div>
+                <div className="text-xs text-gray-600">Still Needed</div>
               </div>
             </div>
 
@@ -346,7 +345,7 @@ const SalesActivitySummary: React.FC<SalesActivitySummaryProps> = ({
               <div className="flex items-center gap-2">
                 <div className="w-2 h-2 rounded-full bg-chart-1" />
                 <span className="text-xs font-semibold text-muted-foreground font-sans">
-                  Total Influenced Volume
+                  Total Prospects
                 </span>
               </div>
               <span className="text-2xl font-bold text-foreground font-sans">
@@ -359,7 +358,7 @@ const SalesActivitySummary: React.FC<SalesActivitySummaryProps> = ({
               <div className="flex items-center gap-2">
                 <div className="w-2 h-2 rounded-full bg-chart-2" />
                 <span className="text-xs font-semibold text-muted-foreground font-sans">
-                  Total Closed Sales
+                  Sales Made
                 </span>
               </div>
               <span className="text-2xl font-bold text-foreground font-sans">
@@ -372,7 +371,7 @@ const SalesActivitySummary: React.FC<SalesActivitySummaryProps> = ({
             <div className="flex items-center gap-2 justify-center mb-1">
               <div className="w-2 h-2 rounded-full bg-chart-3" />
               <span className="text-xs font-semibold text-muted-foreground font-sans">
-                Conversion Rate
+                Success Rate
               </span>
             </div>
             <span className="text-2xl font-bold text-foreground font-sans">
@@ -388,7 +387,7 @@ const SalesActivitySummary: React.FC<SalesActivitySummaryProps> = ({
             <div className="flex items-center gap-2 justify-center mb-1">
               <div className="w-2 h-2 rounded-full bg-chart-4" />
               <span className="text-xs font-semibold text-muted-foreground font-sans">
-                Avg Growth Rate
+                Growth Rate
               </span>
             </div>
             <span className="text-2xl font-bold text-foreground font-sans">
@@ -399,7 +398,7 @@ const SalesActivitySummary: React.FC<SalesActivitySummaryProps> = ({
             <div className="flex items-center gap-2 justify-center mb-1">
               <div className="w-2 h-2 rounded-full bg-chart-5" />
               <span className="text-xs font-semibold text-muted-foreground font-sans">
-                Active {viewMode === VIEW_MODES.REGION ? "Regions" : "Reps"}
+                Active {viewMode === VIEW_MODES.REGION ? "Areas" : "Reps"}
               </span>
             </div>
             <span className="text-2xl font-bold text-foreground font-sans">
