@@ -1,5 +1,6 @@
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Combobox, type ComboboxOption } from "@/components/ui/combobox";
 import {
   Dialog,
   DialogContent,
@@ -17,8 +18,15 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
+import {
   CheckCircle,
   Clock,
+  Info,
   Mail,
   Send,
   Shield,
@@ -45,7 +53,7 @@ import type {
 import { useUserStore } from "@/store";
 import { toast } from "sonner";
 import { formatDate } from "../../../admin/components/faq-manager/utils";
-import { useFeedProducts } from "./hooks/useFeedProducts";
+import { PHILIPPINE_REGIONS } from "./lib/const";
 
 const EMAIL_LINK_TYPES = [
   {
@@ -64,6 +72,39 @@ const EMAIL_LINK_TYPES = [
   },
 ];
 
+const LIVESTOCK_TYPES = [
+  {
+    value: "broilers",
+    label: "Broilers (Chicken)",
+    description: "Fast-growing chickens raised primarily for meat production",
+    disabled: false,
+  },
+  {
+    value: "layers",
+    label: "Layers (Chicken)",
+    description: "Hens bred specifically for high egg production",
+    disabled: false,
+  },
+  {
+    value: "native",
+    label: "Native (Chicken)",
+    description: "Indigenous chicken breeds adapted to local conditions",
+    disabled: false,
+  },
+  {
+    value: "ducks",
+    label: "Ducks",
+    description: "Waterfowl raised for meat, eggs, or both",
+    disabled: true, // Temporarily disabled
+  },
+  {
+    value: "hogs",
+    label: "Hogs (Pigs)",
+    description: "Swine raised for pork production",
+    disabled: true, // Temporarily disabled
+  },
+];
+
 interface FarmerManagerProps {
   className?: string;
   companyId?: number | null;
@@ -75,8 +116,14 @@ export const FarmerManager = ({ className, companyId }: FarmerManagerProps) => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [redirectTo, setRedirectTo] = useState("");
-  const [selectedFeedProductId, setSelectedFeedProductId] =
-    useState<string>("");
+
+  // New farmer fields
+  const [firstName, setFirstName] = useState("");
+  const [lastName, setLastName] = useState("");
+  const [mobileNumber, setMobileNumber] = useState("");
+  const [location, setLocation] = useState("");
+  const [region, setRegion] = useState("");
+  const [livestockType, setLivestockType] = useState("");
 
   const { user } = useUserStore();
   const {
@@ -84,13 +131,34 @@ export const FarmerManager = ({ className, companyId }: FarmerManagerProps) => {
     isLoading,
     error,
   } = useGetFarmersByCompanyId(companyId || undefined);
-  const { data: feedProducts = [], isLoading: isLoadingFeedProducts } =
-    useFeedProducts({ onlyActive: true });
+
   const generateEmailLinkMutation = useGenerateEmailLink();
   const createUserMutation = useCreateUser();
   const inviteUserMutation = useInviteUserByEmail();
 
   const selectedType = EMAIL_LINK_TYPES.find((type) => type.value === linkType);
+
+  // Get available cities based on selected region
+  const availableCities =
+    region && PHILIPPINE_REGIONS[region as keyof typeof PHILIPPINE_REGIONS]
+      ? PHILIPPINE_REGIONS[region as keyof typeof PHILIPPINE_REGIONS].cities
+      : [];
+
+  // Convert cities to ComboboxOption format
+  const cityOptions: ComboboxOption[] = useMemo(
+    () =>
+      availableCities.map((city) => ({
+        label: city,
+        value: city,
+      })),
+    [availableCities],
+  );
+
+  // Handle region change - clear location when region changes
+  const handleRegionChange = (newRegion: string) => {
+    setRegion(newRegion);
+    setLocation(""); // Clear selected city when region changes
+  };
 
   // Calculate metrics from farmers data
   const metrics = useMemo(() => {
@@ -119,8 +187,26 @@ export const FarmerManager = ({ className, companyId }: FarmerManagerProps) => {
     e.preventDefault();
 
     if (!email) return;
-    if (!selectedFeedProductId) {
-      toast.error("Please select a feed product");
+
+    // Validate required farmer fields
+    if (!firstName.trim()) {
+      toast.error("First name is required");
+      return;
+    }
+    if (!lastName.trim()) {
+      toast.error("Last name is required");
+      return;
+    }
+    if (!location.trim()) {
+      toast.error("Location is required");
+      return;
+    }
+    if (!region.trim()) {
+      toast.error("Region is required");
+      return;
+    }
+    if (!livestockType.trim()) {
+      toast.error("Livestock type is required");
       return;
     }
 
@@ -137,7 +223,12 @@ export const FarmerManager = ({ className, companyId }: FarmerManagerProps) => {
         user_metadata: {
           role: "farmer" as UserRole,
           created_by: user?.id || null,
-          feed_product_id: Number(selectedFeedProductId),
+          first_name: firstName.trim(),
+          last_name: lastName.trim(),
+          mobile_number: mobileNumber.trim() || null,
+          location: location.trim(),
+          region: region.trim(),
+          livestock_type: livestockType.trim(),
         }, // Always farmer for sales reps
         email_confirm: true,
       };
@@ -155,7 +246,12 @@ export const FarmerManager = ({ className, companyId }: FarmerManagerProps) => {
           data: {
             role: "farmer", // Always farmer
             created_by: user?.id || null,
-            feed_product_id: Number(selectedFeedProductId),
+            first_name: firstName.trim(),
+            last_name: lastName.trim(),
+            mobile_number: mobileNumber.trim() || null,
+            location: location.trim(),
+            region: region.trim(),
+            livestock_type: livestockType.trim(),
           },
         },
       };
@@ -181,7 +277,12 @@ export const FarmerManager = ({ className, companyId }: FarmerManagerProps) => {
         data: {
           role: "farmer", // Always farmer
           created_by: user?.id || null,
-          feed_product_id: Number(selectedFeedProductId),
+          first_name: firstName.trim(),
+          last_name: lastName.trim(),
+          mobile_number: mobileNumber.trim() || null,
+          location: location.trim(),
+          region: region.trim(),
+          livestock_type: livestockType.trim(),
         },
       };
     } else {
@@ -189,7 +290,12 @@ export const FarmerManager = ({ className, companyId }: FarmerManagerProps) => {
         data: {
           role: "farmer",
           created_by: user?.id || null,
-          feed_product_id: Number(selectedFeedProductId),
+          first_name: firstName.trim(),
+          last_name: lastName.trim(),
+          mobile_number: mobileNumber.trim() || null,
+          location: location.trim(),
+          region: region.trim(),
+          livestock_type: livestockType.trim(),
         },
       };
     }
@@ -202,7 +308,12 @@ export const FarmerManager = ({ className, companyId }: FarmerManagerProps) => {
     setPassword("");
     setRedirectTo("");
     setLinkType("invite");
-    setSelectedFeedProductId("");
+    setFirstName("");
+    setLastName("");
+    setMobileNumber("");
+    setLocation("");
+    setRegion("");
+    setLivestockType("");
   };
 
   const handleSuccess = () => {
@@ -431,50 +542,6 @@ export const FarmerManager = ({ className, companyId }: FarmerManagerProps) => {
 
           <form onSubmit={handleSubmit} className="space-y-4">
             <div className="space-y-2">
-              <Label htmlFor="feed-product">Feed Product</Label>
-              <Select
-                value={selectedFeedProductId}
-                onValueChange={(value: string) =>
-                  setSelectedFeedProductId(value)
-                }
-                disabled={isLoadingFeedProducts}
-                required
-              >
-                <SelectTrigger
-                  id="feed-product"
-                  aria-label="Select feed product"
-                >
-                  <SelectValue
-                    placeholder={
-                      isLoadingFeedProducts
-                        ? "Loading products..."
-                        : "Select a feed product"
-                    }
-                  />
-                </SelectTrigger>
-                <SelectContent>
-                  {feedProducts.length === 0 ? (
-                    <div className="px-2 py-1.5 text-sm text-muted-foreground">
-                      No feed products found
-                    </div>
-                  ) : (
-                    feedProducts.map((p) => (
-                      <SelectItem key={p.id} value={String(p.id)}>
-                        <div className="flex items-center justify-between w-full">
-                          <span className="font-medium">{p.name}</span>
-                          {p.category ? (
-                            <span className="ml-2 text-xs text-muted-foreground">
-                              {p.category}
-                            </span>
-                          ) : null}
-                        </div>
-                      </SelectItem>
-                    ))
-                  )}
-                </SelectContent>
-              </Select>
-            </div>
-            <div className="space-y-2">
               <Label htmlFor="link-type">Invitation Type</Label>
               <Select
                 value={linkType}
@@ -515,6 +582,154 @@ export const FarmerManager = ({ className, companyId }: FarmerManagerProps) => {
               />
             </div>
 
+            {/* Farmer Personal Information */}
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="first-name">First Name</Label>
+                <Input
+                  id="first-name"
+                  type="text"
+                  value={firstName}
+                  onChange={(e) => setFirstName(e.target.value)}
+                  placeholder="Juan"
+                  required
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="last-name">Last Name</Label>
+                <Input
+                  id="last-name"
+                  type="text"
+                  value={lastName}
+                  onChange={(e) => setLastName(e.target.value)}
+                  placeholder="Cruz"
+                  required
+                />
+              </div>
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="mobile-number">Mobile Number (Optional)</Label>
+              <Input
+                id="mobile-number"
+                type="tel"
+                value={mobileNumber}
+                onChange={(e) => setMobileNumber(e.target.value)}
+                placeholder="+63 9XX XXX XXXX"
+              />
+            </div>
+
+            {/* Location Information */}
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="region">Region</Label>
+                <Select
+                  value={region}
+                  onValueChange={handleRegionChange}
+                  required
+                >
+                  <SelectTrigger id="region">
+                    <SelectValue placeholder="Select region" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {Object.entries(PHILIPPINE_REGIONS).map(
+                      ([key, regionData]) => (
+                        <SelectItem key={key} value={key}>
+                          {regionData.name}
+                        </SelectItem>
+                      ),
+                    )}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="location">City/Municipality</Label>
+                <Combobox
+                  options={cityOptions}
+                  value={location}
+                  onValueChange={setLocation}
+                  placeholder={
+                    region ? "Search or select city..." : "Select region first"
+                  }
+                  searchPlaceholder="Search cities..."
+                  disabled={!region || availableCities.length === 0}
+                  contentClassName="w-[220px]"
+                />
+              </div>
+            </div>
+
+            <div className="space-y-2">
+              <div className="flex items-center gap-2">
+                <Label htmlFor="livestock-type">Livestock Type</Label>
+                <TooltipProvider>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <button
+                        type="button"
+                        className="inline-flex items-center justify-center"
+                        aria-label="Livestock type information"
+                      >
+                        <Info className="h-4 w-4 text-muted-foreground cursor-help" />
+                      </button>
+                    </TooltipTrigger>
+                    <TooltipContent className="max-w-xs">
+                      <div className="space-y-2 text-sm">
+                        <p>
+                          <strong>Broilers:</strong> Fast-growing chickens for
+                          meat
+                        </p>
+                        <p>
+                          <strong>Layers:</strong> Hens for egg production
+                        </p>
+                        <p>
+                          <strong>Native:</strong> Indigenous chicken breeds
+                        </p>
+                        <p>
+                          <strong>Ducks:</strong> Waterfowl for meat/eggs
+                        </p>
+                        <p>
+                          <strong>Hogs:</strong> Pigs for pork (coming soon)
+                        </p>
+                      </div>
+                    </TooltipContent>
+                  </Tooltip>
+                </TooltipProvider>
+              </div>
+              <Select
+                value={livestockType}
+                onValueChange={(value: string) => setLivestockType(value)}
+                required
+              >
+                <SelectTrigger id="livestock-type">
+                  <SelectValue placeholder="Select livestock type" />
+                </SelectTrigger>
+                <SelectContent>
+                  {LIVESTOCK_TYPES.map((livestock) => (
+                    <SelectItem
+                      key={livestock.value}
+                      value={livestock.value}
+                      disabled={livestock.disabled}
+                    >
+                      <div className="flex items-center justify-between w-full">
+                        <span
+                          className={
+                            livestock.disabled ? "text-muted-foreground" : ""
+                          }
+                        >
+                          {livestock.label}
+                        </span>
+                        {livestock.disabled && (
+                          <span className="ml-2 text-xs text-muted-foreground">
+                            (Coming Soon)
+                          </span>
+                        )}
+                      </div>
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
             {selectedType?.requiresPassword && (
               <div className="space-y-2">
                 <Label htmlFor="password">Password</Label>
@@ -548,7 +763,15 @@ export const FarmerManager = ({ className, companyId }: FarmerManagerProps) => {
             <div className="flex gap-2">
               <Button
                 type="submit"
-                disabled={isPending || !email || !selectedFeedProductId}
+                disabled={
+                  isPending ||
+                  !email ||
+                  !firstName.trim() ||
+                  !lastName.trim() ||
+                  !location.trim() ||
+                  !region.trim() ||
+                  !livestockType.trim()
+                }
                 className="flex-1"
               >
                 <Send className="mr-2 h-4 w-4" />
