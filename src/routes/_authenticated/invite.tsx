@@ -6,9 +6,13 @@ import { getDefaultDashboardRoute } from "@/lib/rbac";
 import { authService } from "@/services/auth-service";
 import { transformSupabaseUser, useUserStore } from "@/store/user-store";
 
-export const Route = createFileRoute("/invite")({
-  // No beforeLoad auth check for invite route
-  component: InviteSetup,
+export const Route = createFileRoute("/_authenticated/invite")({
+  // Override the parent layout to use full screen without header
+  component: () => (
+    <div className="min-h-screen bg-background">
+      <InviteSetup />
+    </div>
+  ),
 });
 
 function InviteSetup() {
@@ -82,8 +86,30 @@ function InviteSetup() {
 
       handleInviteFlow();
     } else {
-      // No valid invite parameters, redirect to sign-in
-      window.location.href = "/auth/sign-in";
+      // Check if user is already authenticated (they might have clicked invite link while logged in)
+      const checkExistingSession = async () => {
+        try {
+          const session = await authService.getCurrentSession();
+          const user = await authService.getCurrentUser();
+
+          if (session && user) {
+            // User is already authenticated, redirect to their dashboard
+            const dashboardRoute = getDefaultDashboardRoute(
+              user.user_metadata?.role || "farmer",
+            );
+            window.location.href = dashboardRoute;
+          } else {
+            // No valid session or invite parameters, redirect to sign-in
+            window.location.href = "/auth/sign-in";
+          }
+        } catch (error) {
+          console.error("Error checking existing session:", error);
+          // Fallback to sign-in on error
+          window.location.href = "/auth/sign-in";
+        }
+      };
+
+      checkExistingSession();
     }
   }, [setUser]);
 
@@ -120,18 +146,16 @@ function InviteSetup() {
 
   if (isProcessing) {
     return (
-      <div className="min-h-screen flex flex-col bg-background">
-        <div className="flex-1 flex items-center justify-center">
-          <div className="w-full p-4 max-w-md">
-            <div className="space-y-10">
-              <div className="space-y-2">
-                <h1 className="text-2xl font-medium font-display">
-                  Processing Invitation...
-                </h1>
-                <p className="text-sm max-w-xs leading-4">
-                  Please wait while we set up your account.
-                </p>
-              </div>
+      <div className="flex-1 flex items-center justify-center">
+        <div className="w-full p-4 max-w-md">
+          <div className="space-y-10">
+            <div className="space-y-2">
+              <h1 className="text-2xl font-medium font-display">
+                Processing Invitation...
+              </h1>
+              <p className="text-sm max-w-xs leading-4">
+                Please wait while we set up your account.
+              </p>
             </div>
           </div>
         </div>
@@ -140,26 +164,24 @@ function InviteSetup() {
   }
 
   return (
-    <div className="min-h-screen flex flex-col bg-background">
-      <div className="flex-1 flex items-center justify-center">
-        <div className="w-full p-4 max-w-md">
-          <div className="space-y-10">
-            <div className="space-y-2">
-              <h1 className="text-2xl font-medium font-display">
-                Welcome to the Platform!
-              </h1>
-              <p className="text-sm max-w-xs leading-4">
-                Complete your account setup by creating a secure password.
-              </p>
-            </div>
-
-            <UpdatePasswordAlertDialog
-              open={showInviteSetup}
-              onComplete={handleInviteComplete}
-              userEmail={userEmail}
-              type="invite"
-            />
+    <div className="flex-1 flex items-center justify-center">
+      <div className="w-full p-4 max-w-md">
+        <div className="space-y-10">
+          <div className="space-y-2">
+            <h1 className="text-2xl font-medium font-display">
+              Welcome to the Platform!
+            </h1>
+            <p className="text-sm max-w-xs leading-4">
+              Complete your account setup by creating a secure password.
+            </p>
           </div>
+
+          <UpdatePasswordAlertDialog
+            open={showInviteSetup}
+            onComplete={handleInviteComplete}
+            userEmail={userEmail}
+            type="invite"
+          />
         </div>
       </div>
     </div>

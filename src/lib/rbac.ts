@@ -14,6 +14,7 @@ export const ROUTE_PERMISSIONS: Record<string, UserRole[]> = {
   "/admin": ["admin", "dev"],
   "/sales": ["sales_rep", "dev"],
   "/farmer": ["farmer", "dev"],
+  "/invite": ["dev", "admin", "sales_rep", "farmer"], // Allow all authenticated users to access invite route
 };
 
 /**

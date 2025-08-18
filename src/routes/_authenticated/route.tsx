@@ -13,6 +13,12 @@ export const Route = createFileRoute("/_authenticated")({
   beforeLoad: async ({ location }) => {
     if (BYPASS_AUTH) return;
 
+    // Special handling for invite route - allow access even without session
+    // since the invite flow will handle setting up the session
+    if (location.pathname === "/invite") {
+      return;
+    }
+
     try {
       // Check auth state directly from Supabase instead of Zustand store
       const user = await authService.getCurrentUser();
