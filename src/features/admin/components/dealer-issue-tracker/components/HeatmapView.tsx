@@ -1,10 +1,10 @@
+import { Button } from "@/components/ui/button";
+import L from "leaflet";
+import { ChevronLeft, ChevronRight } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { MapContainer, TileLayer, useMap } from "react-leaflet";
-import L from "leaflet";
 import type { DealerIssue } from "../constants";
 import { getHeatmapData } from "../utils";
-import { Button } from "@/components/ui/button";
-import { ChevronLeft, ChevronRight } from "lucide-react";
 
 // Fix for default markers in react-leaflet
 delete (L.Icon.Default.prototype as any)._getIconUrl;
@@ -75,14 +75,14 @@ const HeatmapLayer = ({
         {
           animate: true,
           duration: 0.5,
-        }
+        },
       );
     } else if (dealers.length > 0) {
       // Fit bounds if there are dealers but no specific focus
       const group = new L.FeatureGroup(
         dealers.map((dealer) =>
-          L.marker([dealer.location.lat, dealer.location.lng])
-        )
+          L.marker([dealer.location.lat, dealer.location.lng]),
+        ),
       );
       map.fitBounds(group.getBounds().pad(0.1));
     }
@@ -168,7 +168,7 @@ const HeatmapView = ({ dealers, className }: HeatmapViewProps) => {
               size="sm"
               onClick={handlePreviousDealer}
               className="h-8 w-8 p-0"
-              aria-label="Previous dealer"
+              aria-label="Previous sales rep"
             >
               <ChevronLeft className="h-4 w-4" />
             </Button>
@@ -183,7 +183,7 @@ const HeatmapView = ({ dealers, className }: HeatmapViewProps) => {
                 </div>
               ) : (
                 <div className="text-center min-w-24">
-                  <div className="font-medium">All Dealers</div>
+                  <div className="font-medium">All Sales Reps</div>
                   <div className="text-muted-foreground">
                     {dealers.length} total
                   </div>
@@ -196,7 +196,7 @@ const HeatmapView = ({ dealers, className }: HeatmapViewProps) => {
               size="sm"
               onClick={handleNextDealer}
               className="h-8 w-8 p-0"
-              aria-label="Next dealer"
+              aria-label="Next sales rep"
             >
               <ChevronRight className="h-4 w-4" />
             </Button>

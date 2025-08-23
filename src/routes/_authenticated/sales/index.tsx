@@ -5,7 +5,6 @@ import {
   DealerAlertLog,
   FarmerManager,
   MonthlySalesChart,
-  TrainingTracker,
   VisitSchedule,
 } from "@/features/sales-rep/components";
 
@@ -50,7 +49,7 @@ function SalesDashboard() {
               companyId={user?.company_id}
             />
             <DealerAlertLog className="sm:col-span-1" userId={userId} />
-            <TrainingTracker className="sm:col-span-1" />
+            {/* <TrainingTracker className="sm:col-span-1" /> */}
           </div>
         </div>
       </div>

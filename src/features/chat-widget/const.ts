@@ -108,7 +108,12 @@ export const REPORT_OPTIONS = {
     { id: "farm-visit", intent: 8, label: "Farm Visit", emoji: "🤝" },
   ],
   "report-issue-sales": [
-    { id: "dealer-problems", intent: 2, label: "Dealer Problems", emoji: "🤝" },
+    {
+      id: "dealer-problems",
+      intent: 2,
+      label: "Sales Rep Problems",
+      emoji: "🤝",
+    },
     {
       id: "product-or-field-issues",
       intent: 3,
@@ -118,7 +123,7 @@ export const REPORT_OPTIONS = {
     // { id: "other-sales", label: "Other Issues", emoji: "🤖" },
   ],
   "report-issue": [
-    { id: "dealer-issue", intent: 2, label: "Dealer Issue", emoji: "🏥" },
+    { id: "dealer-issue", intent: 2, label: "Sales Rep Issue", emoji: "🏥" },
     { id: "farm-issue", intent: 3, label: "Farm Issue", emoji: "🌾" },
   ],
   "report-problem": [
@@ -178,7 +183,7 @@ export const SUGGESTED_CHAT_OPTIONS = {
     "daily-sales": [
       {
         id: "dealer-contract",
-        label: "Dealer didn't sign contract",
+        label: "Sales rep didn't sign contract",
         emoji: "📝",
       },
       {
@@ -290,22 +295,22 @@ export const SUGGESTED_CHAT_OPTIONS = {
     "dealer-problems": [
       {
         id: "dealer-complaint",
-        label: "Dealer filed complaint",
+        label: "Sales rep filed complaint",
         emoji: "😤",
       },
       {
         id: "dealer-dissatisfaction",
-        label: "Dealer expressed dissatisfaction",
+        label: "Sales rep expressed dissatisfaction",
         emoji: "😞",
       },
       {
         id: "dealer-request",
-        label: "Dealer made special request",
+        label: "Sales rep made special request",
         emoji: "🙏",
       },
       {
         id: "dealer-feedback",
-        label: "Dealer provided feedback",
+        label: "Sales rep provided feedback",
         emoji: "💬",
       },
     ],

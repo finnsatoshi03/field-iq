@@ -58,14 +58,14 @@ const DealerAlertLog: React.FC<DealerAlertLogProps> = ({
 
     return (
       <ExpandableCard
-        title="Dealer Alert Log"
+        title="Sales Rep Alert Log"
         summary={summaryContent}
         className={cn("sm:h-fit", className)}
       >
         <div className="h-32 w-full flex items-center justify-center">
           <div className="text-center text-muted-foreground">
             <Loader2 className="h-8 w-8 animate-spin mx-auto mb-2" />
-            <p className="text-sm">Loading dealer data...</p>
+            <p className="text-sm">Loading sales rep data...</p>
           </div>
         </div>
       </ExpandableCard>
@@ -83,7 +83,7 @@ const DealerAlertLog: React.FC<DealerAlertLogProps> = ({
 
     return (
       <ExpandableCard
-        title="Dealer Alert Log"
+        title="Sales Rep Alert Log"
         summary={summaryContent}
         className={cn("sm:h-fit", className)}
       >

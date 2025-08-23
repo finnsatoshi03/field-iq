@@ -1,17 +1,5 @@
-import React, { useState, useEffect } from "react";
-import { MapContainer, TileLayer, Marker, Popup } from "react-leaflet";
-import L from "leaflet";
-import {
-  Navigation,
-  ExternalLink,
-  MapPin,
-  Phone,
-  Loader2,
-  MapPinIcon,
-  Mail,
-} from "lucide-react";
-import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import {
   Dialog,
   DialogContent,
@@ -19,14 +7,26 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
+import { cn } from "@/lib/utils";
+import L from "leaflet";
+import {
+  ExternalLink,
+  Loader2,
+  Mail,
+  MapPin,
+  MapPinIcon,
+  Navigation,
+  Phone,
+} from "lucide-react";
+import React, { useEffect, useState } from "react";
+import { MapContainer, Marker, Popup, TileLayer } from "react-leaflet";
 import { type DealerIssue } from "../constants";
 import {
-  getDealerDirectionsOptions,
-  hasDealerGpsCoordinates,
-  getSeverityBadgeClass,
   formatDate,
+  getDealerDirectionsOptions,
+  getSeverityBadgeClass,
+  hasDealerGpsCoordinates,
 } from "../utils";
-import { cn } from "@/lib/utils";
 
 // Fix for default markers in react-leaflet
 delete (L.Icon.Default.prototype as any)._getIconUrl;
@@ -106,7 +106,7 @@ const DealerDirectionsModal: React.FC<DealerDirectionsModalProps> = ({
         enableHighAccuracy: true,
         timeout: 10000,
         maximumAge: 300000, // 5 minutes
-      }
+      },
     );
   };
 
@@ -139,7 +139,7 @@ const DealerDirectionsModal: React.FC<DealerDirectionsModalProps> = ({
   };
 
   const openIssues = dealer.issues.filter(
-    (issue) => issue.status !== "resolved"
+    (issue) => issue.status !== "resolved",
   );
 
   return (
@@ -170,7 +170,7 @@ const DealerDirectionsModal: React.FC<DealerDirectionsModalProps> = ({
                       <Badge
                         className={cn(
                           "text-xs",
-                          getSeverityBadgeClass(dealer.severity)
+                          getSeverityBadgeClass(dealer.severity),
                         )}
                       >
                         {dealer.severity.toUpperCase()}
@@ -327,7 +327,9 @@ const DealerDirectionsModal: React.FC<DealerDirectionsModalProps> = ({
 
             {/* Right Column - Map Preview */}
             <div className="space-y-4">
-              <h4 className="font-medium text-sm">Dealer Location Preview:</h4>
+              <h4 className="font-medium text-sm">
+                Sales Rep Location Preview:
+              </h4>
 
               {hasCoordinates || userLocation ? (
                 <div className="h-64 lg:h-80 w-full bg-muted/10 rounded-lg overflow-hidden border">
@@ -408,7 +410,7 @@ const DealerDirectionsModal: React.FC<DealerDirectionsModalProps> = ({
                         ? "Getting your location..."
                         : locationError
                           ? "Unable to show map preview"
-                          : "Loading dealer location..."}
+                          : "Loading sales rep location..."}
                     </div>
                     <div className="text-xs text-muted-foreground mt-1">
                       {locationLoading
@@ -437,13 +439,13 @@ const DealerDirectionsModal: React.FC<DealerDirectionsModalProps> = ({
                 </div>
                 <div>• Allow location access for turn-by-turn directions</div>
                 <div>• Google Maps works best for all devices</div>
-                <div>• Visit dealers efficiently with GPS navigation</div>
+                <div>• Visit sales reps efficiently with GPS navigation</div>
                 {hasCoordinates ? (
                   <div>
                     • Precise GPS coordinates ensure accurate navigation
                   </div>
                 ) : (
-                  <div>• Dealer coordinates available for navigation</div>
+                  <div>• Sales rep coordinates available for navigation</div>
                 )}
               </div>
             </div>

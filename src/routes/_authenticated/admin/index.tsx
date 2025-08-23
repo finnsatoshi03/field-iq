@@ -87,7 +87,7 @@ function AdminDashboard() {
                   </p>
                   <div className="text-xs space-y-1">
                     <p>Sales Activity: {dataSummary.salesActivity} records</p>
-                    <p>Dealer Issues: {dataSummary.dealerIssues} records</p>
+                    <p>Sales Rep Issues: {dataSummary.dealerIssues} records</p>
                     <p>FAQs: {dataSummary.faqs} records</p>
                     <p>Users: {dataSummary.users} records</p>
                     <p>

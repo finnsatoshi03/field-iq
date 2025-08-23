@@ -1,15 +1,15 @@
-import { useState } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { ChevronDown, ChevronRight, Phone, Mail, MapPin } from "lucide-react";
+import { ChevronDown, ChevronRight, Mail, MapPin, Phone } from "lucide-react";
+import { useState } from "react";
 import type { DealerIssue } from "../constants";
 import {
-  getSeverityBadgeClass,
-  getIssueTypeBadgeClass,
-  getStatusBadgeClass,
-  getIssueTypeLabel,
   formatDate,
+  getIssueTypeBadgeClass,
+  getIssueTypeLabel,
   getRelativeTime,
+  getSeverityBadgeClass,
+  getStatusBadgeClass,
   hasDealerGpsCoordinates,
 } from "../utils";
 import DealerDirectionsButton from "./DealerDirectionsButton";
@@ -39,10 +39,10 @@ const DealerItem = ({ dealer, onSelect }: DealerItemProps) => {
   };
 
   const openIssues = dealer.issues.filter(
-    (issue) => issue.status !== "resolved"
+    (issue) => issue.status !== "resolved",
   );
   const resolvedIssues = dealer.issues.filter(
-    (issue) => issue.status === "resolved"
+    (issue) => issue.status === "resolved",
   );
 
   return (
@@ -231,7 +231,7 @@ const IssueList = ({ dealers, onDealerSelect, className }: IssueListProps) => {
       {dealers.length === 0 ? (
         <div className="text-center py-8">
           <p className="text-muted-foreground font-sans">
-            No dealers with issues found
+            No sales reps with issues found
           </p>
         </div>
       ) : (

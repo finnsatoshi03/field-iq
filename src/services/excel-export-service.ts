@@ -28,10 +28,10 @@ export class ExcelExportService {
         utils.book_append_sheet(workbook, salesSheet, "Sales Activity");
       }
 
-      // Dealer Issues Sheet
+      // Sales Rep Issues Sheet
       if (data.dealerIssues && data.dealerIssues.length > 0) {
         const dealerSheet = this.createDealerIssuesSheet(data.dealerIssues);
-        utils.book_append_sheet(workbook, dealerSheet, "Dealer Issues");
+        utils.book_append_sheet(workbook, dealerSheet, "Sales Rep Issues");
       }
 
       // FAQs Sheet
@@ -102,11 +102,11 @@ export class ExcelExportService {
   }
 
   /**
-   * Create Dealer Issues sheet
+   * Create Sales Rep Issues sheet
    */
   private static createDealerIssuesSheet(dealerData: any[]) {
     const formattedData = dealerData.map((item) => ({
-      "Dealer Name": item.name || "N/A",
+      "Sales Rep Name": item.name || "N/A",
       Location: item.location || "N/A",
       "Issue Type": item.issue_type || "N/A",
       "Issue Description": item.issue_description || "N/A",
@@ -230,7 +230,7 @@ export class ExcelExportService {
       [""],
       ["Data Summary:"],
       ["Sales Activity Records", data.salesActivity?.length || 0],
-      ["Dealer Issues", data.dealerIssues?.length || 0],
+      ["Sales Rep Issues", data.dealerIssues?.length || 0],
       ["FAQs", data.faqs?.length || 0],
       ["Users", data.users?.length || 0],
       ["Farm Registrations", data.farmRegistrations?.length || 0],

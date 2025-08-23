@@ -149,7 +149,7 @@ const DealerIssueTracker: React.FC<DealerIssueTrackerProps> = ({
       <div className="bg-card space-y-4 rounded-lg border border-border p-4">
         <div className="flex items-center justify-between">
           <h3 className="text-foreground font-display font-semibold text-base tracking-tight">
-            Dealer Issue Tracker
+            Sales Rep Issue Tracker
           </h3>
           <div className="flex items-center gap-2 text-muted-foreground">
             <Loader2 className="h-4 w-4 animate-spin" />
@@ -160,7 +160,7 @@ const DealerIssueTracker: React.FC<DealerIssueTrackerProps> = ({
         <div className="h-96 w-full flex items-center justify-center">
           <div className="text-center text-muted-foreground">
             <Loader2 className="h-8 w-8 animate-spin mx-auto mb-2" />
-            <p className="text-sm">Loading dealer issues...</p>
+            <p className="text-sm">Loading sales rep issues...</p>
           </div>
         </div>
       </div>
@@ -173,7 +173,7 @@ const DealerIssueTracker: React.FC<DealerIssueTrackerProps> = ({
       <div className="bg-card space-y-4 rounded-lg border border-border p-4">
         <div className="flex items-center justify-between">
           <h3 className="text-foreground font-display font-semibold text-base tracking-tight">
-            Dealer Issue Tracker
+            Sales Rep Issue Tracker
           </h3>
           <div className="flex items-center gap-2 text-muted-foreground">
             <AlertTriangle className="h-4 w-4" />
@@ -184,7 +184,7 @@ const DealerIssueTracker: React.FC<DealerIssueTrackerProps> = ({
         <div className="h-96 w-full flex items-center justify-center">
           <div className="text-center text-muted-foreground">
             <p className="text-sm mb-2">
-              Failed to load dealer issues: {error.message}
+              Failed to load sales rep issues: {error.message}
             </p>
             <button
               onClick={() => refetch()}
@@ -204,7 +204,7 @@ const DealerIssueTracker: React.FC<DealerIssueTrackerProps> = ({
       <div className="bg-card space-y-4 rounded-lg border border-border p-4">
         <div>
           <h3 className="text-foreground font-display font-semibold text-base tracking-tight">
-            Dealer Issue Tracker
+            Sales Rep Issue Tracker
           </h3>
         </div>
 
@@ -212,11 +212,11 @@ const DealerIssueTracker: React.FC<DealerIssueTrackerProps> = ({
           <div className="text-center text-muted-foreground">
             <AlertTriangle className="h-12 w-12 mx-auto mb-4 opacity-50" />
             <h3 className="font-display font-medium text-foreground mb-2">
-              No dealer issues found
+              No sales rep issues found
             </h3>
             <p className="text-sm">
-              Dealer issue data will appear here once available for company ID{" "}
-              {companyId}.
+              Sales rep issue data will appear here once available for company
+              ID {companyId}.
             </p>
           </div>
         </div>
@@ -266,7 +266,7 @@ const DealerIssueTracker: React.FC<DealerIssueTrackerProps> = ({
                 <div className="flex flex-wrap gap-2 justify-between">
                   <div>
                     <h3 className="text-foreground font-display font-semibold text-base tracking-tight">
-                      Dealer Locations
+                      Sales Rep Locations
                     </h3>
                     <p className="text-xs text-muted-foreground">
                       Interactive map and issue tracking
@@ -356,7 +356,7 @@ const DealerIssueTracker: React.FC<DealerIssueTrackerProps> = ({
               <div className="space-y-1">
                 <div className="flex items-center justify-between">
                   <span className="text-xs text-muted-foreground font-sans">
-                    Total Dealers
+                    Total Sales Reps
                   </span>
                   <span className="text-sm font-medium text-foreground font-display">
                     {metrics.totalDealers}
