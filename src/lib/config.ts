@@ -13,6 +13,17 @@ export const FIELD_IQ_API_CONFIG = {
       chat: "/farmer/chat",
     },
 
+    // Farmer V2 API Endpoints
+    farmer_v2: {
+      chat_ai: "/farmer_v2/chat-ai",
+      feed_programs: "/farmer_v2/feed-programs",
+      feed_programs_active: "/farmer_v2/feed-programs/farmer-user-profile",
+      feed_programs_active_product:
+        "/farmer_v2/feed-programs/farmer-user-profile",
+      feed_programs_complete: "/farmer_v2/feed-programs/farmer-user-profile",
+      feed_programs_incomplete: "/farmer_v2/feed-programs/farmer-user-profile",
+    },
+
     // Sales Rep API Endpoints
     sales_rep: {
       monthly_sales: "/salesrep/monthly-sales",

@@ -1,0 +1,193 @@
+import type {
+  ActiveFeedProductResponse,
+  ActiveFeedProgramResponse,
+  ChatAiRequest,
+  ChatAiResponse,
+  CompleteFeedProgramResponse,
+  CreateFeedProgramRequest,
+  CreateFeedProgramResponse,
+  IncompleteFeedProgramResponse,
+} from "@/features/farmer/types";
+import { fieldIQService } from "@/services/field-iq-service";
+import type {
+  UseMutationOptions,
+  UseQueryOptions,
+} from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+
+// Query key factory for farmer v2 queries
+export const farmerV2Keys = {
+  all: ["farmer-v2"] as const,
+  feedPrograms: () => [...farmerV2Keys.all, "feed-programs"] as const,
+  activeFeedProgram: (farmerUserProfileId: number) =>
+    [...farmerV2Keys.feedPrograms(), "active", farmerUserProfileId] as const,
+  activeFeedProduct: (farmerUserProfileId: number) =>
+    [
+      ...farmerV2Keys.feedPrograms(),
+      "active-product",
+      farmerUserProfileId,
+    ] as const,
+  chatAi: () => [...farmerV2Keys.all, "chat-ai"] as const,
+};
+
+// Chat AI Hook
+export const useChatAi = (
+  options?: Omit<
+    UseMutationOptions<ChatAiResponse, Error, ChatAiRequest>,
+    "mutationFn"
+  >,
+) => {
+  return useMutation({
+    mutationFn: (chatData: ChatAiRequest) => fieldIQService.chatAi(chatData),
+    ...options,
+  });
+};
+
+// Create Feed Program Hook
+export const useCreateFeedProgram = (
+  options?: Omit<
+    UseMutationOptions<
+      CreateFeedProgramResponse,
+      Error,
+      CreateFeedProgramRequest
+    >,
+    "mutationFn"
+  >,
+) => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (programData: CreateFeedProgramRequest) =>
+      fieldIQService.createFeedProgram(programData),
+    onSuccess: (_, variables) => {
+      // Invalidate and refetch active feed program for this farmer
+      queryClient.invalidateQueries({
+        queryKey: farmerV2Keys.activeFeedProgram(
+          variables.farmer_user_profile_id,
+        ),
+      });
+      queryClient.invalidateQueries({
+        queryKey: farmerV2Keys.activeFeedProduct(
+          variables.farmer_user_profile_id,
+        ),
+      });
+    },
+    ...options,
+  });
+};
+
+// Get Active Feed Program Hook
+export const useActiveFeedProgram = (
+  farmerUserProfileId: number,
+  options?: Omit<
+    UseQueryOptions<ActiveFeedProgramResponse, Error>,
+    "queryKey" | "queryFn"
+  >,
+) => {
+  return useQuery({
+    queryKey: farmerV2Keys.activeFeedProgram(farmerUserProfileId),
+    queryFn: () => fieldIQService.getActiveFeedProgram(farmerUserProfileId),
+    enabled: farmerUserProfileId > 0,
+    staleTime: 5 * 60 * 1000, // 5 minutes
+    gcTime: 10 * 60 * 1000, // 10 minutes
+    retry: false,
+    ...options,
+  });
+};
+
+// Get Active Feed Product Hook
+export const useActiveFeedProduct = (
+  farmerUserProfileId: number,
+  options?: Omit<
+    UseQueryOptions<ActiveFeedProductResponse, Error>,
+    "queryKey" | "queryFn"
+  >,
+) => {
+  return useQuery({
+    queryKey: farmerV2Keys.activeFeedProduct(farmerUserProfileId),
+    queryFn: () => fieldIQService.getActiveFeedProduct(farmerUserProfileId),
+    enabled: farmerUserProfileId > 0,
+    staleTime: 5 * 60 * 1000, // 5 minutes
+    gcTime: 10 * 60 * 1000, // 10 minutes
+    retry: false,
+    ...options,
+  });
+};
+
+// Complete Feed Program Hook
+export const useCompleteFeedProgram = (
+  options?: Omit<
+    UseMutationOptions<CompleteFeedProgramResponse, Error, number>,
+    "mutationFn"
+  >,
+) => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (farmerUserProfileId: number) =>
+      fieldIQService.completeFeedProgram(farmerUserProfileId),
+    onSuccess: (_, farmerUserProfileId) => {
+      // Invalidate and refetch active feed program for this farmer
+      queryClient.invalidateQueries({
+        queryKey: farmerV2Keys.activeFeedProgram(farmerUserProfileId),
+      });
+      queryClient.invalidateQueries({
+        queryKey: farmerV2Keys.activeFeedProduct(farmerUserProfileId),
+      });
+    },
+    ...options,
+  });
+};
+
+// Incomplete Feed Program Hook
+export const useIncompleteFeedProgram = (
+  options?: Omit<
+    UseMutationOptions<IncompleteFeedProgramResponse, Error, number>,
+    "mutationFn"
+  >,
+) => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (farmerUserProfileId: number) =>
+      fieldIQService.incompleteFeedProgram(farmerUserProfileId),
+    onSuccess: (_, farmerUserProfileId) => {
+      // Invalidate and refetch active feed program for this farmer
+      queryClient.invalidateQueries({
+        queryKey: farmerV2Keys.activeFeedProgram(farmerUserProfileId),
+      });
+      queryClient.invalidateQueries({
+        queryKey: farmerV2Keys.activeFeedProduct(farmerUserProfileId),
+      });
+    },
+    ...options,
+  });
+};
+
+// Utility hook for invalidating farmer v2 queries
+export const useInvalidateFarmerV2Queries = () => {
+  const queryClient = useQueryClient();
+
+  return {
+    invalidateActiveFeedProgram: (farmerUserProfileId: number) => {
+      queryClient.invalidateQueries({
+        queryKey: farmerV2Keys.activeFeedProgram(farmerUserProfileId),
+      });
+    },
+    invalidateActiveFeedProduct: (farmerUserProfileId: number) => {
+      queryClient.invalidateQueries({
+        queryKey: farmerV2Keys.activeFeedProduct(farmerUserProfileId),
+      });
+    },
+    invalidateAllFeedPrograms: () => {
+      queryClient.invalidateQueries({
+        queryKey: farmerV2Keys.feedPrograms(),
+      });
+    },
+    invalidateAll: () => {
+      queryClient.invalidateQueries({
+        queryKey: farmerV2Keys.all,
+      });
+    },
+  };
+};

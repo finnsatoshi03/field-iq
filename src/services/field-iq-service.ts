@@ -18,7 +18,17 @@ import type {
   UpdateSalesGoalRequest,
   UpdateSalesGoalResponse,
 } from "@/features/admin/types";
-import type { FarmerDashboardData } from "@/features/farmer/types";
+import type {
+  ActiveFeedProductResponse,
+  ActiveFeedProgramResponse,
+  ChatAiRequest,
+  ChatAiResponse,
+  CompleteFeedProgramResponse,
+  CreateFeedProgramRequest,
+  CreateFeedProgramResponse,
+  FarmerDashboardData,
+  IncompleteFeedProgramResponse,
+} from "@/features/farmer/types";
 import type {
   FarmsResponse,
   MonthlySalesResponse,
@@ -117,6 +127,138 @@ export const fieldIQService = {
 
     const response = await apiClient.get<FarmerDashboardViewModel>(
       `${FIELD_IQ_API_CONFIG.endpoints.farmerDashboard}/${farmerUserProfileId}`,
+    );
+
+    if (response.error) {
+      throw new Error(response.error);
+    }
+
+    if (!response.data) {
+      throw new Error("No data received from server");
+    }
+
+    return response.data;
+  },
+
+  // Farmer V2 API Methods
+
+  // Chat AI Service
+  async chatAi(chatData: ChatAiRequest): Promise<ChatAiResponse> {
+    const response = await apiClient.post<ChatAiResponse>(
+      FIELD_IQ_API_CONFIG.endpoints.farmer_v2.chat_ai,
+      chatData,
+    );
+
+    if (response.error) {
+      throw new Error(response.error);
+    }
+
+    if (!response.data) {
+      throw new Error("No data received from server");
+    }
+
+    return response.data;
+  },
+
+  // Create Feed Program
+  async createFeedProgram(
+    programData: CreateFeedProgramRequest,
+  ): Promise<CreateFeedProgramResponse> {
+    const response = await apiClient.post<CreateFeedProgramResponse>(
+      FIELD_IQ_API_CONFIG.endpoints.farmer_v2.feed_programs,
+      programData,
+    );
+
+    if (response.error) {
+      throw new Error(response.error);
+    }
+
+    if (!response.data) {
+      throw new Error("No data received from server");
+    }
+
+    return response.data;
+  },
+
+  // Get Active Feed Program
+  async getActiveFeedProgram(
+    farmerUserProfileId: number,
+  ): Promise<ActiveFeedProgramResponse> {
+    if (farmerUserProfileId <= 0) {
+      throw new Error("Invalid farmer user profile ID.");
+    }
+
+    const response = await apiClient.get<ActiveFeedProgramResponse>(
+      `${FIELD_IQ_API_CONFIG.endpoints.farmer_v2.feed_programs_active}/${farmerUserProfileId}/active`,
+    );
+
+    if (response.error) {
+      throw new Error(response.error);
+    }
+
+    if (!response.data) {
+      throw new Error("No data received from server");
+    }
+
+    return response.data;
+  },
+
+  // Get Active Feed Product
+  async getActiveFeedProduct(
+    farmerUserProfileId: number,
+  ): Promise<ActiveFeedProductResponse> {
+    if (farmerUserProfileId <= 0) {
+      throw new Error("Invalid farmer user profile ID.");
+    }
+
+    const response = await apiClient.get<ActiveFeedProductResponse>(
+      `${FIELD_IQ_API_CONFIG.endpoints.farmer_v2.feed_programs_active_product}/${farmerUserProfileId}/feed-product/active`,
+    );
+
+    if (response.error) {
+      throw new Error(response.error);
+    }
+
+    if (!response.data) {
+      throw new Error("No data received from server");
+    }
+
+    return response.data;
+  },
+
+  // Complete Active Feed Program
+  async completeFeedProgram(
+    farmerUserProfileId: number,
+  ): Promise<CompleteFeedProgramResponse> {
+    if (farmerUserProfileId <= 0) {
+      throw new Error("Invalid farmer user profile ID.");
+    }
+
+    const response = await apiClient.put<CompleteFeedProgramResponse>(
+      `${FIELD_IQ_API_CONFIG.endpoints.farmer_v2.feed_programs_complete}/${farmerUserProfileId}/complete`,
+    );
+
+    if (response.error) {
+      throw new Error(response.error);
+    }
+
+    if (!response.data) {
+      throw new Error("No data received from server");
+    }
+
+    return response.data;
+  },
+
+  // Incomplete Active Feed Program
+  async incompleteFeedProgram(
+    farmerUserProfileId: number,
+  ): Promise<IncompleteFeedProgramResponse> {
+    if (farmerUserProfileId <= 0) {
+      throw new Error("Invalid farmer user profile ID.");
+    }
+
+    const response = await apiClient.put<IncompleteFeedProgramResponse>(
+      `${FIELD_IQ_API_CONFIG.endpoints.farmer_v2.feed_programs_incomplete}/${farmerUserProfileId}/incomplete`,
     );
 
     if (response.error) {

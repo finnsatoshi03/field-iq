@@ -141,3 +141,6 @@ export const ALERT_LEVEL_COLORS: Record<string, string> = {
   medium: "bg-yellow-100 text-yellow-800 border-yellow-200",
   high: "bg-green-100 text-green-800 border-green-200",
 };
+
+// Export Farmer V2 API types
+export * from "./farmer-v2-api";
