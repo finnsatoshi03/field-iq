@@ -38,6 +38,7 @@ interface UserState {
   signOut: () => void;
   updateUser: (updates: Partial<UserProfile>) => void;
   forceRefresh: () => void;
+  clearPersistedState: () => void;
 }
 
 export const useUserStore = create<UserState>()(
@@ -55,12 +56,19 @@ export const useUserStore = create<UserState>()(
 
       setLoading: (loading) => set({ isLoading: loading }),
 
-      signOut: () =>
+      signOut: () => {
+        // Clear the persisted storage completely
+        try {
+          localStorage.removeItem("user-store");
+        } catch (error) {
+          console.warn("Failed to clear localStorage:", error);
+        }
         set({
           user: null,
           isAuthenticated: false,
           isLoading: false,
-        }),
+        });
+      },
 
       updateUser: (updates) => {
         const currentUser = get().user;
@@ -77,6 +85,20 @@ export const useUserStore = create<UserState>()(
         set({
           user: null,
           isAuthenticated: false,
+        });
+      },
+
+      clearPersistedState: () => {
+        // Completely clear the persisted storage and reset state
+        try {
+          localStorage.removeItem("user-store");
+        } catch (error) {
+          console.warn("Failed to clear localStorage:", error);
+        }
+        set({
+          user: null,
+          isAuthenticated: false,
+          isLoading: false,
         });
       },
     }),
