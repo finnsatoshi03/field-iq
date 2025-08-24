@@ -1,4 +1,4 @@
-import { createFileRoute, Outlet, redirect } from "@tanstack/react-router";
+import { createFileRoute, Outlet, redirect, useLocation } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 
 import { BYPASS_AUTH } from "@/lib/config";
@@ -65,9 +65,14 @@ export const Route = createFileRoute("/_authenticated")({
 function AuthenticatedLayout() {
   const { user, isAuthenticated, setUser, setLoading } = useUserStore();
   const [showCompanySetup, setShowCompanySetup] = useState(false);
+  const location = useLocation();
 
   // Initialize user/profile in store for sessions coming from passwordless or refresh
+  // Skip this on invite route to prevent premature authentication
   useEffect(() => {
+    // Don't initialize session on invite route - let the invite component handle it
+    if (location.pathname === "/invite") return;
+    
     let isMounted = true;
     const initializeUserFromSession = async () => {
       if (isAuthenticated) return;
@@ -91,7 +96,7 @@ function AuthenticatedLayout() {
     return () => {
       isMounted = false;
     };
-  }, [isAuthenticated, setLoading, setUser]);
+  }, [isAuthenticated, setLoading, setUser, location.pathname]);
 
   useEffect(() => {
     // Show company setup modal if user is admin and has no company_id
