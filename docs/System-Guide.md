@@ -5,6 +5,7 @@ This single guide covers how people get access and what each role sees on their 
 ### Contents
 
 - Access & Invitations
+- Onboarding & Setup Flows
 - Your Dashboard by Role
   - Admin
   - Sales Rep
@@ -30,13 +31,107 @@ How invitations work
 3. They set their password and are signed in automatically.
 4. They land on the dashboard for their role (Admin, Sales, or Farmer).
 
-If the invite link expires, use “Forgot password” on the sign‑in page or ask the inviter to resend.
+If the invite link expires, use "Forgot password" on the sign‑in page or ask the inviter to resend.
+
+Authentication Methods
+
+The system supports multiple authentication flows:
+
+- **Sign In**: Standard email/password authentication with role-based dashboard routing
+- **Create Password**: First-time password creation from invitation links
+- **Forgot Password**: Password reset functionality for existing users
+- **Dev Signup**: Special signup flow for development/testing purposes
+- **Invitation Flow**: Passwordless invitations that auto-create accounts
+
+Role-Based Access Control
+
+- Users are automatically redirected to their appropriate dashboard based on role
+- Route permissions are enforced - users cannot access areas outside their role
+- Failed authentication redirects to sign-in with the intended destination preserved
 
 Security basics
 
-- Invite links are time‑limited and tied to the recipient’s email.
+- Invite links are time‑limited and tied to the recipient's email.
 - Passwords are never sent by email.
 - If using a shared device, sign out when done.
+- All routes are protected and enforce role-based permissions.
+
+---
+
+## Onboarding & Setup Flows
+
+New User Welcome Experience
+
+When you first access Field‑IQ, you'll see a welcome screen with animated questions about your farming challenges. This helps introduce you to the system's capabilities:
+
+- "Worried about your chickens?"
+- "Hoping for bigger profits?"
+- "Sure about the right feed?"
+- And more engaging questions to set the context
+
+After viewing the welcome questions, you'll be directed to sign in and begin your dashboard journey.
+
+Company Setup (Admins Only)
+
+When an Admin signs in for the first time without a company setup, they'll see a mandatory Company Setup Modal that must be completed:
+
+- Company name and type (Feed Manufacturer, Distributor, or Cooperative)
+- Country and timezone selection
+- Optional contact details (email, phone, address)
+- Phone number validation based on selected country
+- Cannot be closed until completed
+
+Farmer Onboarding Process
+
+When farmers first access their dashboard after invitation, they encounter a comprehensive onboarding flow that ensures proper setup before they can use the system:
+
+**Initial Dashboard Access**
+
+- Upon first login, farmers see their dashboard with all components, but a mandatory onboarding overlay prevents full access
+- The system checks if they have an active feed program or feed product setup
+- If neither exists, the Feed Program Manager modal automatically opens and cannot be closed until completed
+
+**3-Step Feed Program Setup (Mandatory)**
+
+1. **Welcome Step**:
+   - Introduction to the farm dashboard concept
+   - Explanation of feed program benefits for farm optimization
+   - Visual: Wheat icon with green accent
+   - Message: "Let's get you started with your first feed program to optimize your farm operations"
+
+2. **Feed Product Selection**:
+   - Advanced product selector with detailed specifications
+   - Visual tooltips showing:
+     - Product goals and unique selling points
+     - Animal type and feed stage compatibility
+     - Age ranges (e.g., "Day 1 - 21 days")
+     - Medicated vs. non-medicated indicators
+     - Product format and category details
+   - Visual: Package icon with blue accent
+   - Must select a product to proceed
+   - Message: "Select the right feed product for your animals to ensure optimal growth and health"
+
+3. **Setup Completion**:
+   - Final confirmation and feed program creation
+   - Visual: CheckCircle icon with purple accent
+   - Creates the farmer_feed_program record linking farmer to selected feed
+   - Success message: "Feed program created successfully! Welcome to your farm management journey!"
+   - Message: "Finalize your feed program setup and start tracking your farm's performance"
+
+**Post-Onboarding Dashboard Access**
+
+- Once completed, farmers gain full access to all dashboard components
+- Feed Program Manager becomes invisible and non-intrusive
+- All dashboard widgets become fully functional with their new feed program data
+
+**Persistent Onboarding Design**
+
+- The onboarding modal cannot be dismissed or closed until completed
+- It's designed as a persistent overlay that ensures every farmer has a proper setup
+- Progress indicators show current step (1 of 3, 2 of 3, 3 of 3)
+- Navigation only allows forward progress with valid data
+
+This onboarding is essential because many farmer dashboard features depend on having an active feed program established.
 
 ---
 
@@ -48,9 +143,9 @@ Below is a plain‑English tour of each dashboard block (the main sections/cards
 
 User Manager
 
-- What it shows: A list of users for your company with their role and status.
-- How to use: Filter/search users; open a user to view details.
-- Actions: Invite new users, update roles, activate/deactivate, resend invites.
+- What it shows: Comprehensive user management with real-time metrics (total users, farmers, sales reps, active/inactive counts).
+- How to use: Filter/search users; open user details; view detailed user information with last sign-in data.
+- Actions: Invite new users (sales reps and farmers), update roles, activate/deactivate accounts, resend invites, generate email links, manage user territories and regions.
 
 Sales Activity Summary
 
@@ -84,9 +179,9 @@ Competitor Intelligence
 
 FAQ Manager
 
-- What it shows: FAQ cards/lists and usage stats.
-- How to use: Search and filter FAQs; open one to edit.
-- Actions: Create, edit, or retire FAQs to keep the knowledge base up‑to‑date.
+- What it shows: Comprehensive FAQ management with category-based organization, usage analytics, and filtering options.
+- How to use: Switch between card and list views; filter by category, status, or search terms; sort by various criteria.
+- Actions: Create new FAQs, edit existing ones, delete outdated content, view detailed analytics, manage categories and priorities.
 
 ### Sales Rep Dashboard
 
@@ -98,9 +193,9 @@ Visit Schedule
 
 Farmer Manager
 
-- What it shows: Your farmer accounts with key details and status badges.
-- How to use: Search/filter; open a farmer to view details and history.
-- Actions: Add farmers, invite new contacts, update account info.
+- What it shows: Your farmer accounts with livestock type selection (broilers, layers, native chickens, ducks, hogs), territory mapping, and status indicators.
+- How to use: Search/filter farmers; open farmer details; manage livestock types and territories.
+- Actions: Invite new farmers (passwordless or with signup), select livestock types, assign territories, update farmer information, send targeted invitations.
 
 Dealer Alert Log
 
@@ -110,9 +205,9 @@ Dealer Alert Log
 
 Monthly Sales Chart
 
-- What it shows: Sales performance by month with trends.
-- How to use: Change date range; compare periods.
-- Actions: Identify peaks/dips; set targets for upcoming periods.
+- What it shows: Detailed sales performance with volume influenced vs. closed sales, monthly trends, and average benchmarks.
+- How to use: View total volume influenced, total closed sales, and monthly averages; analyze performance against targets.
+- Actions: Track sales progress, identify performance patterns, compare monthly results, set improvement goals.
 
 Training Tracker
 
@@ -142,23 +237,41 @@ Feed Intake Behavior
 
 Feed Usage Calculator
 
-- What it shows: A simple calculator to estimate feed usage/needs.
-- How to use: Enter inputs to get quick estimates.
-- Actions: Share results with your team for planning.
+- What it shows: Advanced calculator with animal type selection, feed stage options, and consumption patterns with automatic reorder point calculations.
+- How to use: Enter number of animals, bag size, current stock, and costs; select animal type and feed stage for accurate estimates.
+- Actions: Calculate daily/weekly consumption, determine reorder points, get cost estimates, receive low-stock alerts.
 
 Current Feed in Use
 
-- What it shows: Snapshot of the feed currently being used.
-- How to use: Review at a glance.
-- Actions: Use in conversations with your rep or nutritionist.
+- What it shows: Detailed view of your active feed product with stage information, start dates, and usage status.
+- How to use: Click to view expanded details about your current feed program.
+- Actions: Monitor feed transitions; plan next feed stages with your team.
+
+Feed Product Selector
+
+- What it shows: Available feed products for your livestock with detailed specifications.
+- How to use: Browse products by animal type, stage, and goals; view tooltips for detailed info.
+- Actions: Select appropriate feeds; compare options; view medicated vs. non-medicated choices.
+
+Feed Program Manager
+
+- What it shows: Your active feed program status and setup.
+- How to use: Automatically appears for new farmers; guides through feed program creation.
+- Actions: Complete initial setup; manage ongoing feed programs.
 
 ### Super Admin (Dev) Dashboard
 
-User Tools (internal)
+Email Link Generator
 
-- What it shows: Utilities for setting up/testing accounts.
-- How to use: Generate account links; view user tables.
-- Actions: Create company admins; support demos and QA.
+- What it shows: Advanced user creation and invitation tools.
+- How to use: Select link type (signup, invite, recovery); enter user details and role.
+- Actions: Create admin accounts; send passwordless invitations; manage user onboarding.
+
+Users Table
+
+- What it shows: Complete user management interface for all companies.
+- How to use: Search, filter, and manage users across the entire system.
+- Actions: Support account issues; manage user roles; troubleshoot access problems.
 
 ---
 
@@ -177,7 +290,28 @@ How the frontend chat is organized
 - Stages: welcome → chat → report
 - Modes: normal (free chat), report (guided logging), quick (selection‑based)
 
-Frontend categories and options come from the app’s chat menu. The assistant still follows the same rules from the prompts: it asks for one missing detail at a time, validates product/feed names, and expects dates in YYYY/MM/DD.
+Frontend categories and options come from the app's chat menu. The assistant still follows the same rules from the prompts: it asks for one missing detail at a time, validates product/feed names, and expects dates in YYYY/MM/DD.
+
+Available Prompt Files
+
+The system uses dedicated prompt files for different chat intents:
+
+**Sales Rep Prompts:**
+
+- ask_salesrep_sales_log.json/txt - Sales activity logging
+- ask_salesrep_farm_log.json/txt - Farm visit tracking
+- ask_salesrep_dealer_log.json/txt - Dealer problem reporting
+- ask_salesrep_product_field_log.json/txt - Product/field issue logging
+- ask_sales_rep_general_questions.json/txt - General Q&A
+- ask_salesrep_intent.json/txt - Intent classification
+
+**Farmer Prompts:**
+
+- ask_farmer_health_log.json/txt - Health issue reporting
+- ask_farmer_log.json/txt - Performance logging
+- ask_farmer_diy_log.json/txt - DIY practice safety checks
+- ask_farmer_general_questions.json/txt - General questions & feed advisory
+- ask_farmer_intent.json/txt - Intent classification
 
 ### Sales Rep: Frontend categories
 
@@ -339,9 +473,19 @@ Tips
 - Start your day on the dashboard to see priorities.
 - Use filters to focus on the right region, dealer, or timeframe.
 - Log small updates often so reports and charts stay meaningful.
+- Complete any onboarding flows promptly - they're required for system access.
+- Use tooltips and help icons for detailed feature explanations.
+- Take advantage of the calculator tools for accurate planning.
 
 Troubleshooting
 
-- I can’t find someone I invited: Check the Users/Team list or resend the invite.
+- I can't find someone I invited: Check the Users/Team list or resend the invite.
 - My map/list looks empty: Clear filters or expand the date range.
-- I think I’m seeing the wrong dashboard: Ask an Admin to review your role.
+- I think I'm seeing the wrong dashboard: Ask an Admin to review your role.
+- Company setup modal won't close: Complete all required fields before the modal can be dismissed.
+- Feed program setup stuck: Ensure you've selected a feed product before continuing. The onboarding cannot be skipped.
+- Farmer dashboard seems blocked: Complete the mandatory Feed Program Manager onboarding - it's required for dashboard access.
+- Can't access farmer features: Verify your feed program setup was completed. Some features require an active feed program.
+- Chat not responding properly: Check that you're using the correct date format (YYYY/MM/DD) and exact product names.
+- Authentication issues: Clear browser cache and try again, or use the "Forgot Password" link.
+- Role permission errors: Contact your administrator to verify your role assignment.
