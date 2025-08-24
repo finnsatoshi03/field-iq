@@ -80,8 +80,14 @@ function AuthenticatedLayout() {
           user?.id === supaUser.id &&
           // For farmers, ensure livestock_type is loaded
           ((userRole === "farmer" && user?.livestock_type !== undefined) ||
-            // For non-farmers, ensure company_id is loaded
-            (userRole !== "farmer" && user?.company_id !== undefined));
+            // For sales reps, ensure company_id and territory_region are loaded
+            (userRole === "sales_rep" &&
+              user?.company_id !== undefined &&
+              user?.territory_region !== undefined) ||
+            // For other non-farmers, ensure company_id is loaded
+            (userRole !== "farmer" &&
+              userRole !== "sales_rep" &&
+              user?.company_id !== undefined));
 
         if (isDataComplete) {
           // User data is already complete, no need to refetch

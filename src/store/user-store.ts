@@ -23,6 +23,8 @@ export interface UserProfile {
   livestock_type: string | null;
   location: string | null;
   region: string | null;
+  // Sales rep region for territory management
+  territory_region: string | null;
 }
 
 interface UserState {
@@ -117,5 +119,7 @@ export const transformSupabaseUser = (
     livestock_type: user.user_metadata?.livestock_type || null,
     location: user.user_metadata?.location || null,
     region: user.user_metadata?.region || null,
+    // Sales rep territory region
+    territory_region: user.user_metadata?.region || null,
   };
 };

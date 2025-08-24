@@ -8,6 +8,15 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuGroup,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import {
@@ -25,9 +34,11 @@ import {
 } from "@/components/ui/tooltip";
 import {
   CheckCircle,
+  ChevronDownIcon,
   Clock,
   Info,
   Mail,
+  MapPinIcon,
   Send,
   Shield,
   UserPlus,
@@ -43,6 +54,7 @@ import {
   useGetFarmersByCompanyId,
   useInviteUserByEmail,
 } from "@/features/auth/mutations/admin-mutations";
+import { REGIONS_BY_ISLAND, type RegionCode } from "@/lib/consts";
 import type { UserRole } from "@/lib/types";
 import { cn } from "@/lib/utils";
 import type {
@@ -53,7 +65,6 @@ import type {
 import { useUserStore } from "@/store";
 import { toast } from "sonner";
 import { formatDate } from "../../../admin/components/faq-manager/utils";
-import { PHILIPPINE_REGIONS } from "./lib/const";
 
 const EMAIL_LINK_TYPES = [
   {
@@ -105,6 +116,240 @@ const LIVESTOCK_TYPES = [
   },
 ];
 
+// Utility function to get island group from region code
+const getIslandGroupFromRegion = (regionCode: RegionCode): string | null => {
+  for (const [island, regions] of Object.entries(REGIONS_BY_ISLAND)) {
+    if (regions.some((region) => region.code === regionCode)) {
+      return island.toLowerCase();
+    }
+  }
+  return null;
+};
+
+// Utility function to get available regions for sales rep based on their territory
+const getAvailableRegionsForSalesRep = (
+  salesRepRegion: string | null,
+): RegionCode[] => {
+  if (!salesRepRegion) {
+    // If no region specified, return all regions
+    return Object.values(REGIONS_BY_ISLAND)
+      .flat()
+      .map((region) => region.code);
+  }
+
+  // Find which island group the sales rep belongs to
+  const islandGroup = getIslandGroupFromRegion(salesRepRegion as RegionCode);
+
+  if (!islandGroup) {
+    // If region not found, return all regions as fallback
+    return Object.values(REGIONS_BY_ISLAND)
+      .flat()
+      .map((region) => region.code);
+  }
+
+  // Return only the region codes for the sales rep's island group
+  const islandKey = islandGroup.charAt(0).toUpperCase() + islandGroup.slice(1);
+  return (
+    REGIONS_BY_ISLAND[islandKey as keyof typeof REGIONS_BY_ISLAND]?.map(
+      (region) => region.code,
+    ) || []
+  );
+};
+
+// Helper function to get formatted island group name
+const getFormattedIslandGroupName = (regionCode: string | null): string => {
+  if (!regionCode) return "";
+  const islandGroup = getIslandGroupFromRegion(regionCode as RegionCode);
+  if (!islandGroup) return "";
+  return islandGroup.charAt(0).toUpperCase() + islandGroup.slice(1);
+};
+
+// Helper function to get cities based on region code
+const getCitiesForRegion = (regionCode: string): string[] => {
+  if (!regionCode) return [];
+
+  // Map of region codes to their cities
+  const regionCities: Record<string, string[]> = {
+    // National Capital Region (NCR)
+    NCR: [
+      "Caloocan",
+      "Las Piñas",
+      "Makati",
+      "Malabon",
+      "Mandaluyong",
+      "Manila",
+      "Marikina",
+      "Muntinlupa",
+      "Navotas",
+      "Parañaque",
+      "Pasay",
+      "Pasig",
+      "Quezon City",
+      "San Juan",
+      "Taguig",
+      "Valenzuela",
+    ],
+
+    // Cordillera Administrative Region (CAR)
+    CAR: ["Baguio"],
+
+    // Region I - Ilocos Region
+    "Region I": [
+      "Batac",
+      "Laoag",
+      "Candon",
+      "Vigan",
+      "San Fernando",
+      "Alaminos",
+      "Dagupan",
+      "San Carlos",
+      "Urdaneta",
+    ],
+
+    // Region II - Cagayan Valley
+    "Region II": ["Tuguegarao", "Cauayan", "Ilagan", "Santiago"],
+
+    // Region III - Central Luzon
+    "Region III": [
+      "Balanga",
+      "Malolos",
+      "Meycauayan",
+      "San Jose del Monte",
+      "Cabanatuan",
+      "Gapan",
+      "Muñoz",
+      "Palayan",
+      "Angeles",
+      "Mabalacat",
+      "San Fernando",
+      "Tarlac",
+      "Olongapo",
+    ],
+
+    // Region IV-A - CALABARZON
+    "Region IV-A": [
+      "Batangas City",
+      "Lipa",
+      "Tanauan",
+      "Bacoor",
+      "Cavite City",
+      "Dasmariñas",
+      "Imus",
+      "Tagaytay",
+      "Trece Martires",
+      "Biñan",
+      "Cabuyao",
+      "San Pablo",
+      "Santa Rosa",
+      "Lucena",
+      "Tayabas",
+      "Antipolo",
+      "Calamba",
+    ],
+
+    // Region IV-B - MIMAROPA
+    "Region IV-B": ["Calapan", "Puerto Princesa"],
+
+    // Region V - Bicol Region
+    "Region V": [
+      "Legazpi",
+      "Ligao",
+      "Tabaco",
+      "Iriga",
+      "Naga",
+      "Masbate City",
+      "Sorsogon City",
+    ],
+
+    // Region VI - Western Visayas
+    "Region VI": [
+      "Roxas",
+      "Iloilo City",
+      "Passi",
+      "Bacolod",
+      "Bago",
+      "Cadiz",
+      "Escalante",
+      "Himamaylan",
+      "Kabankalan",
+      "La Carlota",
+      "Sagay",
+      "San Carlos",
+      "Silay",
+      "Sipalay",
+      "Talisay",
+      "Victorias",
+    ],
+
+    // Region VII - Central Visayas
+    "Region VII": [
+      "Tagbilaran",
+      "Bais",
+      "Bayawan",
+      "Canlaon",
+      "Dumaguete",
+      "Guihulngan",
+      "Tanjay",
+      "Toledo",
+      "Talisay",
+      "Naga",
+      "Mandaue",
+      "Lapu-Lapu",
+      "Danao",
+      "Cebu City",
+      "Carcar",
+      "Bogo",
+    ],
+
+    // Region VIII - Eastern Visayas
+    "Region VIII": [
+      "Borongan",
+      "Calbayog",
+      "Catbalogan",
+      "Maasin",
+      "Ormoc",
+      "Tacloban",
+    ],
+
+    // Region IX - Zamboanga Peninsula
+    "Region IX": ["Dapitan", "Dipolog", "Pagadian", "Zamboanga City"],
+
+    // Region X - Northern Mindanao
+    "Region X": [
+      "Cagayan de Oro",
+      "El Salvador",
+      "Gingoog",
+      "Iligan",
+      "Malaybalay",
+      "Oroquieta",
+      "Ozamiz",
+      "Tangub",
+      "Valencia",
+    ],
+
+    // Region XI - Davao Region
+    "Region XI": ["Davao City", "Digos", "Mati", "Panabo", "Samal", "Tagum"],
+
+    // Region XII - SOCCSKSARGEN
+    "Region XII": ["General Santos", "Kidapawan", "Koronadal", "Tacurong"],
+
+    // Region XIII - Caraga
+    "Region XIII": [
+      "Bayugan",
+      "Bislig",
+      "Butuan",
+      "Cabadbaran",
+      "Surigao",
+      "Tandag",
+    ],
+
+    // Bangsamoro Autonomous Region in Muslim Mindanao (BARMM)
+    BARMM: ["Cotabato City", "Lamitan", "Marawi"],
+  };
+
+  return regionCities[regionCode] || [];
+};
+
 interface FarmerManagerProps {
   className?: string;
   companyId?: number | null;
@@ -138,11 +383,13 @@ export const FarmerManager = ({ className, companyId }: FarmerManagerProps) => {
 
   const selectedType = EMAIL_LINK_TYPES.find((type) => type.value === linkType);
 
+  // Get available regions based on sales rep's territory
+  const availableRegionCodes = getAvailableRegionsForSalesRep(
+    user?.territory_region || null,
+  );
+
   // Get available cities based on selected region
-  const availableCities =
-    region && PHILIPPINE_REGIONS[region as keyof typeof PHILIPPINE_REGIONS]
-      ? PHILIPPINE_REGIONS[region as keyof typeof PHILIPPINE_REGIONS].cities
-      : [];
+  const availableCities = region ? getCitiesForRegion(region) : [];
 
   // Convert cities to ComboboxOption format
   const cityOptions: ComboboxOption[] = useMemo(
@@ -622,25 +869,112 @@ export const FarmerManager = ({ className, companyId }: FarmerManagerProps) => {
             {/* Location Information */}
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
-                <Label htmlFor="region">Region</Label>
-                <Select
-                  value={region}
-                  onValueChange={handleRegionChange}
-                  required
-                >
-                  <SelectTrigger id="region">
-                    <SelectValue placeholder="Select region" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {Object.entries(PHILIPPINE_REGIONS).map(
-                      ([key, regionData]) => (
-                        <SelectItem key={key} value={key}>
-                          {regionData.name}
-                        </SelectItem>
-                      ),
-                    )}
-                  </SelectContent>
-                </Select>
+                <div className="flex items-center gap-2">
+                  <Label htmlFor="region">Region</Label>
+                  {user?.territory_region && (
+                    <TooltipProvider>
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <button
+                            type="button"
+                            className="inline-flex items-center justify-center"
+                            aria-label="Region restriction information"
+                          >
+                            <Info className="h-4 w-4 text-muted-foreground cursor-help" />
+                          </button>
+                        </TooltipTrigger>
+                        <TooltipContent className="max-w-xs">
+                          <p className="text-sm">
+                            You can only register farmers in regions within your
+                            territory (
+                            {getFormattedIslandGroupName(user.territory_region)}{" "}
+                            island group).
+                          </p>
+                        </TooltipContent>
+                      </Tooltip>
+                    </TooltipProvider>
+                  )}
+                </div>
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button
+                      variant="outline"
+                      className="w-full justify-between truncate"
+                    >
+                      {region
+                        ? Object.values(REGIONS_BY_ISLAND)
+                            .flat()
+                            .find((r) => r.code === region)?.name || region
+                        : "Select region"}
+                      <ChevronDownIcon
+                        className="ml-2 h-4 w-4 opacity-60"
+                        aria-hidden="true"
+                      />
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent className="w-[200px] max-h-[300px] overflow-y-auto">
+                    {Object.entries(REGIONS_BY_ISLAND)
+                      .filter(([island]) => {
+                        // Only show regions from the sales rep's island group
+                        if (!user?.territory_region) return true;
+                        const salesRepIsland = getIslandGroupFromRegion(
+                          user.territory_region as RegionCode,
+                        );
+                        return (
+                          !salesRepIsland ||
+                          island.toLowerCase() === salesRepIsland
+                        );
+                      })
+                      .map(([island, regions]) => (
+                        <div key={island}>
+                          <DropdownMenuLabel className="text-xs font-semibold text-muted-foreground">
+                            {island} Island Group
+                          </DropdownMenuLabel>
+                          <DropdownMenuGroup>
+                            {regions
+                              .filter((region) =>
+                                availableRegionCodes.includes(region.code),
+                              )
+                              .map((regionData) => (
+                                <DropdownMenuItem
+                                  key={regionData.code}
+                                  onClick={() =>
+                                    handleRegionChange(regionData.code)
+                                  }
+                                  className="flex flex-col items-start py-2"
+                                >
+                                  <div className="flex items-center gap-2 w-full">
+                                    <MapPinIcon
+                                      size={16}
+                                      className="opacity-60 flex-shrink-0"
+                                      aria-hidden="true"
+                                    />
+                                    <div className="flex flex-col">
+                                      <span className="font-medium text-sm">
+                                        {regionData.name}
+                                      </span>
+                                      <span className="text-xs text-muted-foreground">
+                                        {regionData.description}
+                                      </span>
+                                    </div>
+                                  </div>
+                                </DropdownMenuItem>
+                              ))}
+                          </DropdownMenuGroup>
+                          <DropdownMenuSeparator />
+                        </div>
+                      ))}
+                  </DropdownMenuContent>
+                </DropdownMenu>
+                {user?.territory_region &&
+                  availableRegionCodes.length <
+                    Object.values(REGIONS_BY_ISLAND).flat().length && (
+                    <p className="text-xs text-muted-foreground">
+                      Showing regions for{" "}
+                      {getFormattedIslandGroupName(user.territory_region)}{" "}
+                      territory only
+                    </p>
+                  )}
               </div>
               <div className="space-y-2">
                 <Label htmlFor="location">City/Municipality</Label>
