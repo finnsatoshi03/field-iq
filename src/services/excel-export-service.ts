@@ -1,13 +1,23 @@
 import { utils, writeFile, type WorkBook } from "xlsx";
 
+import type {
+  AdminDealerIssueApiItem,
+  AdminFaqItem,
+  AdminFarmApiItem,
+  AdminPerformanceMetric,
+  AdminSalesItem,
+  SalesGoal,
+} from "@/features/admin/types";
+
 // Types for the data we'll be exporting
 export interface AdminExportData {
-  salesActivity: any[];
-  dealerIssues: any[];
-  faqs: any[];
-  users: any[];
-  farmRegistrations: any[];
-  feedPerformance: any[];
+  salesActivity: AdminSalesItem[];
+  dealerIssues: AdminDealerIssueApiItem[];
+  faqs: AdminFaqItem[];
+  users: any[]; // User type from auth service
+  farmRegistrations: AdminFarmApiItem[];
+  feedPerformance: AdminPerformanceMetric[];
+  salesGoals?: SalesGoal[]; // Optional sales goals data
 }
 
 // Service class for handling Excel exports
@@ -28,10 +38,10 @@ export class ExcelExportService {
         utils.book_append_sheet(workbook, salesSheet, "Sales Activity");
       }
 
-      // Sales Rep Issues Sheet
+      // Dealer Issues Sheet
       if (data.dealerIssues && data.dealerIssues.length > 0) {
         const dealerSheet = this.createDealerIssuesSheet(data.dealerIssues);
-        utils.book_append_sheet(workbook, dealerSheet, "Sales Rep Issues");
+        utils.book_append_sheet(workbook, dealerSheet, "Dealer Issues");
       }
 
       // FAQs Sheet
@@ -60,6 +70,12 @@ export class ExcelExportService {
         utils.book_append_sheet(workbook, feedSheet, "Feed Performance");
       }
 
+      // Sales Goals Sheet
+      if (data.salesGoals && data.salesGoals.length > 0) {
+        const goalsSheet = this.createSalesGoalsSheet(data.salesGoals);
+        utils.book_append_sheet(workbook, goalsSheet, "Sales Goals");
+      }
+
       // Generate filename with timestamp if not provided
       const exportFilename =
         filename ||
@@ -76,50 +92,62 @@ export class ExcelExportService {
   /**
    * Create Sales Activity sheet
    */
-  private static createSalesActivitySheet(salesData: any[]) {
+  private static createSalesActivitySheet(salesData: AdminSalesItem[]) {
     const formattedData = salesData.map((item) => ({
-      "Sales Rep": item.sales_rep_name || item.name || "N/A",
+      ID: item.id || "N/A",
+      "Sales Rep": item.rep || "N/A",
       Region: item.region || "N/A",
-      "Volume Influenced": item.influenced_volume_amount
-        ? `₱${item.influenced_volume_amount.toLocaleString()}`
+      "Target Influence": item.targetInfluence
+        ? `₱${item.targetInfluence.toLocaleString()}`
         : "₱0",
-      "Closed Sales": item.closed_sales_amount
-        ? `₱${item.closed_sales_amount.toLocaleString()}`
+      "Closed Sales": item.closedSales
+        ? `₱${item.closedSales.toLocaleString()}`
         : "₱0",
       "Success Rate":
-        item.influenced_volume_amount > 0
-          ? `${((item.closed_sales_amount / item.influenced_volume_amount) * 100).toFixed(1)}%`
+        item.targetInfluence > 0
+          ? `${((item.closedSales / item.targetInfluence) * 100).toFixed(1)}%`
           : "0%",
-      "Growth Rate": item.growth_rate
-        ? `${item.growth_rate.toFixed(1)}%`
-        : "0%",
-      "Last Updated": item.last_updated
-        ? new Date(item.last_updated).toLocaleDateString()
-        : "N/A",
+      "Growth Rate": item.growthRate ? `${item.growthRate.toFixed(1)}%` : "0%",
+      Period: item.period || "N/A",
     }));
 
     return utils.json_to_sheet(formattedData);
   }
 
   /**
-   * Create Sales Rep Issues sheet
+   * Create Dealer Issues sheet
    */
-  private static createDealerIssuesSheet(dealerData: any[]) {
-    const formattedData = dealerData.map((item) => ({
-      "Sales Rep Name": item.name || "N/A",
-      Location: item.location || "N/A",
-      "Issue Type": item.issue_type || "N/A",
-      "Issue Description": item.issue_description || "N/A",
-      Priority: item.priority || "N/A",
-      Status: item.status || "N/A",
-      "Created Date": item.created_at
-        ? new Date(item.created_at).toLocaleDateString()
-        : "N/A",
-      "Updated Date": item.updated_at
-        ? new Date(item.updated_at).toLocaleDateString()
-        : "N/A",
-      "Assigned To": item.assigned_to || "N/A",
-    }));
+  private static createDealerIssuesSheet(
+    dealerData: AdminDealerIssueApiItem[],
+  ) {
+    const formattedData: any[] = [];
+
+    dealerData.forEach((dealer) => {
+      // Create a row for each issue
+      dealer.issues.forEach((issue) => {
+        formattedData.push({
+          "Dealer ID": dealer.id,
+          "Dealer Name": dealer.dealerName || "N/A",
+          "Dealer Code": dealer.dealerCode || "N/A",
+          "Location Address": dealer.location?.address || "N/A",
+          Region: dealer.location?.region || "N/A",
+          "Contact Person": dealer.contactPerson || "N/A",
+          Phone: dealer.phone || "N/A",
+          Email: dealer.email || "N/A",
+          "Issue Type": issue.type || "N/A",
+          "Issue Description": issue.description || "N/A",
+          Priority: issue.priority || "N/A",
+          Status: issue.status || "N/A",
+          "Overall Severity": dealer.severity || "N/A",
+          "Reported Date": issue.reportedDate
+            ? new Date(issue.reportedDate).toLocaleDateString()
+            : "N/A",
+          "Last Updated": dealer.lastUpdated
+            ? new Date(dealer.lastUpdated).toLocaleDateString()
+            : "N/A",
+        });
+      });
+    });
 
     return utils.json_to_sheet(formattedData);
   }
@@ -127,19 +155,21 @@ export class ExcelExportService {
   /**
    * Create FAQs sheet
    */
-  private static createFaqsSheet(faqData: any[]) {
+  private static createFaqsSheet(faqData: AdminFaqItem[]) {
     const formattedData = faqData.map((item) => ({
+      ID: item.id,
       Question: item.question || "N/A",
       Answer: item.answer || "N/A",
       Category: item.category || "N/A",
-      "Created By": item.created_by_name || item.created_by || "N/A",
-      "Created Date": item.created_at
-        ? new Date(item.created_at).toLocaleDateString()
+      Status: item.status || "N/A",
+      Priority: item.priority || 0,
+      Views: item.views || 0,
+      "Is Featured": item.is_featured ? "Yes" : "No",
+      "Created By": item.createdBy || "N/A",
+      "Last Updated": item.lastUpdated
+        ? new Date(item.lastUpdated).toLocaleDateString()
         : "N/A",
-      "Updated Date": item.updated_at
-        ? new Date(item.updated_at).toLocaleDateString()
-        : "N/A",
-      Status: item.is_active ? "Active" : "Inactive",
+      Tags: Array.isArray(item.tags) ? item.tags.join(", ") : "N/A",
     }));
 
     return utils.json_to_sheet(formattedData);
@@ -150,19 +180,21 @@ export class ExcelExportService {
    */
   private static createUsersSheet(userData: any[]) {
     const formattedData = userData.map((item) => ({
-      Name: item.name || "N/A",
+      ID: item.id || "N/A",
       Email: item.email || "N/A",
-      Role: item.role || "N/A",
-      Department: item.department || "N/A",
-      Status: item.is_active ? "Active" : "Inactive",
-      Phone: item.phone || "N/A",
-      Region: item.region || "N/A",
+      "Full Name":
+        item.user_metadata?.full_name || item.user_metadata?.name || "N/A",
+      Role: item.user_metadata?.role || "N/A",
+      "Phone Number": item.user_metadata?.phone_number || item.phone || "N/A",
+      "Email Confirmed": item.email_confirmed_at ? "Yes" : "No",
+      "Phone Confirmed": item.phone_confirmed_at ? "Yes" : "No",
       "Created Date": item.created_at
         ? new Date(item.created_at).toLocaleDateString()
         : "N/A",
-      "Last Login": item.last_login
-        ? new Date(item.last_login).toLocaleDateString()
+      "Last Sign In": item.last_sign_in_at
+        ? new Date(item.last_sign_in_at).toLocaleDateString()
         : "Never",
+      "Sign In Count": item.raw_user_meta_data?.sign_in_count || 0,
     }));
 
     return utils.json_to_sheet(formattedData);
@@ -171,21 +203,46 @@ export class ExcelExportService {
   /**
    * Create Farm Registrations sheet
    */
-  private static createFarmRegistrationsSheet(farmData: any[]) {
-    const formattedData = farmData.map((item) => ({
-      "Farm Name": item.farm_name || item.name || "N/A",
-      "Farmer Name": item.farmer_name || item.owner_name || "N/A",
-      Location: item.location || "N/A",
-      Region: item.region || "N/A",
-      "Farm Size": item.farm_size ? `${item.farm_size} hectares` : "N/A",
-      "Crop Type": item.crop_type || "N/A",
-      "Registration Date": item.registration_date
-        ? new Date(item.registration_date).toLocaleDateString()
-        : "N/A",
-      "Contact Number": item.contact_number || "N/A",
-      Status: item.status || "N/A",
-      "Assigned Sales Rep": item.assigned_sales_rep || "N/A",
-    }));
+  private static createFarmRegistrationsSheet(farmData: AdminFarmApiItem[]) {
+    const formattedData: any[] = [];
+
+    farmData.forEach((item) => {
+      // Each farm registration can have multiple farm details
+      item.farmer.farmer_details.forEach((farm) => {
+        formattedData.push({
+          "Company ID": item.company_id,
+          "Farmer ID": item.farmer.id,
+          "Farmer First Name": item.farmer.first_name || "N/A",
+          "Farmer Last Name": item.farmer.last_name || "N/A",
+          "Farm ID": farm.id,
+          "Farm Name": farm.farm_name || "N/A",
+          "Farm Type": farm.farm_type || "N/A",
+          "Farm Size": farm.farm_size ? `${farm.farm_size} hectares` : "N/A",
+          "Current Feed": farm.current_feed || "N/A",
+          "Days on Feed": farm.days_on_feed || "N/A",
+          Latitude: farm.latitude || "N/A",
+          Longitude: farm.longitude || "N/A",
+          "Location City": farm.location_city || "N/A",
+          "Location Barangay": farm.location_barangay || "N/A",
+          "Location Province": farm.location_province || "N/A",
+          "Sales Rep ID": item.salesrep.id,
+          "Sales Rep First Name": item.salesrep.first_name || "N/A",
+          "Sales Rep Last Name": item.salesrep.last_name || "N/A",
+          "Sales Rep Territory":
+            item.salesrep.salesrep_details?.[0]?.territory || "N/A",
+          "Sales Rep Employee ID":
+            item.salesrep.salesrep_details?.[0]?.employee_id || "N/A",
+          "Monthly Quota":
+            item.salesrep.salesrep_details?.[0]?.quota_monthly || "N/A",
+          "Farm Created": farm.created_at
+            ? new Date(farm.created_at).toLocaleDateString()
+            : "N/A",
+          "Farm Updated": farm.updated_at
+            ? new Date(farm.updated_at).toLocaleDateString()
+            : "N/A",
+        });
+      });
+    });
 
     return utils.json_to_sheet(formattedData);
   }
@@ -193,12 +250,19 @@ export class ExcelExportService {
   /**
    * Create Feed Performance sheet
    */
-  private static createFeedPerformanceSheet(feedData: any[]) {
+  private static createFeedPerformanceSheet(
+    feedData: AdminPerformanceMetric[],
+  ) {
     const formattedData = feedData.map((item) => ({
-      "Farm Name": item.farmName || "N/A",
+      ID: item.id,
+      "Product ID": item.productId,
       "Product Name": item.productName || "N/A",
+      "Farm ID": item.farmId,
+      "Farm Name": item.farmName || "N/A",
       Region: item.region || "N/A",
       Province: item.province || "N/A",
+      "GPS Latitude": item.gpsCoordinates?.lat || "N/A",
+      "GPS Longitude": item.gpsCoordinates?.lng || "N/A",
       "Batch Size": item.batchSize || "N/A",
       "Days on Feed": item.daysOnFeed || "N/A",
       FCR: item.fcr || "N/A",
@@ -219,6 +283,35 @@ export class ExcelExportService {
   }
 
   /**
+   * Create Sales Goals sheet
+   */
+  private static createSalesGoalsSheet(goalsData: SalesGoal[]) {
+    const formattedData = goalsData.map((item) => ({
+      ID: item.id,
+      "Company ID": item.company_id,
+      "Target Amount": item.target_amount
+        ? `₱${item.target_amount.toLocaleString()}`
+        : "₱0",
+      "Period Start": item.period_start
+        ? new Date(item.period_start).toLocaleDateString()
+        : "N/A",
+      "Period End": item.period_end
+        ? new Date(item.period_end).toLocaleDateString()
+        : "N/A",
+      Status: item.status || "N/A",
+      "Created By": item.created_by || "N/A",
+      "Created Date": item.created_at
+        ? new Date(item.created_at).toLocaleDateString()
+        : "N/A",
+      "Updated Date": item.updated_at
+        ? new Date(item.updated_at).toLocaleDateString()
+        : "N/A",
+    }));
+
+    return utils.json_to_sheet(formattedData);
+  }
+
+  /**
    * Create a summary sheet with overview data
    */
   static createSummarySheet(data: AdminExportData) {
@@ -230,11 +323,12 @@ export class ExcelExportService {
       [""],
       ["Data Summary:"],
       ["Sales Activity Records", data.salesActivity?.length || 0],
-      ["Sales Rep Issues", data.dealerIssues?.length || 0],
+      ["Dealer Issues", data.dealerIssues?.length || 0],
       ["FAQs", data.faqs?.length || 0],
       ["Users", data.users?.length || 0],
       ["Farm Registrations", data.farmRegistrations?.length || 0],
       ["Feed Performance Records", data.feedPerformance?.length || 0],
+      ["Sales Goals", data.salesGoals?.length || 0],
     ];
 
     return utils.aoa_to_sheet(summary);
