@@ -1,15 +1,20 @@
-import { redirect } from "@tanstack/react-router";
-import { useUserStore } from "@/store/user-store";
-import { getDefaultDashboardRoute } from "@/lib/rbac";
 import { BYPASS_AUTH } from "@/lib/config";
+import { getDefaultDashboardRoute } from "@/lib/rbac";
+import { useUserStore } from "@/store/user-store";
+import { redirect } from "@tanstack/react-router";
 
 /**
  * Hook to redirect authenticated users away from public auth routes
  * This improves UX by preventing logged-in users from seeing login/signup pages
  */
-export const useAuthRedirect = () => {
+export const useAuthRedirect = (currentPath?: string) => {
   // Skip auth redirect if auth is bypassed
   if (BYPASS_AUTH) return;
+
+  // Skip redirect if user is on invite route (they need to complete the invite flow)
+  if (currentPath === "/invite" || currentPath?.startsWith("/invite#")) {
+    return;
+  }
 
   const { isAuthenticated, user } = useUserStore.getState();
 
@@ -25,9 +30,14 @@ export const useAuthRedirect = () => {
 /**
  * Function version for use in route beforeLoad
  */
-export const checkAuthRedirect = () => {
+export const checkAuthRedirect = (currentPath?: string) => {
   // Skip auth redirect if auth is bypassed
   if (BYPASS_AUTH) return;
+
+  // Skip redirect if user is on invite route (they need to complete the invite flow)
+  if (currentPath === "/invite" || currentPath?.startsWith("/invite#")) {
+    return;
+  }
 
   const { isAuthenticated, user } = useUserStore.getState();
 

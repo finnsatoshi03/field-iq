@@ -4,9 +4,9 @@ import { ForgotPasswordForm } from "@/features/auth/components/forgot-pass-form"
 import { checkAuthRedirect } from "@/hooks/use-auth-redirect";
 
 export const Route = createFileRoute("/auth/forgot-password")({
-  beforeLoad: () => {
+  beforeLoad: ({ location }) => {
     // Redirect authenticated users to their dashboard
-    checkAuthRedirect();
+    checkAuthRedirect(location.pathname);
   },
   component: ForgotPassword,
 });

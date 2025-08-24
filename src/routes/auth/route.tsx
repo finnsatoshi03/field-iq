@@ -4,7 +4,7 @@ import { Header } from "@/components/custom/header";
 import { checkAuthRedirect } from "@/hooks/use-auth-redirect";
 
 export const Route = createFileRoute("/auth")({
-  beforeLoad: checkAuthRedirect,
+  beforeLoad: ({ location }) => checkAuthRedirect(location.pathname),
   component: AuthLayoutComponent,
 });
 

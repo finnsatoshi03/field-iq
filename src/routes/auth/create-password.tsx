@@ -1,15 +1,15 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useState } from "react";
 
-import { CreatePasswordForm } from "@/features/auth/components/create-password-form";
 import { AuthSuccess } from "@/features/auth/components/auth-success";
+import { CreatePasswordForm } from "@/features/auth/components/create-password-form";
 import { checkAuthRedirect } from "@/hooks/use-auth-redirect";
 import type { UserRole } from "@/lib/types";
 
 export const Route = createFileRoute("/auth/create-password")({
-  beforeLoad: () => {
+  beforeLoad: ({ location }) => {
     // Redirect authenticated users to their dashboard
-    checkAuthRedirect();
+    checkAuthRedirect(location.pathname);
   },
   component: CreatePassword,
 });
