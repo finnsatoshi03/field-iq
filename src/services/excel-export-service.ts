@@ -125,6 +125,35 @@ export class ExcelExportService {
     dealerData.forEach((dealer) => {
       // Create a row for each issue
       dealer.issues.forEach((issue) => {
+        // Map issue type to category for better readability
+        const getIssueCategory = (type: string) => {
+          const lowerType = type.toLowerCase().trim();
+          if (lowerType.includes("stock")) return "Stock/Inventory";
+          if (
+            lowerType.includes("delivery") ||
+            lowerType.includes("late") ||
+            lowerType.includes("missing")
+          )
+            return "Delivery";
+          if (
+            lowerType.includes("invoice") ||
+            lowerType.includes("billing") ||
+            lowerType.includes("payment")
+          )
+            return "Pricing/Billing";
+          if (
+            lowerType.includes("leak") ||
+            lowerType.includes("mold") ||
+            lowerType.includes("damaged") ||
+            lowerType.includes("spoiled") ||
+            lowerType.includes("broken") ||
+            lowerType.includes("wrong") ||
+            lowerType.includes("incorrect")
+          )
+            return "Quality";
+          return "Others";
+        };
+
         formattedData.push({
           "Dealer ID": dealer.id,
           "Dealer Name": dealer.dealerName || "N/A",
@@ -135,6 +164,7 @@ export class ExcelExportService {
           Phone: dealer.phone || "N/A",
           Email: dealer.email || "N/A",
           "Issue Type": issue.type || "N/A",
+          "Issue Category": getIssueCategory(issue.type || ""),
           "Issue Description": issue.description || "N/A",
           Priority: issue.priority || "N/A",
           Status: issue.status || "N/A",

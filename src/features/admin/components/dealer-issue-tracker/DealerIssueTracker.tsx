@@ -300,12 +300,12 @@ const DealerIssueTracker: React.FC<DealerIssueTrackerProps> = ({
                 </p>
               </div>
 
-              <div className="grid grid-cols-3 gap-2">
+              <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-2">
                 <div className="rounded-lg bg-muted/50 px-3 py-2">
                   <div className="flex items-center gap-2">
                     <div className="w-2 h-2 rounded-full bg-red-500"></div>
                     <span className="text-xs text-muted-foreground font-sans">
-                      Stock Out
+                      Stock
                     </span>
                   </div>
                   <span className="text-lg font-medium text-foreground font-sans">
@@ -334,6 +334,30 @@ const DealerIssueTracker: React.FC<DealerIssueTrackerProps> = ({
                   </div>
                   <span className="text-lg font-medium text-foreground font-sans">
                     {metrics.pricingIssues}
+                  </span>
+                </div>
+
+                <div className="rounded-lg bg-muted/50 px-3 py-2">
+                  <div className="flex items-center gap-2">
+                    <div className="w-2 h-2 rounded-full bg-cyan-500"></div>
+                    <span className="text-xs text-muted-foreground font-sans">
+                      Quality
+                    </span>
+                  </div>
+                  <span className="text-lg font-medium text-foreground font-sans">
+                    {metrics.qualityIssues}
+                  </span>
+                </div>
+
+                <div className="rounded-lg bg-muted/50 px-3 py-2">
+                  <div className="flex items-center gap-2">
+                    <div className="w-2 h-2 rounded-full bg-gray-500"></div>
+                    <span className="text-xs text-muted-foreground font-sans">
+                      Others
+                    </span>
+                  </div>
+                  <span className="text-lg font-medium text-foreground font-sans">
+                    {metrics.otherIssues}
                   </span>
                 </div>
               </div>

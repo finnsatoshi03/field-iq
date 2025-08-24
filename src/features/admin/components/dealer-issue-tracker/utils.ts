@@ -12,32 +12,78 @@ import { ISSUE_STATUS, ISSUE_TYPES } from "./constants";
 export const mapApiIssueTypeToComponent = (
   apiIssueType: string,
 ): IssueTypeKey => {
-  const lowerCaseType = apiIssueType.toLowerCase();
+  const lowerCaseType = apiIssueType.toLowerCase().trim();
 
-  // Map various API issue types to our three categories
+  // Stock/Inventory Issues - be very specific about stock-related issues
   if (
+    lowerCaseType === "out of stock" ||
+    lowerCaseType === "dealer out of stock" ||
+    lowerCaseType.startsWith("out of stock") ||
+    lowerCaseType.includes("stockout") ||
     lowerCaseType.includes("stock") ||
-    lowerCaseType.includes("out of stock")
+    lowerCaseType.includes("inventory") ||
+    lowerCaseType.includes("shortage")
   ) {
     return ISSUE_TYPES.STOCKOUT;
   }
 
+  // Delivery Issues - specific delivery-related problems
   if (
+    lowerCaseType === "late delivery" ||
+    lowerCaseType === "missing items" ||
+    lowerCaseType.includes("late delivery") ||
+    lowerCaseType.includes("missing items") ||
     lowerCaseType.includes("delivery") ||
     lowerCaseType.includes("late") ||
     lowerCaseType.includes("missing") ||
-    lowerCaseType.includes("damaged") ||
-    lowerCaseType.includes("spoiled") ||
-    lowerCaseType.includes("broken") ||
-    lowerCaseType.includes("wrong product") ||
-    lowerCaseType.includes("mold") ||
-    lowerCaseType.includes("leak")
+    lowerCaseType.includes("transport") ||
+    lowerCaseType.includes("shipping") ||
+    lowerCaseType.includes("logistics")
   ) {
     return ISSUE_TYPES.DELIVERY;
   }
 
-  // Default everything else to pricing (including billing/invoice issues)
-  return ISSUE_TYPES.PRICING;
+  // Pricing/Invoice Issues - billing and payment related
+  if (
+    lowerCaseType === "duplicate invoice" ||
+    lowerCaseType.includes("invoice") ||
+    lowerCaseType.includes("billing") ||
+    lowerCaseType.includes("payment") ||
+    lowerCaseType.includes("pricing") ||
+    lowerCaseType.includes("price") ||
+    lowerCaseType.includes("cost") ||
+    lowerCaseType.includes("duplicate")
+  ) {
+    return ISSUE_TYPES.PRICING;
+  }
+
+  // Quality Issues - product condition and integrity
+  if (
+    lowerCaseType === "leak in packaging" ||
+    lowerCaseType === "mold in product" ||
+    lowerCaseType === "incorrect labeling" ||
+    lowerCaseType === "damaged bags" ||
+    lowerCaseType === "spoiled feed" ||
+    lowerCaseType === "wrong product" ||
+    lowerCaseType === "broken seal" ||
+    lowerCaseType.includes("leak") ||
+    lowerCaseType.includes("mold") ||
+    lowerCaseType.includes("damaged") ||
+    lowerCaseType.includes("spoiled") ||
+    lowerCaseType.includes("broken") ||
+    lowerCaseType.includes("wrong product") ||
+    lowerCaseType.includes("incorrect labeling") ||
+    lowerCaseType.includes("quality") ||
+    lowerCaseType.includes("defective") ||
+    lowerCaseType.includes("contaminated") ||
+    lowerCaseType.includes("expired") ||
+    lowerCaseType.includes("tampered")
+  ) {
+    return ISSUE_TYPES.QUALITY;
+  }
+
+  // Default everything else to others
+  return ISSUE_TYPES.OTHERS;
 };
 
 // Transform API data to component format
@@ -83,6 +129,12 @@ export const calculateIssueMetrics = (dealers: DealerIssue[]): IssueMetrics => {
   const pricingIssues = allIssues.filter(
     (issue) => issue.type === ISSUE_TYPES.PRICING,
   ).length;
+  const qualityIssues = allIssues.filter(
+    (issue) => issue.type === ISSUE_TYPES.QUALITY,
+  ).length;
+  const otherIssues = allIssues.filter(
+    (issue) => issue.type === ISSUE_TYPES.OTHERS,
+  ).length;
 
   const criticalIssues = dealers.filter(
     (dealer) => dealer.severity === "critical",
@@ -97,6 +149,8 @@ export const calculateIssueMetrics = (dealers: DealerIssue[]): IssueMetrics => {
     stockoutIssues,
     deliveryIssues,
     pricingIssues,
+    qualityIssues,
+    otherIssues,
     criticalIssues,
     resolvedIssues,
   };
@@ -176,8 +230,10 @@ export const getIssueTypeBadgeClass = (type: IssueTypeKey): string => {
     stockout: "bg-red-50 text-red-700 border-red-200",
     delivery: "bg-amber-50 text-amber-700 border-amber-200",
     pricing: "bg-violet-50 text-violet-700 border-violet-200",
+    quality: "bg-cyan-50 text-cyan-700 border-cyan-200",
+    others: "bg-gray-50 text-gray-700 border-gray-200",
   };
-  return classes[type];
+  return classes[type] || classes.others;
 };
 
 export const getStatusBadgeClass = (status: string): string => {
@@ -191,9 +247,11 @@ export const getStatusBadgeClass = (status: string): string => {
 
 export const getIssueTypeLabel = (type: IssueTypeKey): string => {
   const labels = {
-    stockout: "Stock Out",
+    stockout: "Stock",
     delivery: "Delivery",
     pricing: "Pricing",
+    quality: "Quality",
+    others: "Others",
   };
   return labels[type];
 };

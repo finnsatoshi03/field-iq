@@ -17,7 +17,7 @@ export interface DealerIssue {
 }
 
 export interface IssueType {
-  type: "stockout" | "delivery" | "pricing";
+  type: "stockout" | "delivery" | "pricing" | "quality" | "others";
   description: string;
   reportedDate: string;
   status: "open" | "in-progress" | "resolved";
@@ -30,6 +30,8 @@ export interface IssueMetrics {
   stockoutIssues: number;
   deliveryIssues: number;
   pricingIssues: number;
+  qualityIssues: number;
+  otherIssues: number;
   criticalIssues: number;
   resolvedIssues: number;
 }
@@ -46,6 +48,8 @@ export const ISSUE_TYPES = {
   STOCKOUT: "stockout",
   DELIVERY: "delivery",
   PRICING: "pricing",
+  QUALITY: "quality",
+  OTHERS: "others",
 } as const;
 
 export const SEVERITY_LEVELS = {
@@ -72,6 +76,8 @@ export const ISSUE_TYPE_COLORS = {
   stockout: "#ef4444", // red-500
   delivery: "#f59e0b", // amber-500
   pricing: "#8b5cf6", // violet-500
+  quality: "#06b6d4", // cyan-500
+  others: "#6b7280", // gray-500
 } as const;
 
 export const MOCK_DEALER_ISSUES: DealerIssue[] = [
