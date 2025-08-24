@@ -185,7 +185,7 @@ export const UserManager = ({ className, companyId }: UserManagerProps) => {
         email,
         options: {
           // Always redirect invites to the dedicated invite route
-          redirectTo: redirectTo || "http://localhost:3000/invite",
+          redirectTo: redirectTo || "https://www.fieldiq.ph/invite",
           ...(selectedType?.supportsRole && {
             data: {
               role: selectedRole,
@@ -1056,7 +1056,7 @@ export const UserManager = ({ className, companyId }: UserManagerProps) => {
                 disabled={linkType === "invite"}
                 placeholder={
                   linkType === "invite"
-                    ? `http://localhost:3000/invite (default for invites)`
+                    ? `https://www.fieldiq.ph/invite (default for invites)`
                     : "https://yourapp.com/dashboard"
                 }
               />
