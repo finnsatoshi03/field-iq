@@ -31,21 +31,41 @@ export const useAuthRedirect = (currentPath?: string) => {
  * Function version for use in route beforeLoad
  */
 export const checkAuthRedirect = (currentPath?: string) => {
+  console.log("🚀 [CHECK AUTH REDIRECT] Called for path:", currentPath);
+
   // Skip auth redirect if auth is bypassed
-  if (BYPASS_AUTH) return;
+  if (BYPASS_AUTH) {
+    console.log("🚀 [CHECK AUTH REDIRECT] BYPASS_AUTH is true, skipping");
+    return;
+  }
 
   // Skip redirect if user is on invite route (they need to complete the invite flow)
   if (currentPath === "/invite" || currentPath?.startsWith("/invite#")) {
+    console.log(
+      "🚀 [CHECK AUTH REDIRECT] Invite route detected, skipping redirect",
+    );
     return;
   }
 
   const { isAuthenticated, user } = useUserStore.getState();
+  console.log(
+    "🚀 [CHECK AUTH REDIRECT] Store state - isAuthenticated:",
+    isAuthenticated,
+    "user:",
+    user?.email,
+  );
 
   if (isAuthenticated && user) {
     // Redirect to their appropriate dashboard
     const defaultRoute = getDefaultDashboardRoute(user.role);
+    console.log(
+      "🚀 [CHECK AUTH REDIRECT] User authenticated, redirecting to:",
+      defaultRoute,
+    );
     throw redirect({
       to: defaultRoute,
     });
   }
+
+  console.log("🚀 [CHECK AUTH REDIRECT] No redirect needed");
 };
