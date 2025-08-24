@@ -51,7 +51,7 @@ import ExpandableCard from "@/components/ui/expandable-card";
 import {
   useCreateUser,
   useGenerateEmailLink,
-  useGetFarmersByCompanyId,
+  useGetFarmersByAssignedSalesRep,
   useInviteUserByEmail,
 } from "@/features/auth/mutations/admin-mutations";
 import { REGIONS_BY_ISLAND, type RegionCode } from "@/lib/consts";
@@ -352,10 +352,9 @@ const getCitiesForRegion = (regionCode: string): string[] => {
 
 interface FarmerManagerProps {
   className?: string;
-  companyId?: number | null;
 }
 
-export const FarmerManager = ({ className, companyId }: FarmerManagerProps) => {
+export const FarmerManager = ({ className }: FarmerManagerProps) => {
   const [isInviteDialogOpen, setIsInviteDialogOpen] = useState(false);
   const [linkType, setLinkType] = useState<EmailLinkType>("invite");
   const [email, setEmail] = useState("");
@@ -376,7 +375,7 @@ export const FarmerManager = ({ className, companyId }: FarmerManagerProps) => {
     data: farmersData = [],
     isLoading,
     error,
-  } = useGetFarmersByCompanyId(companyId || undefined);
+  } = useGetFarmersByAssignedSalesRep(user?.profileId || undefined);
 
   const generateEmailLinkMutation = useGenerateEmailLink();
   const createUserMutation = useCreateUser();
@@ -421,14 +420,12 @@ export const FarmerManager = ({ className, companyId }: FarmerManagerProps) => {
     return { total, active, pending };
   }, [farmersData]);
 
-  // Get recent farmers (last 5)
-  const recentFarmers = useMemo(() => {
-    return farmersData
-      .sort(
-        (a, b) =>
-          new Date(b.created_at).getTime() - new Date(a.created_at).getTime(),
-      )
-      .slice(0, 5);
+  // Get all farmers sorted by creation date (most recent first)
+  const sortedFarmers = useMemo(() => {
+    return farmersData.sort(
+      (a, b) =>
+        new Date(b.created_at).getTime() - new Date(a.created_at).getTime(),
+    );
   }, [farmersData]);
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -700,10 +697,10 @@ export const FarmerManager = ({ className, companyId }: FarmerManagerProps) => {
             </div>
           </div>
 
-          {/* Recent Farmers */}
+          {/* Assigned Farmers */}
           <div>
             <div className="flex items-center justify-between mb-4">
-              <h4 className="font-medium text-foreground">Recent Farmers</h4>
+              <h4 className="font-medium text-foreground">Assigned Farmers</h4>
               <Badge
                 variant="outline"
                 className="font-medium rounded-full border-border bg-background text-foreground text-xs"
@@ -712,10 +709,10 @@ export const FarmerManager = ({ className, companyId }: FarmerManagerProps) => {
               </Badge>
             </div>
 
-            {/* Mini User Previews */}
-            <div className="space-y-3">
-              {recentFarmers.length > 0 ? (
-                recentFarmers.map((user) => (
+            {/* Scrollable Farmer List */}
+            <div className="max-h-80 overflow-y-auto space-y-3 pr-2">
+              {sortedFarmers.length > 0 ? (
+                sortedFarmers.map((user) => (
                   <div
                     key={user.id}
                     className="bg-background rounded-lg p-3 border border-border hover:bg-muted/30 transition-colors"
@@ -727,11 +724,19 @@ export const FarmerManager = ({ className, companyId }: FarmerManagerProps) => {
                         </div>
                         <div>
                           <p className="text-sm font-medium text-foreground">
-                            {user.email}
+                            {user.user_metadata?.first_name &&
+                            user.user_metadata?.last_name
+                              ? `${user.user_metadata.first_name} ${user.user_metadata.last_name}`
+                              : user.email}
                           </p>
                           <p className="text-xs text-muted-foreground">
-                            Farmer
+                            {user.user_metadata?.farm_name || "Farmer"}
                           </p>
+                          {user.user_metadata?.location && (
+                            <p className="text-xs text-muted-foreground">
+                              📍 {user.user_metadata.location}
+                            </p>
+                          )}
                         </div>
                       </div>
                       <Badge
@@ -744,15 +749,20 @@ export const FarmerManager = ({ className, companyId }: FarmerManagerProps) => {
                         </span>
                       </Badge>
                     </div>
-                    <div className="text-xs text-muted-foreground">
-                      Joined: {formatDate(user.created_at)}
+                    <div className="flex items-center justify-between text-xs text-muted-foreground">
+                      <span>Joined: {formatDate(user.created_at)}</span>
+                      {user.user_metadata?.livestock_type && (
+                        <span className="capitalize">
+                          {user.user_metadata.livestock_type}
+                        </span>
+                      )}
                     </div>
                   </div>
                 ))
               ) : (
                 <div className="text-center py-6 text-muted-foreground">
                   <Shield className="h-8 w-8 mx-auto mb-2 opacity-50" />
-                  <p className="text-sm">No farmers registered yet</p>
+                  <p className="text-sm">No farmers assigned yet</p>
                   <p className="text-xs">Start by inviting your first farmer</p>
                 </div>
               )}

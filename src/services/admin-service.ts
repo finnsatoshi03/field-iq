@@ -8,6 +8,14 @@ export interface AdminUser {
   user_metadata: {
     name?: string;
     role?: string;
+    first_name?: string;
+    last_name?: string;
+    farm_name?: string;
+    mobile_number?: string;
+    location?: string;
+    region?: string;
+    livestock_type?: string;
+    created_by?: string;
   };
   email_confirmed_at: string | null;
 }
@@ -96,6 +104,64 @@ export const adminService = {
     );
 
     return companyUsers as AdminUser[];
+  },
+
+  // Get farmers by assigned sales rep user profile ID using company_farmers table (requires admin privileges)
+  async getFarmersByAssignedSalesRep(
+    salesRepUserProfileId: number | null,
+  ): Promise<AdminUser[]> {
+    if (!salesRepUserProfileId) {
+      return [];
+    }
+
+    // First get all users from Supabase Auth
+    const { data: authUsers, error: authError } =
+      await supabaseAdmin.auth.admin.listUsers();
+
+    if (authError) {
+      throw authError;
+    }
+
+    // Get company farmers assigned to the specific sales rep
+    const { data: companyFarmersData, error: companyFarmersError } =
+      await supabaseAdmin
+        .from("company_farmers")
+        .select("farmer_user_profile_id")
+        .eq("assigned_sales_rep_user_profile_id", salesRepUserProfileId);
+
+    if (companyFarmersError) {
+      throw companyFarmersError;
+    }
+
+    // Get user profiles for the farmer IDs
+    const farmerProfileIds =
+      companyFarmersData?.map((cf) => cf.farmer_user_profile_id) || [];
+
+    if (farmerProfileIds.length === 0) {
+      return [];
+    }
+
+    const { data: userProfiles, error: profileError } = await supabaseAdmin
+      .from("user_profiles")
+      .select("identity_id")
+      .in("id", farmerProfileIds);
+
+    if (profileError) {
+      throw profileError;
+    }
+
+    // Create a set of farmer user IDs that are assigned to this sales rep
+    const assignedFarmerIds = new Set(
+      userProfiles?.map((profile) => profile.identity_id) || [],
+    );
+
+    // Filter auth users to only include farmers assigned to this sales rep
+    const filteredFarmers = authUsers.users.filter(
+      (user) =>
+        assignedFarmerIds.has(user.id) && user.user_metadata?.role === "farmer",
+    );
+
+    return filteredFarmers as AdminUser[];
   },
 
   // Get farmers by company_id using company_farmers table (requires admin privileges)
@@ -236,5 +302,43 @@ export const adminService = {
     }
 
     return data.user as AdminUser;
+  },
+
+  // Assign farmer to sales rep in company_farmers table
+  async assignFarmerToSalesRep(params: {
+    companyId: number;
+    farmerUserProfileId: number;
+    assignedSalesRepUserProfileId: number;
+  }): Promise<void> {
+    const { error } = await supabaseAdmin.from("company_farmers").insert({
+      company_id: params.companyId,
+      farmer_user_profile_id: params.farmerUserProfileId,
+      assigned_sales_rep_user_profile_id: params.assignedSalesRepUserProfileId,
+    });
+
+    if (error) {
+      throw error;
+    }
+  },
+
+  // Get user profile ID by identity ID
+  async getUserProfileIdByIdentityId(
+    identityId: string,
+  ): Promise<number | null> {
+    const { data, error } = await supabaseAdmin
+      .from("user_profiles")
+      .select("id")
+      .eq("identity_id", identityId)
+      .single();
+
+    if (error) {
+      if (error.code === "PGRST116") {
+        // No rows returned
+        return null;
+      }
+      throw error;
+    }
+
+    return data?.id || null;
   },
 };
