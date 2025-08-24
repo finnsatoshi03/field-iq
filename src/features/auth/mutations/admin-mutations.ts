@@ -132,6 +132,10 @@ export const useCreateUser = () => {
         old ? [...old, newUser] : [newUser],
       );
 
+      queryClient.invalidateQueries({
+        queryKey: adminQueryKeys.users,
+      });
+
       toast.success(`User ${newUser.email} created successfully`);
     },
     onError: (error: any) => {

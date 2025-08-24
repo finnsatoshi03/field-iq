@@ -137,7 +137,7 @@ export const EmailLinkGenerator = ({
       const inviteParams: InviteUserParams = {
         email,
         options: {
-          redirectTo: redirectTo || `https://www.fieldiq.ph/invite`,
+          redirectTo: `https://www.fieldiq.ph/invite`,
           ...(selectedType?.supportsRole && {
             data: {
               role: selectedRole,

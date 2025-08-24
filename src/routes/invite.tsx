@@ -7,7 +7,8 @@ import { authService } from "@/services/auth-service";
 import { transformSupabaseUser, useUserStore } from "@/store/user-store";
 
 export const Route = createFileRoute("/invite")({
-  // This is a public route - no authentication required
+  // This is a public route - accessible by all roles when they have valid invite tokens
+  // If no invite tokens are present, authenticated users are redirected to their dashboard
   component: () => (
     <div className="min-h-screen bg-background">
       <InviteSetup />
