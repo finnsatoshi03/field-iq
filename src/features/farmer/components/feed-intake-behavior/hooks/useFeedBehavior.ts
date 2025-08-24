@@ -9,20 +9,6 @@ import {
   FEED_BEHAVIOR,
 } from "../constants";
 
-// Transform API behavior status to component format
-const transformApiBehaviorStatus = (apiStatus: string): FeedBehavior => {
-  switch (apiStatus) {
-    case "eating_well":
-      return FEED_BEHAVIOR.EATING_WELL;
-    case "picky":
-      return FEED_BEHAVIOR.PICKING_ONLY;
-    case "not_eating":
-      return FEED_BEHAVIOR.NOT_EATING;
-    default:
-      return FEED_BEHAVIOR.EATING_WELL;
-  }
-};
-
 // Transform API data to component format
 const transformApiDataToRecords = (
   apiBehaviorData?: ApiFeedIntakeBehavior,
@@ -36,7 +22,7 @@ const transformApiDataToRecords = (
 
   // Since recent_records structure is unknown, we'll create mock records based on available data
   return apiBehaviorData.performance_analytics.recent_records.map(
-    (record, index) => ({
+    (_record, index) => ({
       id: index.toString(),
       date: new Date().toISOString().split("T")[0], // Use current date as fallback
       behavior: FEED_BEHAVIOR.EATING_WELL, // Default to eating well
