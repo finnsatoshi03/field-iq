@@ -12,7 +12,12 @@ export const useAuthRedirect = (currentPath?: string) => {
   if (BYPASS_AUTH) return;
 
   // Skip redirect if user is on invite route (they need to complete the invite flow)
-  if (currentPath === "/invite" || currentPath?.startsWith("/invite#")) {
+  // Also check for invite URLs with hash parameters
+  if (
+    currentPath === "/invite" ||
+    currentPath?.startsWith("/invite#") ||
+    (typeof window !== "undefined" && window.location.pathname === "/invite")
+  ) {
     return;
   }
 
@@ -32,10 +37,17 @@ export const useAuthRedirect = (currentPath?: string) => {
  */
 export const checkAuthRedirect = (currentPath?: string) => {
   // Skip auth redirect if auth is bypassed
-  if (BYPASS_AUTH) return;
+  if (BYPASS_AUTH) {
+    return;
+  }
 
   // Skip redirect if user is on invite route (they need to complete the invite flow)
-  if (currentPath === "/invite" || currentPath?.startsWith("/invite#")) {
+  // Also check for invite URLs with hash parameters
+  if (
+    currentPath === "/invite" ||
+    currentPath?.startsWith("/invite#") ||
+    (typeof window !== "undefined" && window.location.pathname === "/invite")
+  ) {
     return;
   }
 

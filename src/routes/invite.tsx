@@ -6,8 +6,8 @@ import { getDefaultDashboardRoute } from "@/lib/rbac";
 import { authService } from "@/services/auth-service";
 import { transformSupabaseUser, useUserStore } from "@/store/user-store";
 
-export const Route = createFileRoute("/_authenticated/invite")({
-  // Override the parent layout to use full screen without header
+export const Route = createFileRoute("/invite")({
+  // This is a public route - no authentication required
   component: () => (
     <div className="min-h-screen bg-background">
       <InviteSetup />
@@ -60,7 +60,6 @@ function InviteSetup() {
 
           if (error) {
             console.error("Error setting session:", error);
-            // Redirect to sign-in on error
             window.location.href = "/auth/sign-in";
           } else {
             // Get user info to show email in dialog
@@ -79,7 +78,6 @@ function InviteSetup() {
           }
         } catch (error) {
           console.error("Error handling invite flow:", error);
-          // Redirect to sign-in on error
           window.location.href = "/auth/sign-in";
         }
       };
@@ -117,7 +115,6 @@ function InviteSetup() {
       }
     } catch (error) {
       console.error("Error checking session after password setup:", error);
-      // Fallback to sign-in on error
       window.location.href = "/auth/sign-in";
     }
   };

@@ -1,4 +1,4 @@
-import { createFileRoute, Outlet, redirect, useLocation } from "@tanstack/react-router";
+import { createFileRoute, Outlet, redirect } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 
 import { BYPASS_AUTH } from "@/lib/config";
@@ -11,13 +11,11 @@ import { transformSupabaseUser, useUserStore } from "@/store/user-store";
 
 export const Route = createFileRoute("/_authenticated")({
   beforeLoad: async ({ location }) => {
-    if (BYPASS_AUTH) return;
-
-    // Special handling for invite route - allow access even without session
-    // since the invite flow will handle setting up the session
-    if (location.pathname === "/invite") {
+    if (BYPASS_AUTH) {
       return;
     }
+
+    // Note: Invite route is now a public route outside this authenticated layout
 
     try {
       // Check auth state directly from Supabase instead of Zustand store
@@ -32,19 +30,17 @@ export const Route = createFileRoute("/_authenticated")({
         });
       }
 
-      // Skip permission check for invite route - users need to complete invite flow
+      // Check permissions for all authenticated routes
       const currentPath = location.pathname;
-      if (currentPath !== "/invite") {
-        const userRole = user.user_metadata?.role || "sales_rep";
-        const hasPermission = hasRoutePermission(userRole, currentPath);
+      const userRole = user.user_metadata?.role || "sales_rep";
+      const hasPermission = hasRoutePermission(userRole, currentPath);
 
-        if (!hasPermission) {
-          // Redirect to their appropriate dashboard
-          const defaultRoute = getDefaultDashboardRoute(userRole);
-          throw redirect({
-            to: defaultRoute,
-          });
-        }
+      if (!hasPermission) {
+        // Redirect to their appropriate dashboard
+        const defaultRoute = getDefaultDashboardRoute(userRole);
+        throw redirect({
+          to: defaultRoute,
+        });
       }
     } catch (error) {
       // If any error occurs (including auth errors), redirect to sign-in
@@ -65,17 +61,14 @@ export const Route = createFileRoute("/_authenticated")({
 function AuthenticatedLayout() {
   const { user, isAuthenticated, setUser, setLoading } = useUserStore();
   const [showCompanySetup, setShowCompanySetup] = useState(false);
-  const location = useLocation();
 
   // Initialize user/profile in store for sessions coming from passwordless or refresh
-  // Skip this on invite route to prevent premature authentication
   useEffect(() => {
-    // Don't initialize session on invite route - let the invite component handle it
-    if (location.pathname === "/invite") return;
-    
     let isMounted = true;
     const initializeUserFromSession = async () => {
-      if (isAuthenticated) return;
+      if (isAuthenticated) {
+        return;
+      }
       try {
         setLoading(true);
         const supaUser = await authService.getCurrentUser();
@@ -96,7 +89,7 @@ function AuthenticatedLayout() {
     return () => {
       isMounted = false;
     };
-  }, [isAuthenticated, setLoading, setUser, location.pathname]);
+  }, [isAuthenticated, setLoading, setUser]);
 
   useEffect(() => {
     // Show company setup modal if user is admin and has no company_id
