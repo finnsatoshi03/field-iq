@@ -7,7 +7,10 @@ interface SmileyMeterProps {
 }
 
 export const SmileyMeter = ({ summary }: SmileyMeterProps) => {
-  const healthStatus = getHealthStatus(summary.healthScore, summary.totalIssues);
+  const healthStatus = getHealthStatus(
+    summary.healthScore,
+    summary.totalIssues,
+  );
   const statusColor = getHealthStatusColor(healthStatus);
   const smileyIcon = getSmileyIcon(summary.healthScore);
 

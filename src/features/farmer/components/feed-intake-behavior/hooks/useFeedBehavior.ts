@@ -69,10 +69,13 @@ const createSummaryFromApiData = (
   }
 
   // Determine status based on performance index and total records
-  const getStatus = (performanceIndex: number, totalRecords: number): BehaviorStatus => {
+  const getStatus = (
+    performanceIndex: number,
+    totalRecords: number,
+  ): BehaviorStatus => {
     // If no records, show neutral status
     if (totalRecords === 0) return BEHAVIOR_STATUS.WARNING;
-    
+
     if (performanceIndex >= 90) return BEHAVIOR_STATUS.EXCELLENT;
     if (performanceIndex >= 75) return BEHAVIOR_STATUS.GOOD;
     if (performanceIndex >= 50) return BEHAVIOR_STATUS.WARNING;
@@ -107,7 +110,8 @@ const createSummaryFromApiData = (
     totalRecords,
     eatingWellCount: Math.max(
       0,
-      totalRecords - (apiBehaviorData.performance_analytics?.mortality_count || 0),
+      totalRecords -
+        (apiBehaviorData.performance_analytics?.mortality_count || 0),
     ),
     pickingOnlyCount: 0, // Not available in new API
     notEatingCount: apiBehaviorData.performance_analytics?.mortality_count || 0,

@@ -54,7 +54,9 @@ export const BehaviorList = ({ records, maxItems = 5 }: BehaviorListProps) => {
     return (
       <div className="flex flex-col items-center justify-center py-8 text-center">
         <Utensils className="h-12 w-12 text-gray-300 mb-3" />
-        <h3 className="font-medium text-gray-900 mb-1">No recent feed intake records</h3>
+        <h3 className="font-medium text-gray-900 mb-1">
+          No recent feed intake records
+        </h3>
         <p className="text-sm text-gray-500">
           Feed intake behavior data will appear here once available.
         </p>
