@@ -11,6 +11,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import { Button } from "@/components/ui/button";
 import {
+  useActiveFeedProduct,
   useActiveFeedProgram,
   useCreateFeedProgram,
 } from "@/hooks/use-farmer-v2";
@@ -33,6 +34,8 @@ export const FeedProgramManager: React.FC<FeedProgramOnboardingProps> = ({
   // Queries
   const { data: activeFeedProgram, isLoading: loadingFeedProgram } =
     useActiveFeedProgram(farmerUserProfileId);
+  const { data: activeFeedProduct, isLoading: loadingFeedProduct } =
+    useActiveFeedProduct(farmerUserProfileId);
 
   // Mutations
   const createFeedProgramMutation = useCreateFeedProgram({
@@ -49,9 +52,16 @@ export const FeedProgramManager: React.FC<FeedProgramOnboardingProps> = ({
     },
   });
 
-  // Check if user needs onboarding (no active feed program)
+  // Check if user needs onboarding
+  // User needs onboarding if:
+  // 1. Not currently loading feed program or feed product data
+  // 2. No active feed program exists (from farmer_v2 API)
+  // 3. No active feed product exists (from farmer_v2 API)
   const needsOnboarding =
-    !loadingFeedProgram && !activeFeedProgram?.feed_program;
+    !loadingFeedProgram &&
+    !loadingFeedProduct &&
+    !activeFeedProgram?.feed_program &&
+    !activeFeedProduct?.data;
 
   // Auto-open dialog when user needs onboarding
   useEffect(() => {

@@ -56,8 +56,20 @@ export interface FeedProduct {
   updated_at: string;
 }
 
+export interface ActiveFeedProductData {
+  feed_program_id: number;
+  feed_name: string;
+  status: "active" | "completed" | "incomplete";
+  feed_stage: string;
+  age_range_start: number;
+  age_range_end: number;
+  feed_goal: string;
+  days_on_feed: number;
+}
+
 export interface ActiveFeedProductResponse {
-  feed_product: FeedProduct | null;
+  message: string;
+  data: ActiveFeedProductData | null;
 }
 
 export interface CompleteFeedProgramResponse {
