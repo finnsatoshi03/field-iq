@@ -86,30 +86,8 @@ function InviteSetup() {
 
       handleInviteFlow();
     } else {
-      // Check if user is already authenticated (they might have clicked invite link while logged in)
-      const checkExistingSession = async () => {
-        try {
-          const session = await authService.getCurrentSession();
-          const user = await authService.getCurrentUser();
-
-          if (session && user) {
-            // User is already authenticated, redirect to their dashboard
-            const dashboardRoute = getDefaultDashboardRoute(
-              user.user_metadata?.role || "farmer",
-            );
-            window.location.href = dashboardRoute;
-          } else {
-            // No valid session or invite parameters, redirect to sign-in
-            window.location.href = "/auth/sign-in";
-          }
-        } catch (error) {
-          console.error("Error checking existing session:", error);
-          // Fallback to sign-in on error
-          window.location.href = "/auth/sign-in";
-        }
-      };
-
-      checkExistingSession();
+      // No valid invite parameters, redirect to sign-in
+      window.location.href = "/auth/sign-in";
     }
   }, [setUser]);
 

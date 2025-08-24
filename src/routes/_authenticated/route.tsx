@@ -32,17 +32,19 @@ export const Route = createFileRoute("/_authenticated")({
         });
       }
 
-      // Check if user has permission to access the current route
+      // Skip permission check for invite route - users need to complete invite flow
       const currentPath = location.pathname;
-      const userRole = user.user_metadata?.role || "sales_rep";
-      const hasPermission = hasRoutePermission(userRole, currentPath);
+      if (currentPath !== "/invite") {
+        const userRole = user.user_metadata?.role || "sales_rep";
+        const hasPermission = hasRoutePermission(userRole, currentPath);
 
-      if (!hasPermission) {
-        // Redirect to their appropriate dashboard
-        const defaultRoute = getDefaultDashboardRoute(userRole);
-        throw redirect({
-          to: defaultRoute,
-        });
+        if (!hasPermission) {
+          // Redirect to their appropriate dashboard
+          const defaultRoute = getDefaultDashboardRoute(userRole);
+          throw redirect({
+            to: defaultRoute,
+          });
+        }
       }
     } catch (error) {
       // If any error occurs (including auth errors), redirect to sign-in
