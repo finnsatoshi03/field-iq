@@ -107,3 +107,66 @@ export interface GrowthPerformanceResponse {
   message: string;
   data: GrowthPerformanceData;
 }
+
+// Feed Calculation Log Types
+export interface FeedCalculationLogData {
+  id: number;
+  user_profile_id: number;
+  number_of_animals: number;
+  feed_frequency: number;
+  bag_size_kg: number;
+  current_stock_bags: number;
+  bag_cost_php: number;
+  animal_type: string;
+  feed_stage: string;
+  daily_consumption_kg: number;
+  bags_needed_per_week: number;
+  cost_per_week_php: number;
+  reorder_point_days: number;
+  alert_level: string;
+  weekly_consumption_kg: number;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface CreateFeedCalculationLogRequest {
+  user_profile_id: number;
+  number_of_animals: number;
+  feed_frequency: number;
+  bag_size_kg: number;
+  current_stock_bags: number;
+  bag_cost_php: number;
+  animal_type: string;
+  feed_stage: string;
+  daily_consumption_kg: number;
+  bags_needed_per_week: number;
+  cost_per_week_php: number;
+  reorder_point_days: number;
+  alert_level: string;
+  weekly_consumption_kg: number;
+}
+
+export interface UpdateFeedCalculationLogRequest {
+  id: number;
+  user_profile_id: number;
+  number_of_animals: number;
+  feed_frequency: number;
+  bag_size_kg: number;
+  current_stock_bags: number;
+  bag_cost_php: number;
+  animal_type: string;
+  feed_stage: string;
+  daily_consumption_kg: number;
+  bags_needed_per_week: number;
+  cost_per_week_php: number;
+  reorder_point_days: number;
+  alert_level: string;
+  weekly_consumption_kg: number;
+  created_at: string;
+  update_at: string; // Note: API has typo "update_at" instead of "updated_at"
+}
+
+export interface FeedCalculationLogResponse {
+  message: string;
+  data: FeedCalculationLogData;
+}

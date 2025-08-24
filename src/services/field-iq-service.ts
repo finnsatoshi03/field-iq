@@ -24,11 +24,14 @@ import type {
   ChatAiRequest,
   ChatAiResponse,
   CompleteFeedProgramResponse,
+  CreateFeedCalculationLogRequest,
   CreateFeedProgramRequest,
   CreateFeedProgramResponse,
   FarmerDashboardData,
+  FeedCalculationLogResponse,
   GrowthPerformanceResponse,
   IncompleteFeedProgramResponse,
+  UpdateFeedCalculationLogRequest,
 } from "@/features/farmer/types";
 import type {
   FarmsResponse,
@@ -283,6 +286,83 @@ export const fieldIQService = {
 
     const response = await apiClient.get<GrowthPerformanceResponse>(
       `${FIELD_IQ_API_CONFIG.endpoints.farmer_v2.growth_performance}/${farmerUserProfileId}`,
+    );
+
+    if (response.error) {
+      throw new Error(response.error);
+    }
+
+    if (!response.data) {
+      throw new Error("No data received from server");
+    }
+
+    return response.data;
+  },
+
+  // Get Feed Calculation Log
+  async getFeedCalculationLog(
+    farmerUserProfileId: number,
+  ): Promise<FeedCalculationLogResponse | null> {
+    if (farmerUserProfileId <= 0) {
+      throw new Error("Invalid farmer user profile ID.");
+    }
+
+    const response = await apiClient.get<FeedCalculationLogResponse>(
+      `${FIELD_IQ_API_CONFIG.endpoints.farmer_v2.feed_calculation_log_by_profile}/${farmerUserProfileId}`,
+    );
+
+    // Handle 404 case - no calculation log exists yet
+    if (response.status === 404) {
+      return null;
+    }
+
+    if (response.error) {
+      throw new Error(response.error);
+    }
+
+    if (!response.data) {
+      throw new Error("No data received from server");
+    }
+
+    return response.data;
+  },
+
+  // Create Feed Calculation Log
+  async createFeedCalculationLog(
+    logData: CreateFeedCalculationLogRequest,
+  ): Promise<FeedCalculationLogResponse> {
+    if (logData.user_profile_id <= 0) {
+      throw new Error("Invalid user profile ID.");
+    }
+
+    const response = await apiClient.post<FeedCalculationLogResponse>(
+      FIELD_IQ_API_CONFIG.endpoints.farmer_v2.feed_calculation_log,
+      logData,
+    );
+
+    if (response.error) {
+      throw new Error(response.error);
+    }
+
+    if (!response.data) {
+      throw new Error("No data received from server");
+    }
+
+    return response.data;
+  },
+
+  // Update Feed Calculation Log
+  async updateFeedCalculationLog(
+    farmerUserProfileId: number,
+    logData: UpdateFeedCalculationLogRequest,
+  ): Promise<FeedCalculationLogResponse> {
+    if (farmerUserProfileId <= 0) {
+      throw new Error("Invalid farmer user profile ID.");
+    }
+
+    const response = await apiClient.put<FeedCalculationLogResponse>(
+      `${FIELD_IQ_API_CONFIG.endpoints.farmer_v2.feed_calculation_log_by_profile}/${farmerUserProfileId}`,
+      logData,
     );
 
     if (response.error) {

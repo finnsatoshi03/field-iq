@@ -8,26 +8,168 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import ExpandableCard from "@/components/ui/expandable-card";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { Progress } from "@/components/ui/progress";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Separator } from "@/components/ui/separator";
-import type { FarmerDashboardViewModel } from "@/services/field-iq-service";
-import { AlertTriangle, Package, Wheat } from "lucide-react";
-import { useState } from "react";
+import {
+  useActiveFeedProduct,
+  useCreateFeedCalculationLog,
+  useFeedCalculationLog,
+} from "@/hooks/use-farmer-v2";
+import { useUserStore } from "@/store/user-store";
+import { AlertTriangle, Package, Plus, Wheat } from "lucide-react";
+import { useEffect, useState } from "react";
+import { toast } from "sonner";
 import { ALERT_COLORS, ALERT_MESSAGES } from "./constants";
 import { formatCurrency, formatDays, formatWeight } from "./utils";
 
 interface FeedUsageCalculatorProps {
-  dashboardData?: FarmerDashboardViewModel;
+  farmerUserProfileId: number;
 }
 
 export const FeedUsageCalculator: React.FC<FeedUsageCalculatorProps> = ({
-  dashboardData,
+  farmerUserProfileId,
 }) => {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [isExpanded, setIsExpanded] = useState(false);
+  const [isCreateFormOpen, setIsCreateFormOpen] = useState(false);
 
-  // Extract feed calculation data from API response
-  const feedCalcData = dashboardData?.feed_calculation_log;
+  // Form state for creating new calculation log
+  const [formData, setFormData] = useState({
+    number_of_animals: "",
+    feed_frequency: "",
+    bag_size_kg: "",
+    current_stock_bags: "",
+    bag_cost_php: "",
+    animal_type: "",
+    feed_stage: "",
+  });
+
+  // Fetch feed calculation data from V2 API
+  const { data: feedCalcResponse, isLoading } =
+    useFeedCalculationLog(farmerUserProfileId);
+  const feedCalcData = feedCalcResponse?.data;
+
+  // Fetch current feed product data for auto-filling
+  const { data: activeFeedProduct } = useActiveFeedProduct(farmerUserProfileId);
+
+  // Get user data for livestock type
+  const { user } = useUserStore();
+
+  // Auto-fill form when dialog opens
+  useEffect(() => {
+    if (isCreateFormOpen) {
+      const feedStage = activeFeedProduct?.data?.feed_stage || "";
+      const livestockType = user?.livestock_type || "";
+
+      // Map livestock_type to animal_type format (accepted: layers, broilers, native)
+      let animalType = "";
+      if (livestockType) {
+        const lowerType = livestockType.toLowerCase();
+        if (lowerType.includes("broiler")) {
+          animalType = "broilers";
+        } else if (lowerType.includes("layer")) {
+          animalType = "layers";
+        } else if (lowerType.includes("native")) {
+          animalType = "native";
+        } else if (lowerType.includes("chicken")) {
+          // Default to broilers for generic chicken
+          animalType = "broilers";
+        } else {
+          // Check if it's already one of the accepted values
+          if (["layers", "broilers", "native"].includes(lowerType)) {
+            animalType = lowerType;
+          } else {
+            // Default fallback to broilers if no match
+            animalType = "broilers";
+          }
+        }
+      }
+
+      setFormData((prev) => ({
+        ...prev,
+        animal_type: animalType,
+        feed_stage: feedStage,
+      }));
+    }
+  }, [
+    isCreateFormOpen,
+    activeFeedProduct?.data?.feed_stage,
+    user?.livestock_type,
+  ]);
+
+  // Create mutation
+  const createMutation = useCreateFeedCalculationLog({
+    onSuccess: () => {
+      setIsCreateFormOpen(false);
+      setFormData({
+        number_of_animals: "",
+        feed_frequency: "",
+        bag_size_kg: "",
+        current_stock_bags: "",
+        bag_cost_php: "",
+        animal_type: "",
+        feed_stage: "",
+      });
+      toast.success("Feed calculation log created successfully!");
+    },
+    onError: (error) => {
+      toast.error(`Failed to create calculation log: ${error.message}`);
+    },
+  });
+
+  // Handle form submission
+  const handleCreateSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+
+    // Calculate derived values
+    const numberOfAnimals = Number(formData.number_of_animals);
+    const feedFrequency = Number(formData.feed_frequency);
+    const bagSizeKg = Number(formData.bag_size_kg);
+    const currentStockBags = Number(formData.current_stock_bags);
+    const bagCostPhp = Number(formData.bag_cost_php);
+
+    // Simple calculation logic (you can enhance this)
+    const dailyConsumptionKg = numberOfAnimals * 0.1 * feedFrequency; // Rough estimate
+    const weeklyConsumptionKg = dailyConsumptionKg * 7;
+    const bagsNeededPerWeek = weeklyConsumptionKg / bagSizeKg;
+    const costPerWeekPhp = bagsNeededPerWeek * bagCostPhp;
+    const reorderPointDays =
+      (currentStockBags * bagSizeKg) / dailyConsumptionKg;
+
+    // Determine alert level
+    let alertLevel = "good";
+    if (reorderPointDays < 3) alertLevel = "high";
+    else if (reorderPointDays < 7) alertLevel = "medium";
+    else if (reorderPointDays < 14) alertLevel = "low";
+
+    const createData = {
+      user_profile_id: farmerUserProfileId,
+      number_of_animals: numberOfAnimals,
+      feed_frequency: feedFrequency,
+      bag_size_kg: bagSizeKg,
+      current_stock_bags: currentStockBags,
+      bag_cost_php: bagCostPhp,
+      animal_type: formData.animal_type,
+      feed_stage: formData.feed_stage,
+      daily_consumption_kg: dailyConsumptionKg,
+      bags_needed_per_week: bagsNeededPerWeek,
+      cost_per_week_php: costPerWeekPhp,
+      reorder_point_days: reorderPointDays,
+      alert_level: alertLevel,
+      weekly_consumption_kg: weeklyConsumptionKg,
+    };
+
+    createMutation.mutate(createData);
+  };
 
   const formatInteger = (value?: number | string | null): string => {
     const numericValue =
@@ -52,13 +194,16 @@ export const FeedUsageCalculator: React.FC<FeedUsageCalculatorProps> = ({
   // Safely compute bags needed per week with fallbacks
   const getBagsNeededPerWeek = (): number => {
     if (!feedCalcData) return 0;
-    const raw = (feedCalcData as any).bags_needed_per_week;
-    const parsed = typeof raw === "number" ? raw : Number(raw);
-    if (Number.isFinite(parsed)) return parsed;
-    const weekly = Number((feedCalcData as any).weekly_consumption_kg);
-    const bagSize = Number((feedCalcData as any).bag_size_kg);
-    if (Number.isFinite(weekly) && Number.isFinite(bagSize) && bagSize > 0) {
-      return weekly / bagSize;
+    if (Number.isFinite(feedCalcData.bags_needed_per_week)) {
+      return feedCalcData.bags_needed_per_week;
+    }
+    // Fallback calculation
+    if (
+      Number.isFinite(feedCalcData.weekly_consumption_kg) &&
+      Number.isFinite(feedCalcData.bag_size_kg) &&
+      feedCalcData.bag_size_kg > 0
+    ) {
+      return feedCalcData.weekly_consumption_kg / feedCalcData.bag_size_kg;
     }
     return 0;
   };
@@ -86,14 +231,14 @@ export const FeedUsageCalculator: React.FC<FeedUsageCalculatorProps> = ({
   const getStockProgress = () => {
     if (!feedCalcData) return 0;
     const maxDays = 14; // 2 weeks
-    const days = Number((feedCalcData as any)?.reorder_point_days);
+    const days = feedCalcData.reorder_point_days;
     if (!Number.isFinite(days) || days <= 0) return 0;
     const percent = (days / maxDays) * 100;
     return Math.max(0, Math.min(percent, 100));
   };
 
-  // Show loading state if no data
-  if (!feedCalcData) {
+  // Show loading state
+  if (isLoading) {
     return (
       <ExpandableCard
         title="Feed Usage Calculator"
@@ -108,11 +253,256 @@ export const FeedUsageCalculator: React.FC<FeedUsageCalculatorProps> = ({
         <div className="space-y-4">
           <div className="rounded-lg p-4 border">
             <div className="text-center text-muted-foreground">
-              <p className="text-sm">No calculation data available</p>
+              <p className="text-sm">Loading calculation data...</p>
             </div>
           </div>
         </div>
       </ExpandableCard>
+    );
+  }
+
+  // Show empty state if no calculation log exists
+  if (!feedCalcResponse || !feedCalcData) {
+    return (
+      <>
+        <ExpandableCard
+          title="Feed Usage Calculator"
+          summary={
+            <div className="flex items-center gap-2 text-muted-foreground">
+              <Wheat className="h-4 w-4" />
+              <span className="text-sm">No calculation data available</span>
+            </div>
+          }
+          className="h-fit"
+        >
+          <div className="space-y-4">
+            <div className="rounded-lg p-4 border">
+              <div className="text-center text-muted-foreground space-y-3">
+                <Wheat className="h-8 w-8 mx-auto opacity-50" />
+                <div>
+                  <p className="text-sm font-medium">
+                    No feed calculation log found
+                  </p>
+                  <p className="text-xs mt-1">
+                    Create a calculation log to track feed usage and costs
+                  </p>
+                </div>
+                <Button
+                  onClick={() => setIsCreateFormOpen(true)}
+                  className="mt-3"
+                  size="sm"
+                >
+                  <Plus className="h-4 w-4 mr-2" />
+                  Create Calculation Log
+                </Button>
+              </div>
+            </div>
+          </div>
+        </ExpandableCard>
+
+        {/* Create Form Dialog */}
+        <Dialog open={isCreateFormOpen} onOpenChange={setIsCreateFormOpen}>
+          <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+            <DialogHeader>
+              <DialogTitle className="font-display">
+                Create Feed Calculation Log
+              </DialogTitle>
+              <DialogDescription>
+                Enter your farm details to calculate feed usage and costs
+              </DialogDescription>
+            </DialogHeader>
+
+            <form onSubmit={handleCreateSubmit} className="space-y-6">
+              {/* Farm Details */}
+              <div>
+                <h4 className="font-display font-medium mb-3">Farm Details</h4>
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <Label htmlFor="number_of_animals">Number of Animals</Label>
+                    <Input
+                      id="number_of_animals"
+                      type="number"
+                      value={formData.number_of_animals}
+                      onChange={(e) =>
+                        setFormData((prev) => ({
+                          ...prev,
+                          number_of_animals: e.target.value,
+                        }))
+                      }
+                      required
+                      min="1"
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor="feed_frequency">
+                      Feed Frequency (per day)
+                    </Label>
+                    <Input
+                      id="feed_frequency"
+                      type="number"
+                      value={formData.feed_frequency}
+                      onChange={(e) =>
+                        setFormData((prev) => ({
+                          ...prev,
+                          feed_frequency: e.target.value,
+                        }))
+                      }
+                      required
+                      min="1"
+                      max="10"
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor="animal_type">
+                      Animal Type
+                      {user?.livestock_type && (
+                        <span className="text-xs text-muted-foreground ml-1">
+                          (from profile)
+                        </span>
+                      )}
+                    </Label>
+                    <Select
+                      value={formData.animal_type}
+                      onValueChange={(value) =>
+                        setFormData((prev) => ({ ...prev, animal_type: value }))
+                      }
+                      disabled={!!user?.livestock_type}
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select animal type" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="broilers">Broilers</SelectItem>
+                        <SelectItem value="layers">Layers</SelectItem>
+                        <SelectItem value="native">Native</SelectItem>
+                      </SelectContent>
+                    </Select>
+                    {user?.livestock_type && (
+                      <p className="text-xs text-muted-foreground mt-1">
+                        Auto-filled from your livestock type:{" "}
+                        {user.livestock_type}
+                      </p>
+                    )}
+                  </div>
+                  <div>
+                    <Label htmlFor="feed_stage">
+                      Feed Stage
+                      {activeFeedProduct?.data?.feed_stage && (
+                        <span className="text-xs text-muted-foreground ml-1">
+                          (from current feed)
+                        </span>
+                      )}
+                    </Label>
+                    <Select
+                      value={formData.feed_stage}
+                      onValueChange={(value) =>
+                        setFormData((prev) => ({ ...prev, feed_stage: value }))
+                      }
+                      disabled={!!activeFeedProduct?.data?.feed_stage}
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select feed stage" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="starter">Starter</SelectItem>
+                        <SelectItem value="grower">Grower</SelectItem>
+                        <SelectItem value="finisher">Finisher</SelectItem>
+                        <SelectItem value="layer">Layer</SelectItem>
+                        <SelectItem value="booster">Booster</SelectItem>
+                      </SelectContent>
+                    </Select>
+                    {activeFeedProduct?.data?.feed_stage && (
+                      <p className="text-xs text-muted-foreground mt-1">
+                        Auto-filled from current feed:{" "}
+                        {activeFeedProduct.data.feed_stage}
+                      </p>
+                    )}
+                  </div>
+                </div>
+              </div>
+
+              <Separator />
+
+              {/* Feed & Cost Details */}
+              <div>
+                <h4 className="font-display font-medium mb-3">
+                  Feed & Cost Details
+                </h4>
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <Label htmlFor="bag_size_kg">Bag Size (kg)</Label>
+                    <Input
+                      id="bag_size_kg"
+                      type="number"
+                      value={formData.bag_size_kg}
+                      onChange={(e) =>
+                        setFormData((prev) => ({
+                          ...prev,
+                          bag_size_kg: e.target.value,
+                        }))
+                      }
+                      required
+                      min="1"
+                      step="0.1"
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor="bag_cost_php">Cost per Bag (₱)</Label>
+                    <Input
+                      id="bag_cost_php"
+                      type="number"
+                      value={formData.bag_cost_php}
+                      onChange={(e) =>
+                        setFormData((prev) => ({
+                          ...prev,
+                          bag_cost_php: e.target.value,
+                        }))
+                      }
+                      required
+                      min="0"
+                      step="0.01"
+                    />
+                  </div>
+                  <div className="col-span-2">
+                    <Label htmlFor="current_stock_bags">
+                      Current Stock (bags)
+                    </Label>
+                    <Input
+                      id="current_stock_bags"
+                      type="number"
+                      value={formData.current_stock_bags}
+                      onChange={(e) =>
+                        setFormData((prev) => ({
+                          ...prev,
+                          current_stock_bags: e.target.value,
+                        }))
+                      }
+                      required
+                      min="0"
+                    />
+                  </div>
+                </div>
+              </div>
+
+              <div className="flex justify-end gap-3">
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => setIsCreateFormOpen(false)}
+                  disabled={createMutation.isPending}
+                >
+                  Cancel
+                </Button>
+                <Button type="submit" disabled={createMutation.isPending}>
+                  {createMutation.isPending
+                    ? "Creating..."
+                    : "Create Calculation Log"}
+                </Button>
+              </div>
+            </form>
+          </DialogContent>
+        </Dialog>
+      </>
     );
   }
 
@@ -129,8 +519,7 @@ export const FeedUsageCalculator: React.FC<FeedUsageCalculatorProps> = ({
         <div className="flex items-center gap-2">
           <Package className="h-4 w-4 text-muted-foreground" />
           <span className="text-xs text-muted-foreground">
-            {formatInteger((feedCalcData as any)?.current_stock_bags)} bags in
-            stock
+            {formatInteger(feedCalcData?.current_stock_bags)} bags in stock
           </span>
         </div>
       </div>
@@ -200,7 +589,7 @@ export const FeedUsageCalculator: React.FC<FeedUsageCalculatorProps> = ({
             <div className="rounded-md p-2 bg-gray-50 border border-gray-200">
               <p className="font-medium text-xs text-gray-600">Animals</p>
               <p className="text-lg font-medium font-display text-gray-700">
-                {formatInteger((feedCalcData as any)?.number_of_animals)}
+                {formatInteger(feedCalcData?.number_of_animals)}
               </p>
             </div>
           </div>
@@ -228,14 +617,12 @@ export const FeedUsageCalculator: React.FC<FeedUsageCalculatorProps> = ({
               <div className="space-y-1">
                 <div className="flex items-center justify-between text-sm">
                   <span className="text-muted-foreground text-xs font-medium">
-                    {formatDays(
-                      Number((feedCalcData as any)?.reorder_point_days ?? 0),
-                    )}{" "}
+                    {formatDays(feedCalcData?.reorder_point_days ?? 0)}{" "}
                     remaining
                   </span>
                   <span className="font-display font-medium">
-                    {formatInteger((feedCalcData as any)?.current_stock_bags)}{" "}
-                    bags in stock
+                    {formatInteger(feedCalcData?.current_stock_bags)} bags in
+                    stock
                   </span>
                 </div>
                 <Progress value={getStockProgress()} />
@@ -296,7 +683,7 @@ export const FeedUsageCalculator: React.FC<FeedUsageCalculatorProps> = ({
                     Number of Animals
                   </p>
                   <p className="text-lg font-display font-medium">
-                    {formatInteger((feedCalcData as any)?.number_of_animals)}
+                    {formatInteger(feedCalcData?.number_of_animals)}
                   </p>
                 </div>
                 <div>
@@ -304,22 +691,19 @@ export const FeedUsageCalculator: React.FC<FeedUsageCalculatorProps> = ({
                     Feed Frequency
                   </p>
                   <p className="text-lg font-display font-medium">
-                    {formatInteger((feedCalcData as any)?.feed_frequency)}x per
-                    day
+                    {formatInteger(feedCalcData?.feed_frequency)}x per day
                   </p>
                 </div>
                 <div>
                   <p className="text-sm text-muted-foreground">Animal Type</p>
                   <p className="text-lg font-display font-medium capitalize">
-                    {normalizeAnimalType(
-                      String((feedCalcData as any)?.animal_type || "layer"),
-                    )}
+                    {normalizeAnimalType(feedCalcData?.animal_type || "layer")}
                   </p>
                 </div>
                 <div>
                   <p className="text-sm text-muted-foreground">Feed Stage</p>
                   <p className="text-lg font-display font-medium capitalize">
-                    {String((feedCalcData as any)?.feed_stage || "—")}
+                    {feedCalcData?.feed_stage || "—"}
                   </p>
                 </div>
               </div>
@@ -443,8 +827,7 @@ export const FeedUsageCalculator: React.FC<FeedUsageCalculatorProps> = ({
 
             {/* Last Updated */}
             <div className="text-center text-xs text-muted-foreground border-t pt-4">
-              Last updated:{" "}
-              {safeFormatDateTime((feedCalcData as any)?.updated_at)}
+              Last updated: {safeFormatDateTime(feedCalcData?.updated_at)}
             </div>
           </div>
         </DialogContent>

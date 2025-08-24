@@ -4,10 +4,13 @@ import type {
   ChatAiRequest,
   ChatAiResponse,
   CompleteFeedProgramResponse,
+  CreateFeedCalculationLogRequest,
   CreateFeedProgramRequest,
   CreateFeedProgramResponse,
+  FeedCalculationLogResponse,
   GrowthPerformanceResponse,
   IncompleteFeedProgramResponse,
+  UpdateFeedCalculationLogRequest,
 } from "@/features/farmer/types";
 import { fieldIQService } from "@/services/field-iq-service";
 import type {
@@ -31,6 +34,8 @@ export const farmerV2Keys = {
   chatAi: () => [...farmerV2Keys.all, "chat-ai"] as const,
   growthPerformance: (farmerUserProfileId: number) =>
     [...farmerV2Keys.all, "growth-performance", farmerUserProfileId] as const,
+  feedCalculationLog: (farmerUserProfileId: number) =>
+    [...farmerV2Keys.all, "feed-calculation-log", farmerUserProfileId] as const,
 };
 
 // Chat AI Hook
@@ -210,6 +215,79 @@ export const useGrowthPerformance = (
     staleTime: 5 * 60 * 1000, // 5 minutes
     gcTime: 10 * 60 * 1000, // 10 minutes
     retry: false,
+    ...options,
+  });
+};
+
+// Get Feed Calculation Log Hook
+export const useFeedCalculationLog = (
+  farmerUserProfileId: number,
+  options?: Omit<
+    UseQueryOptions<FeedCalculationLogResponse | null, Error>,
+    "queryKey" | "queryFn"
+  >,
+) => {
+  return useQuery({
+    queryKey: farmerV2Keys.feedCalculationLog(farmerUserProfileId),
+    queryFn: () => fieldIQService.getFeedCalculationLog(farmerUserProfileId),
+    enabled: farmerUserProfileId > 0,
+    staleTime: 5 * 60 * 1000, // 5 minutes
+    gcTime: 10 * 60 * 1000, // 10 minutes
+    retry: false,
+    ...options,
+  });
+};
+
+// Create Feed Calculation Log Hook
+export const useCreateFeedCalculationLog = (
+  options?: Omit<
+    UseMutationOptions<
+      FeedCalculationLogResponse,
+      Error,
+      CreateFeedCalculationLogRequest
+    >,
+    "mutationFn"
+  >,
+) => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (logData: CreateFeedCalculationLogRequest) =>
+      fieldIQService.createFeedCalculationLog(logData),
+    onSuccess: (_, variables) => {
+      // Invalidate and refetch feed calculation log for this farmer
+      queryClient.invalidateQueries({
+        queryKey: farmerV2Keys.feedCalculationLog(variables.user_profile_id),
+      });
+    },
+    ...options,
+  });
+};
+
+// Update Feed Calculation Log Hook
+export const useUpdateFeedCalculationLog = (
+  options?: Omit<
+    UseMutationOptions<
+      FeedCalculationLogResponse,
+      Error,
+      { farmerUserProfileId: number; logData: UpdateFeedCalculationLogRequest }
+    >,
+    "mutationFn"
+  >,
+) => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: ({ farmerUserProfileId, logData }) =>
+      fieldIQService.updateFeedCalculationLog(farmerUserProfileId, logData),
+    onSuccess: (_, variables) => {
+      // Invalidate and refetch feed calculation log for this farmer
+      queryClient.invalidateQueries({
+        queryKey: farmerV2Keys.feedCalculationLog(
+          variables.farmerUserProfileId,
+        ),
+      });
+    },
     ...options,
   });
 };

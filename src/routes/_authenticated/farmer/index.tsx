@@ -96,7 +96,7 @@ function FarmerDashboard() {
           </div>
 
           <div className="xl:col-span-1 space-y-6">
-            <FeedUsageCalculator dashboardData={dashboardData} />
+            <FeedUsageCalculator farmerUserProfileId={farmerUserProfileId} />
             <HealthWatchSummary dashboardData={dashboardData} />
           </div>
         </div>

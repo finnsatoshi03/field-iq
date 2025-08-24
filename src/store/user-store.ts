@@ -19,6 +19,10 @@ export interface UserProfile {
   company_id: number | null;
   created_at: string | null;
   updated_at: string | null;
+  // Farmer-specific fields from user_metadata
+  livestock_type: string | null;
+  location: string | null;
+  region: string | null;
 }
 
 interface UserState {
@@ -31,6 +35,7 @@ interface UserState {
   setLoading: (loading: boolean) => void;
   signOut: () => void;
   updateUser: (updates: Partial<UserProfile>) => void;
+  forceRefresh: () => void;
 }
 
 export const useUserStore = create<UserState>()(
@@ -63,6 +68,15 @@ export const useUserStore = create<UserState>()(
           });
         }
       },
+
+      forceRefresh: () => {
+        // Force a refresh by clearing the user data
+        // This will trigger the useEffect in the authenticated route to refetch
+        set({
+          user: null,
+          isAuthenticated: false,
+        });
+      },
     }),
     {
       name: "user-store",
@@ -70,6 +84,8 @@ export const useUserStore = create<UserState>()(
         user: state.user,
         isAuthenticated: state.isAuthenticated,
       }),
+      // Clear storage version to force refresh with new fields
+      version: 1,
     },
   ),
 );
@@ -78,20 +94,28 @@ export const useUserStore = create<UserState>()(
 export const transformSupabaseUser = (
   user: User,
   profileData?: any,
-): UserProfile => ({
-  id: user.id,
-  profileId: profileData?.id || null,
-  email: user.email || "",
-  name: user.user_metadata?.name || user.email?.split("@")[0] || null,
-  role: user.user_metadata?.role || "sales_rep",
-  isEmailVerified: user.email_confirmed_at !== null,
-  avatar_url: user.user_metadata?.avatar_url || null,
-  // Profile data fields
-  first_name: profileData?.first_name || null,
-  last_name: profileData?.last_name || null,
-  mobile_number: profileData?.mobile_number || null,
-  profile_picture_url: profileData?.profile_picture_url || null,
-  company_id: profileData?.company_id || null,
-  created_at: profileData?.created_at || null,
-  updated_at: profileData?.updated_at || null,
-});
+): UserProfile => {
+  return {
+    id: user.id,
+    profileId: profileData?.id || null,
+    email: user.email || "",
+    name: user.user_metadata?.name || user.email?.split("@")[0] || null,
+    role: user.user_metadata?.role || "sales_rep",
+    isEmailVerified: user.email_confirmed_at !== null,
+    avatar_url: user.user_metadata?.avatar_url || null,
+    // Profile data fields
+    first_name:
+      profileData?.first_name || user.user_metadata?.first_name || null,
+    last_name: profileData?.last_name || user.user_metadata?.last_name || null,
+    mobile_number:
+      profileData?.mobile_number || user.user_metadata?.mobile_number || null,
+    profile_picture_url: profileData?.profile_picture_url || null,
+    company_id: profileData?.company_id || null,
+    created_at: profileData?.created_at || null,
+    updated_at: profileData?.updated_at || null,
+    // Farmer-specific fields from user_metadata
+    livestock_type: user.user_metadata?.livestock_type || null,
+    location: user.user_metadata?.location || null,
+    region: user.user_metadata?.region || null,
+  };
+};
