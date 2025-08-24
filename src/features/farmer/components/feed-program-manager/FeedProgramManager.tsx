@@ -11,11 +11,13 @@ import {
 } from "@/components/ui/alert-dialog";
 import { Button } from "@/components/ui/button";
 import {
+  farmerV2Keys,
   useActiveFeedProduct,
   useActiveFeedProgram,
   useCreateFeedProgram,
 } from "@/hooks/use-farmer-v2";
 import { cn } from "@/lib/utils";
+import { useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { FeedProductSelector } from "../feed-product-selector";
 
@@ -26,6 +28,8 @@ interface FeedProgramOnboardingProps {
 export const FeedProgramManager: React.FC<FeedProgramOnboardingProps> = ({
   farmerUserProfileId,
 }) => {
+  const queryClient = useQueryClient();
+
   const [step, setStep] = useState(1);
   const [selectedFeedProductId, setSelectedFeedProductId] =
     useState<string>("");
@@ -46,6 +50,14 @@ export const FeedProgramManager: React.FC<FeedProgramOnboardingProps> = ({
       setIsOpen(false);
       setStep(1);
       setSelectedFeedProductId("");
+
+      // Invalidate and refetch active feed program for this farmer
+      queryClient.invalidateQueries({
+        queryKey: farmerV2Keys.activeFeedProgram(farmerUserProfileId),
+      });
+      queryClient.invalidateQueries({
+        queryKey: farmerV2Keys.activeFeedProduct(farmerUserProfileId),
+      });
     },
     onError: (error) => {
       toast.error(error.message || "Failed to create feed program");

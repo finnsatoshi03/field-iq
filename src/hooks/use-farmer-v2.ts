@@ -68,24 +68,9 @@ export const useCreateFeedProgram = (
     "mutationFn"
   >,
 ) => {
-  const queryClient = useQueryClient();
-
   return useMutation({
     mutationFn: (programData: CreateFeedProgramRequest) =>
       fieldIQService.createFeedProgram(programData),
-    onSuccess: (_, variables) => {
-      // Invalidate and refetch active feed program for this farmer
-      queryClient.invalidateQueries({
-        queryKey: farmerV2Keys.activeFeedProgram(
-          variables.farmer_user_profile_id,
-        ),
-      });
-      queryClient.invalidateQueries({
-        queryKey: farmerV2Keys.activeFeedProduct(
-          variables.farmer_user_profile_id,
-        ),
-      });
-    },
     ...options,
   });
 };
