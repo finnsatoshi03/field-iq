@@ -1,85 +1,98 @@
-import {
-  AlertCircle,
-  CheckCircle,
-  Plus,
-  Settings,
-  XCircle,
-} from "lucide-react";
-import { useState } from "react";
+import { ArrowRightIcon, CheckCircle, Package, Wheat } from "lucide-react";
+import { useEffect, useState } from "react";
 
-import { Badge } from "@/components/ui/badge";
+import {
+  AlertDialog,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { Button } from "@/components/ui/button";
 import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
-import ExpandableCard from "@/components/ui/expandable-card";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import {
-  useActiveFeedProduct,
   useActiveFeedProgram,
-  useCompleteFeedProgram,
   useCreateFeedProgram,
-  useIncompleteFeedProgram,
 } from "@/hooks/use-farmer-v2";
+import { cn } from "@/lib/utils";
 import { toast } from "sonner";
+import { FeedProductSelector } from "../feed-product-selector";
 
-interface FeedProgramManagerProps {
+interface FeedProgramOnboardingProps {
   farmerUserProfileId: number;
 }
 
-export const FeedProgramManager: React.FC<FeedProgramManagerProps> = ({
+export const FeedProgramManager: React.FC<FeedProgramOnboardingProps> = ({
   farmerUserProfileId,
 }) => {
-  const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
-  const [feedProductId, setFeedProductId] = useState<number>(1);
+  const [step, setStep] = useState(1);
+  const [selectedFeedProductId, setSelectedFeedProductId] =
+    useState<string>("");
+  const [isOpen, setIsOpen] = useState(false);
 
   // Queries
-  const {
-    data: activeFeedProgram,
-    isLoading: loadingFeedProgram,
-    error: feedProgramError,
-  } = useActiveFeedProgram(farmerUserProfileId);
-
-  const { data: activeFeedProduct } = useActiveFeedProduct(farmerUserProfileId);
+  const { data: activeFeedProgram, isLoading: loadingFeedProgram } =
+    useActiveFeedProgram(farmerUserProfileId);
 
   // Mutations
   const createFeedProgramMutation = useCreateFeedProgram({
     onSuccess: () => {
-      toast.success("Feed program created successfully!");
-      setIsCreateDialogOpen(false);
-      setFeedProductId(1);
+      toast.success(
+        "Feed program created successfully! Welcome to your farm management journey!",
+      );
+      setIsOpen(false);
+      setStep(1);
+      setSelectedFeedProductId("");
     },
     onError: (error) => {
       toast.error(error.message || "Failed to create feed program");
     },
   });
 
-  const completeFeedProgramMutation = useCompleteFeedProgram({
-    onSuccess: () => {
-      toast.success("Feed program completed successfully!");
-    },
-    onError: (error) => {
-      toast.error(error.message || "Failed to complete feed program");
-    },
-  });
+  // Check if user needs onboarding (no active feed program)
+  const needsOnboarding =
+    !loadingFeedProgram && !activeFeedProgram?.feed_program;
 
-  const incompleteFeedProgramMutation = useIncompleteFeedProgram({
-    onSuccess: () => {
-      toast.success("Feed program marked as incomplete");
+  // Auto-open dialog when user needs onboarding
+  useEffect(() => {
+    if (needsOnboarding) {
+      setIsOpen(true);
+    }
+  }, [needsOnboarding]);
+
+  const stepContent = [
+    {
+      title: "Welcome to Your Farm Dashboard",
+      description:
+        "Let's get you started with your first feed program to optimize your farm operations.",
+      icon: <Wheat className="h-12 w-12 text-green-600" />,
     },
-    onError: (error) => {
-      toast.error(error.message || "Failed to update feed program");
+    {
+      title: "Choose Your Feed Product",
+      description:
+        "Select the right feed product for your animals to ensure optimal growth and health.",
+      icon: <Package className="h-12 w-12 text-blue-600" />,
     },
-  });
+    {
+      title: "Complete Your Setup",
+      description:
+        "Finalize your feed program setup and start tracking your farm's performance.",
+      icon: <CheckCircle className="h-12 w-12 text-purple-600" />,
+    },
+  ];
+
+  const totalSteps = stepContent.length;
+
+  const handleContinue = () => {
+    if (step < totalSteps) {
+      setStep(step + 1);
+    }
+  };
 
   const handleCreateFeedProgram = () => {
-    if (feedProductId <= 0) {
-      toast.error("Please enter a valid feed product ID");
+    const feedProductId = parseInt(selectedFeedProductId);
+    if (!selectedFeedProductId || feedProductId <= 0) {
+      toast.error("Please select a feed product");
       return;
     }
 
@@ -89,345 +102,97 @@ export const FeedProgramManager: React.FC<FeedProgramManagerProps> = ({
     });
   };
 
-  const handleCompleteFeedProgram = () => {
-    completeFeedProgramMutation.mutate(farmerUserProfileId);
-  };
-
-  const handleIncompleteFeedProgram = () => {
-    incompleteFeedProgramMutation.mutate(farmerUserProfileId);
-  };
-
-  const getStatusBadge = (status?: string) => {
-    switch (status) {
-      case "active":
-        return (
-          <Badge className="bg-green-100 text-green-800 border-green-200">
-            <CheckCircle className="h-3 w-3 mr-1" />
-            Active
-          </Badge>
-        );
-      case "completed":
-        return (
-          <Badge className="bg-blue-100 text-blue-800 border-blue-200">
-            <CheckCircle className="h-3 w-3 mr-1" />
-            Completed
-          </Badge>
-        );
-      case "incomplete":
-        return (
-          <Badge className="bg-yellow-100 text-yellow-800 border-yellow-200">
-            <AlertCircle className="h-3 w-3 mr-1" />
-            Incomplete
-          </Badge>
-        );
-      default:
-        return (
-          <Badge className="bg-gray-100 text-gray-800 border-gray-200">
-            <XCircle className="h-3 w-3 mr-1" />
-            Unknown
-          </Badge>
-        );
-    }
-  };
-
-  const formatDate = (dateString?: string) => {
-    if (!dateString) return "—";
-    const date = new Date(dateString);
-    if (Number.isNaN(date.getTime())) return "—";
-    return date.toLocaleDateString("en-US", {
-      year: "numeric",
-      month: "short",
-      day: "numeric",
-    });
-  };
-
-  // Loading state
-  if (loadingFeedProgram) {
-    return (
-      <ExpandableCard
-        title="Feed Program Manager"
-        summary={
-          <div className="flex items-center gap-2 text-muted-foreground">
-            <Settings className="h-4 w-4" />
-            <span className="text-sm">Loading feed program...</span>
-          </div>
-        }
-        className="h-fit"
-      >
-        <div className="space-y-4">
-          <div className="rounded-lg p-4 border">
-            <div className="text-center text-muted-foreground">
-              <p className="text-sm">Loading feed program information...</p>
-            </div>
-          </div>
-        </div>
-      </ExpandableCard>
-    );
+  // Don't render anything if user already has an active feed program
+  if (!needsOnboarding) {
+    return null;
   }
-
-  // Error state
-  if (feedProgramError) {
-    return (
-      <ExpandableCard
-        title="Feed Program Manager"
-        summary={
-          <div className="flex items-center gap-2 text-red-600">
-            <XCircle className="h-4 w-4" />
-            <span className="text-sm">Error loading feed program</span>
-          </div>
-        }
-        className="h-fit"
-      >
-        <div className="space-y-4">
-          <div className="rounded-lg p-4 border border-red-200 bg-red-50">
-            <div className="text-center text-red-700">
-              <p className="text-sm">{feedProgramError.message}</p>
-            </div>
-          </div>
-        </div>
-      </ExpandableCard>
-    );
-  }
-
-  const feedProgram = activeFeedProgram?.feed_program;
-  const feedProduct = activeFeedProduct?.feed_product;
-
-  // Summary content
-  const summaryContent = (
-    <div className="flex items-center justify-between">
-      <div className="flex items-center gap-4">
-        <div className="flex items-center gap-2">
-          <Settings className="h-4 w-4 text-blue-600" />
-          <span className="text-sm font-medium text-foreground">
-            {feedProgram ? "Active Program" : "No Active Program"}
-          </span>
-        </div>
-        {feedProgram && getStatusBadge(feedProgram.status)}
-      </div>
-      <div className="flex items-center gap-2">
-        {feedProgram ? (
-          <>
-            <div className="w-2 h-2 rounded-full bg-green-500" />
-            <span className="text-xs text-muted-foreground">
-              ID: {feedProgram.id}
-            </span>
-          </>
-        ) : (
-          <>
-            <div className="w-2 h-2 rounded-full bg-gray-400" />
-            <span className="text-xs text-muted-foreground">
-              Ready to create
-            </span>
-          </>
-        )}
-      </div>
-    </div>
-  );
 
   return (
-    <ExpandableCard
-      title="Feed Program Manager"
-      summary={summaryContent}
-      className="h-fit"
+    <AlertDialog
+      open={isOpen}
+      onOpenChange={(open) => {
+        // Prevent closing if user doesn't have feed program (persistent onboarding)
+        if (!open && needsOnboarding) {
+          return;
+        }
+        setIsOpen(open);
+        if (open) setStep(1);
+      }}
     >
-      <div className="space-y-4">
-        {feedProgram ? (
-          // Active Feed Program Display
-          <div className="rounded-lg p-4 border">
-            <div className="flex items-start justify-between mb-3">
-              <div className="flex-1">
-                <h3 className="font-display font-medium text-foreground">
-                  Feed Program #{feedProgram.id}
-                </h3>
-                <p className="text-sm text-muted-foreground mb-2">
-                  {feedProduct
-                    ? feedProduct.name
-                    : `Product ID: ${feedProgram.feed_product_id}`}
-                </p>
-              </div>
-              {getStatusBadge(feedProgram.status)}
-            </div>
-
-            <div className="grid grid-cols-2 gap-4 mb-4">
-              <div>
-                <p className="text-xs text-muted-foreground font-medium">
-                  Created
-                </p>
-                <p className="text-sm font-medium font-display">
-                  {formatDate(feedProgram.created_at)}
-                </p>
-              </div>
-              <div>
-                <p className="text-xs text-muted-foreground font-medium">
-                  Last Updated
-                </p>
-                <p className="text-sm font-medium font-display">
-                  {formatDate(feedProgram.updated_at)}
-                </p>
-              </div>
-            </div>
-
-            {feedProduct && (
-              <div className="bg-background/50 rounded-md p-3 border mb-4">
-                <p className="text-xs text-muted-foreground mb-2 font-medium">
-                  Feed Product Details
-                </p>
-                <div className="space-y-1">
-                  <p className="text-sm font-medium text-foreground">
-                    {feedProduct.name}
-                  </p>
-                  <p className="text-xs text-muted-foreground">
-                    Category: {feedProduct.category} • Price: $
-                    {feedProduct.price}
-                  </p>
-                  {feedProduct.description && (
-                    <p className="text-xs text-muted-foreground">
-                      {feedProduct.description}
-                    </p>
-                  )}
-                </div>
-              </div>
-            )}
-
-            {/* Action Buttons */}
-            <div className="flex gap-2">
-              {feedProgram.status === "active" && (
-                <>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={handleCompleteFeedProgram}
-                    disabled={completeFeedProgramMutation.isPending}
-                    className="flex-1"
-                  >
-                    <CheckCircle className="h-4 w-4 mr-2" />
-                    {completeFeedProgramMutation.isPending
-                      ? "Completing..."
-                      : "Complete"}
-                  </Button>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={handleIncompleteFeedProgram}
-                    disabled={incompleteFeedProgramMutation.isPending}
-                    className="flex-1"
-                  >
-                    <AlertCircle className="h-4 w-4 mr-2" />
-                    {incompleteFeedProgramMutation.isPending
-                      ? "Updating..."
-                      : "Mark Incomplete"}
-                  </Button>
-                </>
-              )}
-            </div>
+      <AlertDialogContent className="gap-0 p-0 max-w-lg max-h-[90vh] overflow-y-auto">
+        <div className="p-6 text-center">
+          <div className="mb-6 flex justify-center">
+            {stepContent[step - 1].icon}
           </div>
-        ) : (
-          // No Active Program - Create New
-          <div className="rounded-lg p-4 border border-dashed">
-            <div className="text-center space-y-3">
-              <div className="mx-auto w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center">
-                <Plus className="h-6 w-6 text-blue-600" />
-              </div>
-              <div>
-                <h3 className="font-display font-medium text-foreground">
-                  No Active Feed Program
-                </h3>
-                <p className="text-sm text-muted-foreground">
-                  Create a new feed program to get started
-                </p>
-              </div>
-              <Button
-                onClick={() => setIsCreateDialogOpen(true)}
-                size="sm"
-                className="mt-3"
-              >
-                <Plus className="h-4 w-4 mr-2" />
-                Create Feed Program
-              </Button>
-            </div>
-          </div>
-        )}
 
-        {/* Status Indicator */}
-        {feedProgram && (
-          <div
-            className={`flex items-center justify-between p-3 -mx-4 border-t border-b ${
-              feedProgram.status === "active"
-                ? "bg-green-100 border-green-500"
-                : feedProgram.status === "completed"
-                  ? "bg-blue-100 border-blue-500"
-                  : "bg-yellow-100 border-yellow-500"
-            }`}
-          >
-            <p
-              className={`text-base font-display font-medium ${
-                feedProgram.status === "active"
-                  ? "text-green-500"
-                  : feedProgram.status === "completed"
-                    ? "text-blue-500"
-                    : "text-yellow-500"
-              }`}
-            >
-              {feedProgram.status === "active" && "Active Feed Program"}
-              {feedProgram.status === "completed" && "Completed Program"}
-              {feedProgram.status === "incomplete" && "Incomplete Program"}
-            </p>
-            <span className="text-sm text-muted-foreground">
-              Program #{feedProgram.id}
-            </span>
-          </div>
-        )}
-      </div>
+          <AlertDialogHeader>
+            <AlertDialogTitle className="text-xl font-semibold">
+              {stepContent[step - 1].title}
+            </AlertDialogTitle>
+            <AlertDialogDescription className="text-base mt-2">
+              {stepContent[step - 1].description}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
 
-      {/* Create Feed Program Dialog */}
-      <Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Create New Feed Program</DialogTitle>
-            <DialogDescription>
-              Create a new feed program for farmer profile #
-              {farmerUserProfileId}
-            </DialogDescription>
-          </DialogHeader>
-
-          <div className="space-y-4">
-            <div>
-              <Label htmlFor="feedProductId">Feed Product ID</Label>
-              <Input
-                id="feedProductId"
-                type="number"
-                value={feedProductId}
-                onChange={(e) => setFeedProductId(Number(e.target.value))}
-                placeholder="Enter feed product ID"
-                min="1"
+          {/* Feed Product Selection on Step 2 */}
+          {step === 2 && (
+            <div className="mt-6 text-left">
+              <FeedProductSelector
+                value={selectedFeedProductId}
+                onValueChange={setSelectedFeedProductId}
               />
-              <p className="text-xs text-muted-foreground mt-1">
-                Enter the ID of the feed product to use for this program
-              </p>
             </div>
+          )}
 
-            <div className="flex justify-end gap-2">
+          {/* Progress Indicators */}
+          <div className="flex justify-center space-x-2 mt-8 mb-6">
+            {[...Array(totalSteps)].map((_, index) => (
+              <div
+                key={index}
+                className={cn(
+                  "h-2 w-2 rounded-full transition-colors",
+                  index + 1 === step
+                    ? "bg-primary"
+                    : index + 1 < step
+                      ? "bg-primary/60"
+                      : "bg-primary/20",
+                )}
+              />
+            ))}
+          </div>
+
+          <AlertDialogFooter className="flex-col sm:flex-row gap-2">
+            {step < totalSteps ? (
               <Button
-                variant="outline"
-                onClick={() => setIsCreateDialogOpen(false)}
-                disabled={createFeedProgramMutation.isPending}
+                className="group w-full sm:w-auto"
+                type="button"
+                onClick={handleContinue}
+                disabled={step === 2 && !selectedFeedProductId}
               >
-                Cancel
+                {step === 2 ? "Continue with Selected Feed" : "Next"}
+                <ArrowRightIcon
+                  className="-me-1 ms-2 opacity-60 transition-transform group-hover:translate-x-0.5"
+                  size={16}
+                  aria-hidden="true"
+                />
               </Button>
+            ) : (
               <Button
+                type="button"
                 onClick={handleCreateFeedProgram}
                 disabled={
-                  createFeedProgramMutation.isPending || feedProductId <= 0
+                  createFeedProgramMutation.isPending || !selectedFeedProductId
                 }
+                className="w-full sm:w-auto"
               >
                 {createFeedProgramMutation.isPending
-                  ? "Creating..."
-                  : "Create Program"}
+                  ? "Creating Program..."
+                  : "Start My Farm Journey"}
               </Button>
-            </div>
-          </div>
-        </DialogContent>
-      </Dialog>
-    </ExpandableCard>
+            )}
+          </AlertDialogFooter>
+        </div>
+      </AlertDialogContent>
+    </AlertDialog>
   );
 };

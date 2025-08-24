@@ -1,0 +1,1 @@
+export { FeedProductSelector } from "./FeedProductSelector";

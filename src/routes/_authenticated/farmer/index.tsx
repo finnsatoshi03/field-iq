@@ -97,11 +97,13 @@ function FarmerDashboard() {
 
           <div className="xl:col-span-1 space-y-6">
             <FeedUsageCalculator dashboardData={dashboardData} />
-            <FeedProgramManager farmerUserProfileId={farmerUserProfileId} />
             <HealthWatchSummary dashboardData={dashboardData} />
           </div>
         </div>
       </div>
+
+      {/* Persistent Onboarding Overlay */}
+      <FeedProgramManager farmerUserProfileId={farmerUserProfileId} />
     </div>
   );
 }
