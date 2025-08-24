@@ -466,8 +466,8 @@ export const transformApiPerformanceMetrics = (
 ): PerformanceMetric[] => {
   return apiMetrics.map((metric) => ({
     id: metric.id.toString(),
-    productId: metric.productId.toString(),
-    productName: metric.productName.toString(),
+    productId: metric.productId?.toString() || "unknown",
+    productName: metric.productName?.toString() || "Unknown Product",
     farmId: metric.farmId.toString(),
     farmName: metric.farmName,
     region: metric.region,
@@ -506,7 +506,7 @@ export const transformApiRegionalPerformance = (
     avgFcr: regional.avgFcr,
     avgWeightGain: regional.avgWeightGain,
     avgMortality: regional.avgMortality,
-    topProduct: regional.topProduct.toString(),
+    topProduct: regional.topProduct?.toString() || "Unknown Product",
     performanceRating: mapPerformanceRating(regional.performanceRating),
     lastUpdate: regional.lastUpdate,
   }));

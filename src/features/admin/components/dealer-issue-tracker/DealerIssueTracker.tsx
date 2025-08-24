@@ -228,7 +228,7 @@ const DealerIssueTracker: React.FC<DealerIssueTrackerProps> = ({
     <div className="bg-card space-y-4 rounded-lg border border-border p-4">
       <div className="flex items-center justify-between">
         <h3 className="text-foreground font-display font-semibold text-base tracking-tight">
-          Dealer Issue Tracker
+          Sales Rep Issue Tracker
         </h3>
         {isGeocoding && (
           <div className="flex items-center gap-2 text-muted-foreground">

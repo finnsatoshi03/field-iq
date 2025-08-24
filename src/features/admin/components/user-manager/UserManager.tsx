@@ -9,6 +9,15 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuGroup,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import {
@@ -21,8 +30,10 @@ import {
 import { Separator } from "@/components/ui/separator";
 import {
   CheckCircle,
+  ChevronDownIcon,
   Clock,
   Mail,
+  MapPinIcon,
   Maximize2,
   Send,
   Shield,
@@ -41,6 +52,7 @@ import {
   useGetUsers,
   useInviteUserByEmail,
 } from "@/features/auth/mutations/admin-mutations";
+import { REGIONS_BY_ISLAND, type RegionCode } from "@/lib/consts";
 import type { UserRole } from "@/lib/types";
 import { cn } from "@/lib/utils";
 import type {
@@ -92,6 +104,7 @@ export const UserManager = ({ className, companyId }: UserManagerProps) => {
   const [password, setPassword] = useState("");
   const [redirectTo, setRedirectTo] = useState("");
   const [selectedRole, setSelectedRole] = useState<UserRole>("sales_rep");
+  const [selectedRegion, setSelectedRegion] = useState<RegionCode | "">("");
 
   const { user } = useUserStore();
   const {
@@ -136,6 +149,12 @@ export const UserManager = ({ className, companyId }: UserManagerProps) => {
 
     if (!email) return;
 
+    // Validate region is required for sales reps
+    if (selectedType?.supportsRole && !selectedRegion) {
+      toast.error("Region is required for sales representatives");
+      return;
+    }
+
     // For signup, use createUser mutation
     if (linkType === "signup") {
       if (!password) {
@@ -147,7 +166,11 @@ export const UserManager = ({ className, companyId }: UserManagerProps) => {
         email,
         password,
         user_metadata: selectedType?.supportsRole
-          ? { role: selectedRole, created_by: user?.id || null }
+          ? {
+              role: selectedRole,
+              created_by: user?.id || null,
+              region: selectedRegion || null,
+            }
           : undefined,
         email_confirm: true,
       };
@@ -162,11 +185,12 @@ export const UserManager = ({ className, companyId }: UserManagerProps) => {
         email,
         options: {
           // Always redirect invites to the dedicated invite route
-          redirectTo: redirectTo || "https://www.fieldiq.ph/invite",
+          redirectTo: redirectTo || "http://localhost:3000/invite",
           ...(selectedType?.supportsRole && {
             data: {
               role: selectedRole,
               created_by: user?.id || null,
+              region: selectedRegion || null,
             },
           }),
         },
@@ -194,6 +218,7 @@ export const UserManager = ({ className, companyId }: UserManagerProps) => {
           data: {
             role: selectedRole,
             created_by: user?.id || null,
+            region: selectedRegion || null,
           },
         }),
       };
@@ -208,6 +233,7 @@ export const UserManager = ({ className, companyId }: UserManagerProps) => {
     setRedirectTo("");
     setLinkType("invite");
     setSelectedRole("sales_rep");
+    setSelectedRegion("");
   };
 
   const handleSuccess = () => {
@@ -866,7 +892,7 @@ export const UserManager = ({ className, companyId }: UserManagerProps) => {
           </DialogHeader>
 
           <form onSubmit={handleSubmit} className="space-y-4">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 gap-4">
               <div className="space-y-2">
                 <Label htmlFor="link-type">Link Type</Label>
                 <Select
@@ -951,6 +977,75 @@ export const UserManager = ({ className, companyId }: UserManagerProps) => {
               </div>
             )}
 
+            {selectedType?.supportsRole && (
+              <div className="space-y-2">
+                <Label htmlFor="region">
+                  Region <span className="text-red-500">*</span>
+                </Label>
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button
+                      variant="outline"
+                      className={cn("w-full justify-between")}
+                    >
+                      {selectedRegion
+                        ? Object.values(REGIONS_BY_ISLAND)
+                            .flat()
+                            .find((region) => region.code === selectedRegion)
+                            ?.name || selectedRegion
+                        : "Select region"}
+                      <ChevronDownIcon
+                        className="ml-2 h-4 w-4 opacity-60"
+                        aria-hidden="true"
+                      />
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent className="w-[450px] max-h-[300px] overflow-y-auto">
+                    {Object.entries(REGIONS_BY_ISLAND).map(
+                      ([island, regions]) => (
+                        <div key={island}>
+                          <DropdownMenuLabel className="text-xs font-semibold text-muted-foreground">
+                            {island} Island Group
+                          </DropdownMenuLabel>
+                          <DropdownMenuGroup>
+                            {regions.map((region) => (
+                              <DropdownMenuItem
+                                key={region.code}
+                                onClick={() => setSelectedRegion(region.code)}
+                                className="flex flex-col items-start py-2"
+                              >
+                                <div className="flex items-center gap-2 w-full">
+                                  <MapPinIcon
+                                    size={16}
+                                    className="opacity-60 flex-shrink-0"
+                                    aria-hidden="true"
+                                  />
+                                  <div className="flex flex-col">
+                                    <span className="font-medium text-sm">
+                                      {region.name}
+                                    </span>
+                                    <span className="text-xs text-muted-foreground">
+                                      {region.description}
+                                    </span>
+                                  </div>
+                                </div>
+                              </DropdownMenuItem>
+                            ))}
+                          </DropdownMenuGroup>
+                          <DropdownMenuSeparator />
+                        </div>
+                      ),
+                    )}
+                  </DropdownMenuContent>
+                </DropdownMenu>
+                {!selectedRegion && (
+                  <p className="text-xs text-red-500 mt-1">
+                    Please select a region for the sales representative
+                  </p>
+                )}
+              </div>
+            )}
+
             <div className="space-y-2">
               <Label htmlFor="redirect-to">Redirect URL (Optional)</Label>
               <Input
@@ -961,7 +1056,7 @@ export const UserManager = ({ className, companyId }: UserManagerProps) => {
                 disabled={linkType === "invite"}
                 placeholder={
                   linkType === "invite"
-                    ? `${window.location.pathname}/invite (default for invites)`
+                    ? `http://localhost:3000/invite (default for invites)`
                     : "https://yourapp.com/dashboard"
                 }
               />
@@ -970,7 +1065,11 @@ export const UserManager = ({ className, companyId }: UserManagerProps) => {
             <div className="flex gap-2">
               <Button
                 type="submit"
-                disabled={isPending || !email}
+                disabled={
+                  isPending ||
+                  !email ||
+                  (selectedType?.supportsRole && !selectedRegion)
+                }
                 className="flex-1"
               >
                 <Send className="mr-2 h-4 w-4" />
