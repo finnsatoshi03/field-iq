@@ -1,21 +1,28 @@
 import { Button } from "@/components/ui/button";
 import ExpandableCard from "@/components/ui/expandable-card";
-import type { FarmerDashboardViewModel } from "@/services/field-iq-service";
+import { useFeedIntakeBehavior } from "@/hooks/use-farmer-v2";
 import { useChatWidgetStore } from "@/store/chat-widget-store";
+import { useUserStore } from "@/store/user-store";
 import { Plus, TrendingUp } from "lucide-react";
 import { BehaviorList, BehaviorMeter, BehaviorSummary } from "./components";
 import { useFeedBehavior } from "./hooks";
 
 interface FeedIntakeBehaviorProps {
-  dashboardData?: FarmerDashboardViewModel;
+  // Remove dashboardData dependency - we'll fetch data directly
 }
 
-export const FeedIntakeBehavior: React.FC<FeedIntakeBehaviorProps> = ({
-  dashboardData,
-}) => {
-  const { records, summary } = useFeedBehavior(
-    dashboardData?.feed_intake_behavior,
-  );
+export const FeedIntakeBehavior: React.FC<FeedIntakeBehaviorProps> = () => {
+  const { user } = useUserStore();
+  const farmerUserProfileId = user?.profileId || 0;
+
+  // Fetch feed intake behavior data directly from API
+  const {
+    data: feedIntakeData,
+    isLoading,
+    error,
+  } = useFeedIntakeBehavior(farmerUserProfileId);
+
+  const { records, summary } = useFeedBehavior(feedIntakeData);
 
   const { openFeedConsumptionReport } = useChatWidgetStore();
 
@@ -23,8 +30,8 @@ export const FeedIntakeBehavior: React.FC<FeedIntakeBehaviorProps> = ({
     openFeedConsumptionReport();
   };
 
-  // Show loading state if no data
-  if (!dashboardData?.feed_intake_behavior) {
+  // Show loading state
+  if (isLoading) {
     return (
       <ExpandableCard
         title="Feed Intake Behavior"
@@ -39,7 +46,32 @@ export const FeedIntakeBehavior: React.FC<FeedIntakeBehaviorProps> = ({
         <div className="space-y-4">
           <div className="rounded-lg p-4 border">
             <div className="text-center text-muted-foreground">
-              <p className="text-sm">No behavior data available</p>
+              <p className="text-sm">Loading...</p>
+            </div>
+          </div>
+        </div>
+      </ExpandableCard>
+    );
+  }
+
+  // Show error state
+  if (error) {
+    return (
+      <ExpandableCard
+        title="Feed Intake Behavior"
+        summary={
+          <div className="flex items-center gap-2 text-muted-foreground">
+            <TrendingUp className="h-4 w-4" />
+            <span className="text-sm">Error loading behavior data</span>
+          </div>
+        }
+        className="h-fit"
+      >
+        <div className="space-y-4">
+          <div className="rounded-lg p-4 border">
+            <div className="text-center text-muted-foreground">
+              <p className="text-sm">Failed to load behavior data</p>
+              <p className="text-xs mt-1">{error.message}</p>
             </div>
           </div>
         </div>

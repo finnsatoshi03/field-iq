@@ -1,10 +1,8 @@
 import { Button } from "@/components/ui/button";
-import { useFarmerDashboard } from "@/hooks";
 import { useUserStore } from "@/store/user-store";
 import { createFileRoute } from "@tanstack/react-router";
 import { RefreshCw } from "lucide-react";
 
-import { Error } from "@/features/error";
 import {
   CurrentFeedInUse,
   FeedIntakeBehavior,
@@ -13,7 +11,6 @@ import {
   GrowthPerformanceLog,
 } from "@/features/farmer/components";
 import { HealthWatchSummary } from "@/features/farmer/components/health-watch-summary";
-import { LoadingSpinner } from "@/features/loader/components/LoadingSpinner";
 
 export const Route = createFileRoute("/_authenticated/farmer/")({
   component: FarmerDashboard,
@@ -24,39 +21,10 @@ function FarmerDashboard() {
 
   const farmerUserProfileId = user?.profileId || 0;
 
-  const {
-    data: dashboardData,
-    isLoading,
-    error,
-    refetch,
-  } = useFarmerDashboard(farmerUserProfileId);
-
   const handleRefresh = () => {
-    refetch();
+    // Refresh will be handled by individual components via React Query
+    window.location.reload();
   };
-
-  // Show loading state
-  if (isLoading) {
-    return <LoadingSpinner />;
-  }
-
-  // Show error state
-  if (error) {
-    return (
-      <Error
-        title="Failed to load dashboard"
-        message={
-          error.message ||
-          "We couldn't load your farmer dashboard. Please try again."
-        }
-        action={{
-          label: "Try Again",
-          onClick: handleRefresh,
-          icon: <RefreshCw className="h-4 w-4" />,
-        }}
-      />
-    );
-  }
 
   return (
     <div className="flex-1 flex flex-col min-h-0 h-full">
@@ -91,13 +59,13 @@ function FarmerDashboard() {
               <GrowthPerformanceLog farmerUserProfileId={farmerUserProfileId} />
             </div>
             <div className="lg:col-span-2 xl:col-span-2">
-              <FeedIntakeBehavior dashboardData={dashboardData} />
+              <FeedIntakeBehavior />
             </div>
           </div>
 
           <div className="xl:col-span-1 space-y-6">
             <FeedUsageCalculator farmerUserProfileId={farmerUserProfileId} />
-            <HealthWatchSummary dashboardData={dashboardData} />
+            <HealthWatchSummary />
           </div>
         </div>
       </div>

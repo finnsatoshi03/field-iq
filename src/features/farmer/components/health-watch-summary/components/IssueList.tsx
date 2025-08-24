@@ -23,6 +23,25 @@ const getIssueTypeIcon = (type: string) => {
 export const IssueList = ({ issues, maxItems = 5 }: IssueListProps) => {
   const displayIssues = issues.slice(0, maxItems);
 
+  // Show empty state if no issues
+  if (issues.length === 0) {
+    return (
+      <div className="space-y-2">
+        <div className="flex flex-col items-center justify-center p-6 rounded-md border-2 border-dashed border-muted-foreground/20 bg-muted/10">
+          <div className="text-muted-foreground mb-2">
+            <AlertTriangle className="h-8 w-8" />
+          </div>
+          <p className="text-sm font-medium text-muted-foreground text-center">
+            No recent health issues
+          </p>
+          <p className="text-xs text-muted-foreground text-center mt-1">
+            Your flock appears to be healthy! Keep monitoring for any changes.
+          </p>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-2">
       {displayIssues.map((issue) => (

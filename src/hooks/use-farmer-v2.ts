@@ -8,7 +8,9 @@ import type {
   CreateFeedProgramRequest,
   CreateFeedProgramResponse,
   FeedCalculationLogResponse,
+  FeedIntakeBehavior,
   GrowthPerformanceResponse,
+  HealthWatch,
   IncompleteFeedProgramResponse,
   UpdateFeedCalculationLogRequest,
 } from "@/features/farmer/types";
@@ -36,6 +38,10 @@ export const farmerV2Keys = {
     [...farmerV2Keys.all, "growth-performance", farmerUserProfileId] as const,
   feedCalculationLog: (farmerUserProfileId: number) =>
     [...farmerV2Keys.all, "feed-calculation-log", farmerUserProfileId] as const,
+  healthWatch: (farmerUserProfileId: number, filter?: string) =>
+    [...farmerV2Keys.all, "health-watch", farmerUserProfileId, filter] as const,
+  feedIntakeBehavior: (farmerUserProfileId: number) =>
+    [...farmerV2Keys.all, "feed-intake-behavior", farmerUserProfileId] as const,
 };
 
 // Chat AI Hook
@@ -270,6 +276,36 @@ export const useUpdateFeedCalculationLog = (
   return useMutation({
     mutationFn: ({ farmerUserProfileId, logData }) =>
       fieldIQService.updateFeedCalculationLog(farmerUserProfileId, logData),
+    ...options,
+  });
+};
+
+// Health Watch Hook
+export const useHealthWatch = (
+  farmerUserProfileId: number,
+  filter?: string,
+  options?: Omit<UseQueryOptions<HealthWatch, Error>, "queryKey" | "queryFn">,
+) => {
+  return useQuery({
+    queryKey: farmerV2Keys.healthWatch(farmerUserProfileId, filter),
+    queryFn: () => fieldIQService.getHealthWatch(farmerUserProfileId, filter),
+    enabled: farmerUserProfileId > 0,
+    ...options,
+  });
+};
+
+// Feed Intake Behavior Hook
+export const useFeedIntakeBehavior = (
+  farmerUserProfileId: number,
+  options?: Omit<
+    UseQueryOptions<FeedIntakeBehavior, Error>,
+    "queryKey" | "queryFn"
+  >,
+) => {
+  return useQuery({
+    queryKey: farmerV2Keys.feedIntakeBehavior(farmerUserProfileId),
+    queryFn: () => fieldIQService.getFeedIntakeBehavior(farmerUserProfileId),
+    enabled: farmerUserProfileId > 0,
     ...options,
   });
 };

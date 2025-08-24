@@ -27,9 +27,10 @@ import type {
   CreateFeedCalculationLogRequest,
   CreateFeedProgramRequest,
   CreateFeedProgramResponse,
-  FarmerDashboardData,
   FeedCalculationLogResponse,
+  FeedIntakeBehavior,
   GrowthPerformanceResponse,
+  HealthWatch,
   IncompleteFeedProgramResponse,
   UpdateFeedCalculationLogRequest,
 } from "@/features/farmer/types";
@@ -41,9 +42,6 @@ import type {
 } from "@/features/sales-rep/types";
 
 // Types for the Field IQ API responses
-export interface FarmerDashboardViewModel extends FarmerDashboardData {
-  farmer_user_profile_id: number;
-}
 
 export interface ApiResponse<T> {
   data?: T;
@@ -122,27 +120,6 @@ const apiClient = new FieldIQApiClient();
 // Field IQ API service functions
 export const fieldIQService = {
   // Farmer Dashboard View Model
-  async getFarmerDashboard(
-    farmerUserProfileId: number,
-  ): Promise<FarmerDashboardViewModel> {
-    if (farmerUserProfileId <= 0) {
-      throw new Error("Invalid user profile ID.");
-    }
-
-    const response = await apiClient.get<FarmerDashboardViewModel>(
-      `${FIELD_IQ_API_CONFIG.endpoints.farmerDashboard}/${farmerUserProfileId}`,
-    );
-
-    if (response.error) {
-      throw new Error(response.error);
-    }
-
-    if (!response.data) {
-      throw new Error("No data received from server");
-    }
-
-    return response.data;
-  },
 
   // Farmer V2 API Methods
 
@@ -373,6 +350,52 @@ export const fieldIQService = {
       throw new Error("No data received from server");
     }
 
+    return response.data;
+  },
+
+  // Get Health Watch data for farmer
+  async getHealthWatch(
+    farmerUserProfileId: number,
+    filter?: string,
+  ): Promise<HealthWatch> {
+    if (farmerUserProfileId <= 0) {
+      throw new Error("Invalid farmer user profile ID.");
+    }
+
+    const queryParams = filter ? `?filter=${encodeURIComponent(filter)}` : "";
+    const response = await apiClient.get<HealthWatch>(
+      `${FIELD_IQ_API_CONFIG.endpoints.farmer_v2.health_watch}/${farmerUserProfileId}${queryParams}`,
+    );
+
+    if (response.error) {
+      throw new Error(response.error);
+    }
+
+    if (!response.data) {
+      throw new Error("No data received from server");
+    }
+    return response.data;
+  },
+
+  // Get Feed Intake Behavior data for farmer
+  async getFeedIntakeBehavior(
+    farmerUserProfileId: number,
+  ): Promise<FeedIntakeBehavior> {
+    if (farmerUserProfileId <= 0) {
+      throw new Error("Invalid farmer user profile ID.");
+    }
+
+    const response = await apiClient.get<FeedIntakeBehavior>(
+      `${FIELD_IQ_API_CONFIG.endpoints.farmer_v2.feed_intake_behavior}/${farmerUserProfileId}`,
+    );
+
+    if (response.error) {
+      throw new Error(response.error);
+    }
+
+    if (!response.data) {
+      throw new Error("No data received from server");
+    }
     return response.data;
   },
 

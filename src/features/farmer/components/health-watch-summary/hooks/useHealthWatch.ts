@@ -1,4 +1,7 @@
-import type { HealthWatch as ApiHealthWatch } from "@/features/farmer/types";
+import type {
+  HealthIssue as ApiHealthIssue,
+  HealthWatch as ApiHealthWatch,
+} from "@/features/farmer/types";
 import { useMemo, useState } from "react";
 import {
   type HealthIssue,
@@ -8,6 +11,16 @@ import {
   TIME_PERIODS,
   type TimePeriod,
 } from "../constants";
+
+// Type guard to check if an issue has the expected structure
+const isValidHealthIssue = (issue: any): issue is ApiHealthIssue => {
+  return (
+    issue &&
+    typeof issue === "object" &&
+    typeof issue.incident_type === "string" &&
+    typeof issue.affected_count === "number"
+  );
+};
 
 // Transform API incident type to component format
 const transformApiIncidentType = (apiType: string): IssueType => {
@@ -38,22 +51,33 @@ const transformApiSeverity = (
 const transformApiDataToIssues = (
   apiHealthData?: ApiHealthWatch,
 ): HealthIssue[] => {
-  if (!apiHealthData?.recent_issues) {
+  if (
+    !apiHealthData?.recent_issues ||
+    apiHealthData.recent_issues.length === 0
+  ) {
     return [];
   }
 
-  return apiHealthData.recent_issues.map((issue, index) => ({
-    id: index.toString(),
-    date: issue.date,
-    type: transformApiIncidentType(issue.incident_type),
-    count: issue.affected_count,
-    severity: transformApiSeverity(
-      issue.affected_count,
-      issue.requires_vet_visit,
-    ),
-    description: issue.symptoms,
-    notes: `${issue.suspected_cause} | Actions: ${issue.actions_taken}`,
-  }));
+  // Filter and transform valid health issues
+  return apiHealthData.recent_issues
+    .filter(isValidHealthIssue)
+    .map((issue, index) => ({
+      id: index.toString(),
+      date: issue.date || new Date().toISOString().split("T")[0],
+      type: transformApiIncidentType(issue.incident_type),
+      count: issue.affected_count,
+      severity: transformApiSeverity(
+        issue.affected_count,
+        issue.requires_vet_visit || false,
+      ),
+      description: issue.symptoms || "No description available",
+      notes:
+        issue.suspected_cause && issue.actions_taken
+          ? `${issue.suspected_cause} | Actions: ${issue.actions_taken}`
+          : issue.suspected_cause ||
+            issue.actions_taken ||
+            "No additional notes",
+    }));
 };
 
 // Create summary from API data
@@ -79,20 +103,27 @@ const createSummaryFromApiData = (
     return "declining";
   };
 
+  // Safely access issue_summary with fallbacks
+  const issueSummary = apiHealthData.issue_summary || {
+    sick: 0,
+    mortality: 0,
+    notes: 0,
+  };
+
   const totalIssues =
-    apiHealthData.issue_summary.sick +
-    apiHealthData.issue_summary.mortality +
-    apiHealthData.issue_summary.notes;
+    issueSummary.sick + issueSummary.mortality + issueSummary.notes;
 
   return {
     totalIssues,
-    sickCount: apiHealthData.issue_summary.sick,
-    mortalityCount: apiHealthData.issue_summary.mortality,
-    notesCount: apiHealthData.issue_summary.notes,
-    healthScore: apiHealthData.health_score,
-    trend: getTrend(apiHealthData.health_score),
+    sickCount: issueSummary.sick,
+    mortalityCount: issueSummary.mortality,
+    notesCount: issueSummary.notes,
+    healthScore: apiHealthData.health_score || 100,
+    trend: getTrend(apiHealthData.health_score || 100),
     lastUpdated:
-      apiHealthData.recent_issues[0]?.date ||
+      (apiHealthData.recent_issues &&
+        apiHealthData.recent_issues.length > 0 &&
+        apiHealthData.recent_issues[0]?.date) ||
       new Date().toISOString().split("T")[0],
   };
 };

@@ -1,23 +1,31 @@
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import ExpandableCard from "@/components/ui/expandable-card";
-import type { FarmerDashboardViewModel } from "@/services/field-iq-service";
+import { useHealthWatch } from "@/hooks/use-farmer-v2";
 import { useChatWidgetStore } from "@/store/chat-widget-store";
+import { useUserStore } from "@/store/user-store";
 import { Plus, TrendingUp } from "lucide-react";
 import { IssueList, IssueSummary, SmileyMeter } from "./components";
 import { TIME_PERIODS } from "./constants";
-import { useHealthWatch } from "./hooks";
+import { useHealthWatch as useHealthWatchLocal } from "./hooks";
 
 interface HealthWatchSummaryProps {
-  dashboardData?: FarmerDashboardViewModel;
+  // Remove dashboardData dependency - we'll fetch data directly
 }
 
-export const HealthWatchSummary: React.FC<HealthWatchSummaryProps> = ({
-  dashboardData,
-}) => {
-  const { timePeriod, setTimePeriod, issues, summary } = useHealthWatch(
-    dashboardData?.health_watch,
-  );
+export const HealthWatchSummary: React.FC<HealthWatchSummaryProps> = () => {
+  const { user } = useUserStore();
+  const farmerUserProfileId = user?.profileId || 0;
+
+  // Fetch health watch data directly from API
+  const {
+    data: healthWatchData,
+    isLoading,
+    error,
+  } = useHealthWatch(farmerUserProfileId);
+
+  const { timePeriod, setTimePeriod, issues, summary } =
+    useHealthWatchLocal(healthWatchData);
 
   const { openFlockMortalityReport } = useChatWidgetStore();
 
@@ -25,8 +33,8 @@ export const HealthWatchSummary: React.FC<HealthWatchSummaryProps> = ({
     openFlockMortalityReport();
   };
 
-  // Show loading state if no data
-  if (!dashboardData?.health_watch) {
+  // Show loading state
+  if (isLoading) {
     return (
       <ExpandableCard
         title="Health Watch Summary"
@@ -41,7 +49,32 @@ export const HealthWatchSummary: React.FC<HealthWatchSummaryProps> = ({
         <div className="space-y-4">
           <div className="rounded-lg p-4 border">
             <div className="text-center text-muted-foreground">
-              <p className="text-sm">No health data available</p>
+              <p className="text-sm">Loading...</p>
+            </div>
+          </div>
+        </div>
+      </ExpandableCard>
+    );
+  }
+
+  // Show error state
+  if (error) {
+    return (
+      <ExpandableCard
+        title="Health Watch Summary"
+        summary={
+          <div className="flex items-center gap-2 text-muted-foreground">
+            <TrendingUp className="h-4 w-4" />
+            <span className="text-sm">Error loading health data</span>
+          </div>
+        }
+        className="h-fit"
+      >
+        <div className="space-y-4">
+          <div className="rounded-lg p-4 border">
+            <div className="text-center text-muted-foreground">
+              <p className="text-sm">Failed to load health data</p>
+              <p className="text-xs mt-1">{error.message}</p>
             </div>
           </div>
         </div>

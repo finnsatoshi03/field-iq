@@ -79,7 +79,11 @@ export const calculateHealthSummary = (
 
 export const getHealthStatus = (
   score: number,
+  totalIssues?: number,
 ): "excellent" | "good" | "warning" | "critical" => {
+  // If no issues, show good status instead of excellent
+  if (totalIssues === 0) return "good";
+  
   if (score >= 90) return "excellent";
   if (score >= 75) return "good";
   if (score >= 50) return "warning";

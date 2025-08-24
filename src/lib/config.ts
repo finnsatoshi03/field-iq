@@ -6,8 +6,6 @@ export const FIELD_IQ_API_URL = import.meta.env.VITE_FIELD_IQ_API_URL;
 export const FIELD_IQ_API_CONFIG = {
   baseUrl: import.meta.env.VITE_FIELD_IQ_API_URL || "http://localhost:8000",
   endpoints: {
-    farmerDashboard: "/ViewModels/farmer-dashboard",
-
     // Farmer API Endpoints
     farmer: {
       chat: "/farmer/chat",
@@ -26,6 +24,9 @@ export const FIELD_IQ_API_CONFIG = {
       feed_calculation_log: "/farmer_v2/feed-calculation-log",
       feed_calculation_log_by_profile:
         "/farmer_v2/feed-calculation-log/farmer-user-profile",
+      health_watch: "/farmer_v2/health-watch/farmer-user-profile",
+      feed_intake_behavior:
+        "/farmer_v2/feed-intake-behavior/farmer-user-profile",
     },
 
     // Sales Rep API Endpoints
