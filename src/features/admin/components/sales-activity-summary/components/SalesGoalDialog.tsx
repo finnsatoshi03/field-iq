@@ -22,6 +22,7 @@ interface SalesGoalDialogProps {
     period_end: string;
   }) => Promise<void>;
   currentGoal?: SalesGoal | null;
+  existingGoals?: SalesGoal[];
   isLoading?: boolean;
   mode: "create" | "update";
 }
@@ -31,6 +32,7 @@ const SalesGoalDialog = ({
   onClose,
   onSave,
   currentGoal,
+  existingGoals = [],
   isLoading = false,
   mode,
 }: SalesGoalDialogProps) => {
@@ -83,6 +85,27 @@ const SalesGoalDialog = ({
       if (startDate >= endDate) {
         newErrors.period_end = "End date must be after start date";
       }
+
+      // Check for timeline conflicts with existing goals (only for create mode)
+      if (mode === "create") {
+        const hasConflict = existingGoals.some((goal) => {
+          const goalStart = new Date(goal.period_start);
+          const goalEnd = new Date(goal.period_end);
+
+          // Check if the new period overlaps with existing goal period
+          return (
+            (startDate >= goalStart && startDate <= goalEnd) ||
+            (endDate >= goalStart && endDate <= goalEnd) ||
+            (startDate <= goalStart && endDate >= goalEnd)
+          );
+        });
+
+        if (hasConflict) {
+          newErrors.period_start =
+            "This period conflicts with an existing goal";
+          newErrors.period_end = "This period conflicts with an existing goal";
+        }
+      }
     }
 
     setErrors(newErrors);
@@ -126,6 +149,26 @@ const SalesGoalDialog = ({
         </DialogHeader>
 
         <div className="space-y-4 py-4">
+          {/* Show existing goals for reference when creating new ones */}
+          {mode === "create" && existingGoals.length > 0 && (
+            <div className="space-y-2">
+              <Label className="text-sm font-medium text-muted-foreground">
+                Existing Goal Periods (for reference)
+              </Label>
+              <div className="max-h-24 overflow-y-auto space-y-1 p-2 bg-muted/50 rounded-md">
+                {existingGoals.map((goal) => (
+                  <div key={goal.id} className="text-xs text-muted-foreground">
+                    {new Date(goal.period_start).toLocaleDateString()} -{" "}
+                    {new Date(goal.period_end).toLocaleDateString()}
+                    <span className="ml-2 font-medium">
+                      (₱{goal.target_amount.toLocaleString()})
+                    </span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
           {/* Target Amount */}
           <div className="space-y-2">
             <Label htmlFor="target_amount">Target Amount (₱)</Label>

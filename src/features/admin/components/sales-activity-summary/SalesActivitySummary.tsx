@@ -1,16 +1,31 @@
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+
+import type { SalesGoal } from "@/features/admin/types";
 import { useUserStore } from "@/store";
-import { AlertTriangle, Loader2, Target, TrendingUp } from "lucide-react";
+import {
+  AlertTriangle,
+  Eye,
+  Loader2,
+  Plus,
+  Target,
+  TrendingUp,
+} from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
-import { SalesChart, SalesGoalDialog, ViewToggle } from "./components";
+import {
+  AllGoalsDialog,
+  SalesChart,
+  SalesGoalDialog,
+  ViewToggle,
+} from "./components";
 import type { ViewMode } from "./constants";
 import { VIEW_MODES } from "./constants";
 import {
   useAdminSales,
   useCreateSalesGoal,
   useCurrentSalesGoal,
+  useSalesGoals,
   useUpdateSalesGoal,
 } from "./hooks";
 import {
@@ -30,6 +45,8 @@ const SalesActivitySummary: React.FC<SalesActivitySummaryProps> = ({
   const { user } = useUserStore();
   const [viewMode, setViewMode] = useState<ViewMode>(VIEW_MODES.REGION);
   const [goalDialogOpen, setGoalDialogOpen] = useState(false);
+  const [allGoalsDialogOpen, setAllGoalsDialogOpen] = useState(false);
+  const [editingGoal, setEditingGoal] = useState<SalesGoal | null>(null);
 
   // Fetch data using our hooks
   const {
@@ -42,13 +59,33 @@ const SalesActivitySummary: React.FC<SalesActivitySummaryProps> = ({
   const { data: currentGoalData, isLoading: goalLoading } =
     useCurrentSalesGoal(companyId);
 
+  const { data: allGoalsData, isLoading: allGoalsLoading } =
+    useSalesGoals(companyId);
+
   const createGoalMutation = useCreateSalesGoal();
   const updateGoalMutation = useUpdateSalesGoal();
 
   const currentGoal = currentGoalData?.data;
+  const allGoals = allGoalsData?.data || [];
 
   const handleViewChange = (newView: ViewMode) => {
     setViewMode(newView);
+  };
+
+  const handleEditGoal = (goal: SalesGoal) => {
+    setEditingGoal(goal);
+    setAllGoalsDialogOpen(false);
+    setGoalDialogOpen(true);
+  };
+
+  const handleCloseGoalDialog = () => {
+    setGoalDialogOpen(false);
+    setEditingGoal(null);
+  };
+
+  const handleCreateNewGoal = () => {
+    setEditingGoal(null); // Clear any editing goal
+    setGoalDialogOpen(true);
   };
 
   const handleSaveGoal = async (goalData: {
@@ -62,8 +99,23 @@ const SalesActivitySummary: React.FC<SalesActivitySummaryProps> = ({
     }
 
     try {
-      if (currentGoal) {
-        // Update existing goal
+      if (editingGoal) {
+        // Update specific goal being edited
+        const updatePromise = updateGoalMutation.mutateAsync({
+          goalId: editingGoal.id,
+          goalData: { target_amount: goalData.target_amount },
+          companyId,
+        });
+
+        toast.promise(updatePromise, {
+          loading: "Updating sales goal...",
+          success: "Sales goal updated successfully!",
+          error: "Failed to update sales goal",
+        });
+
+        await updatePromise;
+      } else if (currentGoal) {
+        // Update current goal if no specific goal is being edited
         const updatePromise = updateGoalMutation.mutateAsync({
           goalId: currentGoal.id,
           goalData: { target_amount: goalData.target_amount },
@@ -101,7 +153,7 @@ const SalesActivitySummary: React.FC<SalesActivitySummaryProps> = ({
   };
 
   // Loading state
-  if (isLoading) {
+  if (isLoading || allGoalsLoading) {
     return (
       <div className="bg-card space-y-4 rounded-lg border border-border p-4">
         <div className="flex items-center justify-between mb-4">
@@ -172,7 +224,7 @@ const SalesActivitySummary: React.FC<SalesActivitySummaryProps> = ({
   const salesMetrics = calculateSalesMetrics(transformedData);
   const chartData = sortChartData(getChartData(transformedData, viewMode));
 
-  // Calculate goal progress
+  // Calculate goal progress for current goal
   const goalProgress = currentGoal
     ? Math.min(
         (salesMetrics.totalClosedSales / currentGoal.target_amount) * 100,
@@ -198,16 +250,43 @@ const SalesActivitySummary: React.FC<SalesActivitySummaryProps> = ({
               currentView={viewMode}
               onViewChange={handleViewChange}
             />
+            {allGoals.length > 0 && (
+              <Button
+                onClick={() => setAllGoalsDialogOpen(true)}
+                size="sm"
+                variant="outline"
+                className="gap-2"
+                disabled={allGoalsLoading}
+              >
+                <Eye className="h-4 w-4" />
+                View All Goals ({allGoals.length})
+              </Button>
+            )}
             <Button
-              onClick={() => setGoalDialogOpen(true)}
+              onClick={handleCreateNewGoal}
               size="sm"
               variant="outline"
               className="gap-2"
-              disabled={goalLoading}
+              disabled={goalLoading || allGoalsLoading}
             >
-              <Target className="h-4 w-4" />
-              {currentGoal ? "Update Goal" : "Set Goal"}
+              <Plus className="h-4 w-4" />
+              Create New Goal
             </Button>
+            {currentGoal && (
+              <Button
+                onClick={() => {
+                  setEditingGoal(currentGoal);
+                  setGoalDialogOpen(true);
+                }}
+                size="sm"
+                variant="outline"
+                className="gap-2"
+                disabled={goalLoading || allGoalsLoading}
+              >
+                <Target className="h-4 w-4" />
+                Update Current Goal
+              </Button>
+            )}
           </div>
         </div>
 
@@ -226,13 +305,27 @@ const SalesActivitySummary: React.FC<SalesActivitySummaryProps> = ({
         {/* Sales Goal Dialog */}
         <SalesGoalDialog
           isOpen={goalDialogOpen}
-          onClose={() => setGoalDialogOpen(false)}
+          onClose={handleCloseGoalDialog}
           onSave={handleSaveGoal}
-          currentGoal={currentGoal}
+          currentGoal={editingGoal || currentGoal}
+          existingGoals={allGoals}
           isLoading={
             createGoalMutation.isPending || updateGoalMutation.isPending
           }
-          mode={currentGoal ? "update" : "create"}
+          mode={editingGoal || currentGoal ? "update" : "create"}
+        />
+
+        {/* All Goals Dialog */}
+        <AllGoalsDialog
+          isOpen={allGoalsDialogOpen}
+          onClose={() => setAllGoalsDialogOpen(false)}
+          goals={allGoals}
+          salesMetrics={salesMetrics}
+          onEditGoal={handleEditGoal}
+          onCreateNew={() => {
+            setAllGoalsDialogOpen(false);
+            handleCreateNewGoal();
+          }}
         />
       </div>
     );
@@ -241,7 +334,7 @@ const SalesActivitySummary: React.FC<SalesActivitySummaryProps> = ({
   return (
     <div className="bg-card space-y-4 rounded-lg border border-border p-4">
       <div>
-        <div className="flex items-center justify-between mb-4">
+        <div className="flex items-start justify-between mb-4">
           <div>
             <h3 className="text-foreground font-display font-semibold text-base tracking-tight">
               Sales Dashboard
@@ -250,31 +343,62 @@ const SalesActivitySummary: React.FC<SalesActivitySummaryProps> = ({
               Track your sales performance and goals
             </p>
           </div>
-          <div className="flex items-center gap-2">
+          <div className="flex flex-col items-end gap-2">
             <ViewToggle
               currentView={viewMode}
               onViewChange={handleViewChange}
             />
-            <Button
-              onClick={() => setGoalDialogOpen(true)}
-              size="sm"
-              variant="outline"
-              className="gap-2"
-              disabled={goalLoading}
-            >
-              <Target className="h-4 w-4" />
-              {currentGoal ? "Update Goal" : "Set Goal"}
-            </Button>
+            <div className="flex items-center flex-wrap gap-2">
+              {allGoals.length > 0 && (
+                <Button
+                  onClick={() => setAllGoalsDialogOpen(true)}
+                  size="sm"
+                  variant="outline"
+                  className="gap-2"
+                  disabled={allGoalsLoading}
+                >
+                  <Eye className="h-4 w-4" />
+                  View All Goals ({allGoals.length})
+                </Button>
+              )}
+              <Button
+                onClick={handleCreateNewGoal}
+                size="sm"
+                variant="outline"
+                className="gap-2"
+                disabled={goalLoading || allGoalsLoading}
+              >
+                <Plus className="h-4 w-4" />
+                Create New Goal
+              </Button>
+              {currentGoal && (
+                <Button
+                  onClick={() => {
+                    setEditingGoal(currentGoal);
+                    setGoalDialogOpen(true);
+                  }}
+                  size="sm"
+                  variant="outline"
+                  className="gap-2"
+                  disabled={goalLoading || allGoalsLoading}
+                >
+                  <Target className="h-4 w-4" />
+                  Update Current Goal
+                </Button>
+              )}
+            </div>
           </div>
         </div>
 
-        {/* Sales Goal Progress - show only if goal exists */}
+        {/* Current Goal Progress - show only current goal */}
         {currentGoal && (
           <div className="mb-6 p-4 bg-gradient-to-r from-blue-50 to-green-50 rounded-lg border border-blue-200">
             <div className="flex items-center justify-between mb-2">
               <div className="flex items-center gap-2">
                 <Target className="h-5 w-5 text-blue-600" />
-                <h4 className="font-semibold text-gray-900">Goal Progress</h4>
+                <h4 className="font-semibold text-gray-900">
+                  Current Goal Progress
+                </h4>
               </div>
               <Badge
                 variant={
@@ -414,11 +538,25 @@ const SalesActivitySummary: React.FC<SalesActivitySummaryProps> = ({
       {/* Sales Goal Dialog */}
       <SalesGoalDialog
         isOpen={goalDialogOpen}
-        onClose={() => setGoalDialogOpen(false)}
+        onClose={handleCloseGoalDialog}
         onSave={handleSaveGoal}
-        currentGoal={currentGoal}
+        currentGoal={editingGoal || currentGoal}
+        existingGoals={allGoals}
         isLoading={createGoalMutation.isPending || updateGoalMutation.isPending}
-        mode={currentGoal ? "update" : "create"}
+        mode={editingGoal || currentGoal ? "update" : "create"}
+      />
+
+      {/* All Goals Dialog */}
+      <AllGoalsDialog
+        isOpen={allGoalsDialogOpen}
+        onClose={() => setAllGoalsDialogOpen(false)}
+        goals={allGoals}
+        salesMetrics={salesMetrics}
+        onEditGoal={handleEditGoal}
+        onCreateNew={() => {
+          setAllGoalsDialogOpen(false);
+          handleCreateNewGoal();
+        }}
       />
     </div>
   );
