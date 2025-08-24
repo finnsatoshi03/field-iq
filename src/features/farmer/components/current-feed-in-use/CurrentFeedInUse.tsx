@@ -1,9 +1,4 @@
-import {
-  Calendar,
-  ChevronRight,
-  Settings,
-  Wheat,
-} from "lucide-react";
+import { Calendar, ChevronRight, Settings, Wheat } from "lucide-react";
 import { useState } from "react";
 
 import { Badge } from "@/components/ui/badge";
@@ -40,8 +35,6 @@ export const CurrentFeedInUse: React.FC<CurrentFeedInUseProps> = ({
     }
     return `${start} - ${end} days`;
   };
-
-
 
   const getFeedStageDisplay = (stage?: string | null) => {
     if (!stage || typeof stage !== "string") return "Unknown";
@@ -153,7 +146,9 @@ export const CurrentFeedInUse: React.FC<CurrentFeedInUseProps> = ({
                   Days on Feed
                 </p>
                 <p className="text-sm font-medium font-display">
-                  {feedInfo?.days_on_feed ? `${feedInfo.days_on_feed} days` : "—"}
+                  {feedInfo?.days_on_feed
+                    ? `${feedInfo.days_on_feed} days`
+                    : "—"}
                 </p>
               </div>
             </div>
@@ -247,7 +242,9 @@ export const CurrentFeedInUse: React.FC<CurrentFeedInUseProps> = ({
             <div className="p-5 bg-green-100 -mx-6 border-t border-green-500 border-b">
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <p className="text-xs text-green-600 font-medium">Program ID</p>
+                  <p className="text-xs text-green-600 font-medium">
+                    Program ID
+                  </p>
                   <p className="text-sm font-display font-medium text-green-700">
                     #{feedInfo?.feed_program_id || "—"}
                   </p>
@@ -262,8 +259,6 @@ export const CurrentFeedInUse: React.FC<CurrentFeedInUseProps> = ({
                 </div>
               </div>
             </div>
-
-
 
             {/* Close Button */}
             <div className="flex items-center justify-end p-5 -mx-6 bg-muted/50">

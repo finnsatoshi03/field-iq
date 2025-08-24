@@ -87,7 +87,7 @@ function FarmerDashboard() {
         <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
           <div className="lg:col-span-2 xl:col-span-2 h-fit gap-6 grid grid-cols-1 lg:grid-cols-2">
             <div className="grid lg:grid-cols-2 gap-6 lg:col-span-2 xl:col-span-2">
-                            <CurrentFeedInUse farmerUserProfileId={farmerUserProfileId} />
+              <CurrentFeedInUse farmerUserProfileId={farmerUserProfileId} />
               <GrowthPerformanceLog dashboardData={dashboardData} />
             </div>
             <div className="lg:col-span-2 xl:col-span-2">
