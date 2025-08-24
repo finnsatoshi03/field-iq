@@ -369,6 +369,7 @@ export const FarmerManager = ({ className, companyId }: FarmerManagerProps) => {
   const [location, setLocation] = useState("");
   const [region, setRegion] = useState("");
   const [livestockType, setLivestockType] = useState("");
+  const [farmName, setFarmName] = useState("");
 
   const { user } = useUserStore();
   const {
@@ -444,6 +445,10 @@ export const FarmerManager = ({ className, companyId }: FarmerManagerProps) => {
       toast.error("Last name is required");
       return;
     }
+    if (!farmName.trim()) {
+      toast.error("Farm name is required");
+      return;
+    }
     if (!location.trim()) {
       toast.error("Location is required");
       return;
@@ -472,6 +477,7 @@ export const FarmerManager = ({ className, companyId }: FarmerManagerProps) => {
           created_by: user?.id || null,
           first_name: firstName.trim(),
           last_name: lastName.trim(),
+          farm_name: farmName.trim(),
           mobile_number: mobileNumber.trim() || null,
           location: location.trim(),
           region: region.trim(),
@@ -495,6 +501,7 @@ export const FarmerManager = ({ className, companyId }: FarmerManagerProps) => {
             created_by: user?.id || null,
             first_name: firstName.trim(),
             last_name: lastName.trim(),
+            farm_name: farmName.trim(),
             mobile_number: mobileNumber.trim() || null,
             location: location.trim(),
             region: region.trim(),
@@ -557,6 +564,7 @@ export const FarmerManager = ({ className, companyId }: FarmerManagerProps) => {
     setLinkType("invite");
     setFirstName("");
     setLastName("");
+    setFarmName("");
     setMobileNumber("");
     setLocation("");
     setRegion("");
@@ -855,6 +863,21 @@ export const FarmerManager = ({ className, companyId }: FarmerManagerProps) => {
               </div>
             </div>
 
+            {/* Farm Information */}
+            <div className="space-y-2">
+              <Label htmlFor="farm-name">
+                Farm Name <span className="text-red-500">*</span>
+              </Label>
+              <Input
+                id="farm-name"
+                type="text"
+                value={farmName}
+                onChange={(e) => setFarmName(e.target.value)}
+                placeholder="e.g., Cruz Family Farm, Sunrise Poultry Farm"
+                required
+              />
+            </div>
+
             <div className="space-y-2">
               <Label htmlFor="mobile-number">Mobile Number (Optional)</Label>
               <Input
@@ -1102,6 +1125,7 @@ export const FarmerManager = ({ className, companyId }: FarmerManagerProps) => {
                   !email ||
                   !firstName.trim() ||
                   !lastName.trim() ||
+                  !farmName.trim() ||
                   !location.trim() ||
                   !region.trim() ||
                   !livestockType.trim()
