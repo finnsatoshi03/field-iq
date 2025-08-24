@@ -261,7 +261,7 @@ const DealerAlertLog: React.FC<DealerAlertLogProps> = ({
 
   return (
     <ExpandableCard
-      title="Dealer Alert Log"
+      title="Sales Rep Alert Log"
       summary={summaryContent}
       className={cn("sm:h-fit", className)}
     >

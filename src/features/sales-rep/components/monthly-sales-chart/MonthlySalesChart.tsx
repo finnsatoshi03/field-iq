@@ -88,8 +88,8 @@ const MonthlySalesChart: React.FC<MonthlySalesChartProps> = ({ userId }) => {
   }
 
   // Extract data from API response
-  const monthlySalesData = salesData?.data.monthly_sales || [];
-  const averageSales = salesData?.data.average_sales || 0;
+  const monthlySalesData = salesData?.data?.monthly_sales || [];
+  const averageSales = salesData?.data?.average_sales || 0;
 
   // Calculate metrics
   const totalVolumeInfluenced =
@@ -98,6 +98,35 @@ const MonthlySalesChart: React.FC<MonthlySalesChartProps> = ({ userId }) => {
   const avgVolumeInfluenced =
     calculateAverageVolumeInfluenced(monthlySalesData);
   const avgClosedSales = averageSales; // Use API provided average
+
+  // Show empty state if no data
+  if (!monthlySalesData || monthlySalesData.length === 0) {
+    return (
+      <ExpandableCard
+        title="Monthly Sales Performance"
+        summary={
+          <div className="flex items-center gap-2 text-muted-foreground">
+            <TrendingUp className="h-4 w-4" />
+            <span className="text-sm">No data available</span>
+          </div>
+        }
+        className="sm:h-fit"
+      >
+        <div className="h-72 w-full flex items-center justify-center">
+          <div className="text-center text-muted-foreground">
+            <TrendingUp className="h-12 w-12 mx-auto mb-4 opacity-50" />
+            <h3 className="font-display font-medium text-foreground mb-2">
+              No sales data yet
+            </h3>
+            <p className="text-sm">
+              Monthly sales data will appear here once you have sales
+              activities.
+            </p>
+          </div>
+        </div>
+      </ExpandableCard>
+    );
+  }
 
   // Summary content - only the key numbers
   const summaryContent = (
@@ -232,7 +261,9 @@ const MonthlySalesChart: React.FC<MonthlySalesChartProps> = ({ userId }) => {
               <Cell
                 key={`volume-${index}`}
                 fillOpacity={
-                  entry.volumeInfluenced >= avgVolumeInfluenced ? 1 : 0.4
+                  (entry?.volumeInfluenced || 0) >= avgVolumeInfluenced
+                    ? 1
+                    : 0.4
                 }
               />
             ))}
@@ -247,7 +278,9 @@ const MonthlySalesChart: React.FC<MonthlySalesChartProps> = ({ userId }) => {
             {monthlySalesData.map((entry, index) => (
               <Cell
                 key={`sales-${index}`}
-                fillOpacity={entry.closedSales >= avgClosedSales ? 1 : 0.4}
+                fillOpacity={
+                  (entry?.closedSales || 0) >= avgClosedSales ? 1 : 0.4
+                }
               />
             ))}
           </Bar>

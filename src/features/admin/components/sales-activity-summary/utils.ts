@@ -11,14 +11,19 @@ import { VIEW_MODES } from "./constants";
 export const transformApiDataToSalesData = (
   apiData: AdminSalesItem[],
 ): SalesData[] => {
+  // Handle null or undefined apiData
+  if (!apiData || !Array.isArray(apiData)) {
+    return [];
+  }
+
   return apiData.map((item) => ({
-    id: item.id,
-    region: item.region || "Unknown Region",
-    rep: item.rep || "Unknown Rep",
-    influencedVolume: item.targetInfluence, // Map targetInfluence to influencedVolume
-    closedSales: item.closedSales,
-    growthRate: item.growthRate,
-    period: item.period,
+    id: item?.id || "",
+    region: item?.region || "Unknown Region",
+    rep: item?.rep || "Unknown Rep",
+    influencedVolume: item?.targetInfluence || 0, // Map targetInfluence to influencedVolume
+    closedSales: item?.closedSales || 0,
+    growthRate: item?.growthRate || 0,
+    period: item?.period || "",
   }));
 };
 
@@ -46,16 +51,27 @@ export const formatPercentage = (percentage: number): string => {
 };
 
 export const calculateSalesMetrics = (salesData: SalesData[]): SalesMetrics => {
+  // Handle empty or null salesData
+  if (!salesData || salesData.length === 0) {
+    return {
+      totalInfluencedVolume: 0,
+      totalClosedSales: 0,
+      averageGrowthRate: 0,
+      topPerformingRegion: "",
+      topPerformingRep: "",
+    };
+  }
+
   const totalInfluencedVolume = salesData.reduce(
-    (sum, data) => sum + data.influencedVolume,
+    (sum, data) => sum + (data.influencedVolume || 0),
     0,
   );
   const totalClosedSales = salesData.reduce(
-    (sum, data) => sum + data.closedSales,
+    (sum, data) => sum + (data.closedSales || 0),
     0,
   );
   const averageGrowthRate =
-    salesData.reduce((sum, data) => sum + data.growthRate, 0) /
+    salesData.reduce((sum, data) => sum + (data.growthRate || 0), 0) /
     salesData.length;
 
   // Group by region to find top performing region
@@ -90,13 +106,19 @@ export const calculateSalesMetrics = (salesData: SalesData[]): SalesMetrics => {
 };
 
 export const groupDataByRegion = (salesData: SalesData[]): ChartDataPoint[] => {
+  // Handle empty or null salesData
+  if (!salesData || salesData.length === 0) {
+    return [];
+  }
+
   const grouped = salesData.reduce(
     (acc, data) => {
-      if (!acc[data.region]) {
-        acc[data.region] = { influenced: 0, closed: 0 };
+      const region = data?.region || "Unknown Region";
+      if (!acc[region]) {
+        acc[region] = { influenced: 0, closed: 0 };
       }
-      acc[data.region].influenced += data.influencedVolume;
-      acc[data.region].closed += data.closedSales;
+      acc[region].influenced += data?.influencedVolume || 0;
+      acc[region].closed += data?.closedSales || 0;
       return acc;
     },
     {} as Record<string, { influenced: number; closed: number }>,
@@ -111,10 +133,15 @@ export const groupDataByRegion = (salesData: SalesData[]): ChartDataPoint[] => {
 };
 
 export const groupDataByRep = (salesData: SalesData[]): ChartDataPoint[] => {
+  // Handle empty or null salesData
+  if (!salesData || salesData.length === 0) {
+    return [];
+  }
+
   return salesData.map((data) => ({
-    name: data.rep,
-    influencedVolume: data.influencedVolume,
-    closedSales: data.closedSales,
+    name: data?.rep || "Unknown Rep",
+    influencedVolume: data?.influencedVolume || 0,
+    closedSales: data?.closedSales || 0,
     type: "rep" as const,
   }));
 };

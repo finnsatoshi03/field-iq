@@ -166,7 +166,7 @@ const SalesActivitySummary: React.FC<SalesActivitySummaryProps> = ({
   }
 
   // Transform API data to component format
-  const transformedData = salesData
+  const transformedData = salesData?.data
     ? transformApiDataToSalesData(salesData.data)
     : [];
   const salesMetrics = calculateSalesMetrics(transformedData);
