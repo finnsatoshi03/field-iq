@@ -4,8 +4,8 @@ import OnBoardingPage from "@/features/pages/OnBoarding";
 import { checkAuthRedirect } from "@/hooks/use-auth-redirect";
 
 export const Route = createFileRoute("/")({
-  beforeLoad: () => {
-    checkAuthRedirect();
+  beforeLoad: ({ location }) => {
+    checkAuthRedirect(location.pathname);
   },
   component: LandingPage,
 });
