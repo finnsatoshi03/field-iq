@@ -132,6 +132,10 @@ export const useCreateUser = () => {
         old ? [...old, newUser] : [newUser],
       );
 
+      // Invalidate and refetch farmers
+      queryClient.invalidateQueries({
+        queryKey: adminQueryKeys.farmers,
+      });
       queryClient.invalidateQueries({
         queryKey: adminQueryKeys.users,
       });
@@ -238,6 +242,7 @@ export const useGenerateEmailLink = () => {
 
 // Invite user by email mutation
 export const useInviteUserByEmail = () => {
+  const queryClient = useQueryClient();
   const { isDev, isAdmin, isSalesRep } = useUser();
 
   return useMutation({
@@ -253,6 +258,13 @@ export const useInviteUserByEmail = () => {
       }
 
       toast.success(`Invitation sent to ${params.email}`);
+
+      queryClient.invalidateQueries({
+        queryKey: adminQueryKeys.farmers,
+      });
+      queryClient.invalidateQueries({
+        queryKey: adminQueryKeys.users,
+      });
     },
     onError: (error: any) => {
       toast.error(error.message || "Failed to send invitation");
