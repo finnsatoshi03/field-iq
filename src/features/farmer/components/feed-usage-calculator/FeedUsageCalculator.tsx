@@ -20,11 +20,14 @@ import {
 } from "@/components/ui/select";
 import { Separator } from "@/components/ui/separator";
 import {
+  farmerV2Keys,
   useActiveFeedProduct,
   useCreateFeedCalculationLog,
   useFeedCalculationLog,
+  useUpdateFeedCalculationLog,
 } from "@/hooks/use-farmer-v2";
 import { useUserStore } from "@/store/user-store";
+import { useQueryClient } from "@tanstack/react-query";
 import { AlertTriangle, Package, Plus, Wheat } from "lucide-react";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
@@ -38,9 +41,12 @@ interface FeedUsageCalculatorProps {
 export const FeedUsageCalculator: React.FC<FeedUsageCalculatorProps> = ({
   farmerUserProfileId,
 }) => {
+  const queryClient = useQueryClient();
+
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [isExpanded, setIsExpanded] = useState(false);
   const [isCreateFormOpen, setIsCreateFormOpen] = useState(false);
+  const [isUpdateFormOpen, setIsUpdateFormOpen] = useState(false);
 
   // Form state for creating new calculation log
   const [formData, setFormData] = useState({
@@ -106,6 +112,21 @@ export const FeedUsageCalculator: React.FC<FeedUsageCalculatorProps> = ({
     user?.livestock_type,
   ]);
 
+  // Auto-fill form with existing data when update dialog opens
+  useEffect(() => {
+    if (isUpdateFormOpen && feedCalcData) {
+      setFormData({
+        number_of_animals: feedCalcData.number_of_animals.toString(),
+        feed_frequency: feedCalcData.feed_frequency.toString(),
+        bag_size_kg: feedCalcData.bag_size_kg.toString(),
+        current_stock_bags: feedCalcData.current_stock_bags.toString(),
+        bag_cost_php: feedCalcData.bag_cost_php.toString(),
+        animal_type: feedCalcData.animal_type,
+        feed_stage: feedCalcData.feed_stage,
+      });
+    }
+  }, [isUpdateFormOpen, feedCalcData]);
+
   // Create mutation
   const createMutation = useCreateFeedCalculationLog({
     onSuccess: () => {
@@ -120,9 +141,29 @@ export const FeedUsageCalculator: React.FC<FeedUsageCalculatorProps> = ({
         feed_stage: "",
       });
       toast.success("Feed calculation log created successfully!");
+      // Invalidate and refetch feed calculation log for this farmer
+      queryClient.invalidateQueries({
+        queryKey: farmerV2Keys.feedCalculationLog(farmerUserProfileId),
+      });
     },
     onError: (error) => {
       toast.error(`Failed to create calculation log: ${error.message}`);
+    },
+  });
+
+  // Update mutation
+  const updateMutation = useUpdateFeedCalculationLog({
+    onSuccess: () => {
+      setIsUpdateFormOpen(false);
+      toast.success("Feed calculation log updated successfully!");
+      // Invalidate and refetch feed calculation log for this farmer
+      queryClient.invalidateQueries({
+        queryKey: farmerV2Keys.feedCalculationLog(farmerUserProfileId),
+      });
+    },
+    onError: (error) => {
+      console.error("Error updating feed calculation log:", error);
+      toast.error("Failed to update feed calculation log. Please try again.");
     },
   });
 
@@ -169,6 +210,60 @@ export const FeedUsageCalculator: React.FC<FeedUsageCalculatorProps> = ({
     };
 
     createMutation.mutate(createData);
+  };
+
+  // Handle update form submission
+  const handleUpdateSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+
+    if (!feedCalcData) return;
+
+    // Calculate derived values
+    const numberOfAnimals = Number(formData.number_of_animals);
+    const feedFrequency = Number(formData.feed_frequency);
+    const bagSizeKg = Number(formData.bag_size_kg);
+    const currentStockBags = Number(formData.current_stock_bags);
+    const bagCostPhp = Number(formData.bag_cost_php);
+
+    // Basic calculations (same as create)
+    const dailyConsumptionKg = numberOfAnimals * feedFrequency * 0.1; // 0.1kg per animal per feeding
+    const weeklyConsumptionKg = dailyConsumptionKg * 7;
+    const bagsNeededPerWeek = weeklyConsumptionKg / bagSizeKg;
+    const costPerWeekPhp = bagsNeededPerWeek * bagCostPhp;
+    const reorderPointDays = Math.floor(
+      (currentStockBags * bagSizeKg) / dailyConsumptionKg,
+    );
+
+    // Determine alert level
+    let alertLevel = "good";
+    if (reorderPointDays < 3) alertLevel = "high";
+    else if (reorderPointDays < 7) alertLevel = "medium";
+    else if (reorderPointDays < 14) alertLevel = "low";
+
+    const updateData = {
+      id: feedCalcData.id,
+      user_profile_id: farmerUserProfileId,
+      number_of_animals: numberOfAnimals,
+      feed_frequency: feedFrequency,
+      bag_size_kg: bagSizeKg,
+      current_stock_bags: currentStockBags,
+      bag_cost_php: bagCostPhp,
+      animal_type: formData.animal_type,
+      feed_stage: formData.feed_stage,
+      daily_consumption_kg: dailyConsumptionKg,
+      bags_needed_per_week: bagsNeededPerWeek,
+      cost_per_week_php: costPerWeekPhp,
+      reorder_point_days: reorderPointDays,
+      alert_level: alertLevel,
+      weekly_consumption_kg: weeklyConsumptionKg,
+      created_at: feedCalcData.created_at,
+      updated_at: new Date().toISOString(),
+    };
+
+    updateMutation.mutate({
+      farmerUserProfileId,
+      logData: updateData,
+    });
   };
 
   const formatInteger = (value?: number | string | null): string => {
@@ -544,6 +639,19 @@ export const FeedUsageCalculator: React.FC<FeedUsageCalculatorProps> = ({
       className="h-fit"
     >
       <div className="space-y-4">
+        {/* Edit Button */}
+        <div className="flex justify-end">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => setIsUpdateFormOpen(true)}
+            className="text-xs"
+          >
+            <Package className="h-3 w-3 mr-1" />
+            Edit Calculation
+          </Button>
+        </div>
+
         {/* Quick Stats Display */}
         <>
           {/* Main Calculation Result */}
@@ -830,6 +938,177 @@ export const FeedUsageCalculator: React.FC<FeedUsageCalculatorProps> = ({
               Last updated: {safeFormatDateTime(feedCalcData?.updated_at)}
             </div>
           </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Update Form Dialog */}
+      <Dialog open={isUpdateFormOpen} onOpenChange={setIsUpdateFormOpen}>
+        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>Update Feed Calculation</DialogTitle>
+            <DialogDescription>
+              Update your feed usage calculation with current data.
+            </DialogDescription>
+          </DialogHeader>
+
+          <form onSubmit={handleUpdateSubmit} className="space-y-4">
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <Label htmlFor="update_number_of_animals">
+                  Number of Animals *
+                </Label>
+                <Input
+                  id="update_number_of_animals"
+                  type="number"
+                  value={formData.number_of_animals}
+                  onChange={(e) =>
+                    setFormData((prev) => ({
+                      ...prev,
+                      number_of_animals: e.target.value,
+                    }))
+                  }
+                  required
+                  min="1"
+                  placeholder="e.g., 100"
+                />
+              </div>
+
+              <div>
+                <Label htmlFor="update_feed_frequency">
+                  Feed Frequency per Day *
+                </Label>
+                <Input
+                  id="update_feed_frequency"
+                  type="number"
+                  value={formData.feed_frequency}
+                  onChange={(e) =>
+                    setFormData((prev) => ({
+                      ...prev,
+                      feed_frequency: e.target.value,
+                    }))
+                  }
+                  required
+                  min="1"
+                  max="10"
+                  placeholder="e.g., 3"
+                />
+              </div>
+
+              <div>
+                <Label htmlFor="update_bag_size_kg">Bag Size (kg) *</Label>
+                <Input
+                  id="update_bag_size_kg"
+                  type="number"
+                  value={formData.bag_size_kg}
+                  onChange={(e) =>
+                    setFormData((prev) => ({
+                      ...prev,
+                      bag_size_kg: e.target.value,
+                    }))
+                  }
+                  required
+                  min="1"
+                  placeholder="e.g., 25"
+                />
+              </div>
+
+              <div>
+                <Label htmlFor="update_current_stock_bags">
+                  Current Stock (bags) *
+                </Label>
+                <Input
+                  id="update_current_stock_bags"
+                  type="number"
+                  value={formData.current_stock_bags}
+                  onChange={(e) =>
+                    setFormData((prev) => ({
+                      ...prev,
+                      current_stock_bags: e.target.value,
+                    }))
+                  }
+                  required
+                  min="0"
+                  placeholder="e.g., 10"
+                />
+              </div>
+
+              <div>
+                <Label htmlFor="update_bag_cost_php">Bag Cost (PHP) *</Label>
+                <Input
+                  id="update_bag_cost_php"
+                  type="number"
+                  value={formData.bag_cost_php}
+                  onChange={(e) =>
+                    setFormData((prev) => ({
+                      ...prev,
+                      bag_cost_php: e.target.value,
+                    }))
+                  }
+                  required
+                  min="1"
+                  placeholder="e.g., 1200"
+                />
+              </div>
+
+              <div>
+                <Label htmlFor="update_animal_type">Animal Type *</Label>
+                <Select
+                  value={formData.animal_type}
+                  onValueChange={(value) =>
+                    setFormData((prev) => ({ ...prev, animal_type: value }))
+                  }
+                  disabled
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select animal type" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="broilers">Broilers</SelectItem>
+                    <SelectItem value="layers">Layers</SelectItem>
+                    <SelectItem value="native">Native</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div>
+                <Label htmlFor="update_feed_stage">Feed Stage *</Label>
+                <Select
+                  value={formData.feed_stage}
+                  onValueChange={(value) =>
+                    setFormData((prev) => ({ ...prev, feed_stage: value }))
+                  }
+                  disabled
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select feed stage" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="starter">Starter</SelectItem>
+                    <SelectItem value="grower">Grower</SelectItem>
+                    <SelectItem value="finisher">Finisher</SelectItem>
+                    <SelectItem value="layer">Layer</SelectItem>
+                    <SelectItem value="booster">Booster</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+
+            <div className="flex justify-end gap-2 pt-4">
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => setIsUpdateFormOpen(false)}
+                disabled={updateMutation.isPending}
+              >
+                Cancel
+              </Button>
+              <Button type="submit" disabled={updateMutation.isPending}>
+                {updateMutation.isPending
+                  ? "Updating..."
+                  : "Update Calculation"}
+              </Button>
+            </div>
+          </form>
         </DialogContent>
       </Dialog>
     </ExpandableCard>

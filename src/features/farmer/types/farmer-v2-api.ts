@@ -163,7 +163,7 @@ export interface UpdateFeedCalculationLogRequest {
   alert_level: string;
   weekly_consumption_kg: number;
   created_at: string;
-  update_at: string; // Note: API has typo "update_at" instead of "updated_at"
+  updated_at: string; // Note: API has typo "update_at" instead of "updated_at"
 }
 
 export interface FeedCalculationLogResponse {

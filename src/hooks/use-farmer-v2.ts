@@ -249,17 +249,9 @@ export const useCreateFeedCalculationLog = (
     "mutationFn"
   >,
 ) => {
-  const queryClient = useQueryClient();
-
   return useMutation({
     mutationFn: (logData: CreateFeedCalculationLogRequest) =>
       fieldIQService.createFeedCalculationLog(logData),
-    onSuccess: (_, variables) => {
-      // Invalidate and refetch feed calculation log for this farmer
-      queryClient.invalidateQueries({
-        queryKey: farmerV2Keys.feedCalculationLog(variables.user_profile_id),
-      });
-    },
     ...options,
   });
 };
@@ -275,19 +267,9 @@ export const useUpdateFeedCalculationLog = (
     "mutationFn"
   >,
 ) => {
-  const queryClient = useQueryClient();
-
   return useMutation({
     mutationFn: ({ farmerUserProfileId, logData }) =>
       fieldIQService.updateFeedCalculationLog(farmerUserProfileId, logData),
-    onSuccess: (_, variables) => {
-      // Invalidate and refetch feed calculation log for this farmer
-      queryClient.invalidateQueries({
-        queryKey: farmerV2Keys.feedCalculationLog(
-          variables.farmerUserProfileId,
-        ),
-      });
-    },
     ...options,
   });
 };
