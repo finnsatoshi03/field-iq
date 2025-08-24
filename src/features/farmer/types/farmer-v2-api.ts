@@ -83,3 +83,27 @@ export interface IncompleteFeedProgramResponse {
   message: string;
   feed_program: FeedProgram;
 }
+
+// Growth Performance Types
+export interface GrowthPerformanceAnalytics {
+  total_logs: number;
+  total_weight_kg: number;
+  mortality_count: number;
+  mortality_percentage: number;
+  performance_index: number;
+  recent_records: any[]; // Define more specific type if needed
+}
+
+export interface GrowthPerformanceData {
+  daily_average_growth_rate: number;
+  current_fcr: number;
+  actual_weight: number;
+  target_weight: number;
+  growth_chart_data: any[]; // Define more specific type if needed
+  performance_analytics: GrowthPerformanceAnalytics;
+}
+
+export interface GrowthPerformanceResponse {
+  message: string;
+  data: GrowthPerformanceData;
+}

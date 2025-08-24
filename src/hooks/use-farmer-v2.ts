@@ -6,6 +6,7 @@ import type {
   CompleteFeedProgramResponse,
   CreateFeedProgramRequest,
   CreateFeedProgramResponse,
+  GrowthPerformanceResponse,
   IncompleteFeedProgramResponse,
 } from "@/features/farmer/types";
 import { fieldIQService } from "@/services/field-iq-service";
@@ -28,6 +29,8 @@ export const farmerV2Keys = {
       farmerUserProfileId,
     ] as const,
   chatAi: () => [...farmerV2Keys.all, "chat-ai"] as const,
+  growthPerformance: (farmerUserProfileId: number) =>
+    [...farmerV2Keys.all, "growth-performance", farmerUserProfileId] as const,
 };
 
 // Chat AI Hook
@@ -190,4 +193,23 @@ export const useInvalidateFarmerV2Queries = () => {
       });
     },
   };
+};
+
+// Get Growth Performance Hook
+export const useGrowthPerformance = (
+  farmerUserProfileId: number,
+  options?: Omit<
+    UseQueryOptions<GrowthPerformanceResponse, Error>,
+    "queryKey" | "queryFn"
+  >,
+) => {
+  return useQuery({
+    queryKey: farmerV2Keys.growthPerformance(farmerUserProfileId),
+    queryFn: () => fieldIQService.getGrowthPerformance(farmerUserProfileId),
+    enabled: farmerUserProfileId > 0,
+    staleTime: 5 * 60 * 1000, // 5 minutes
+    gcTime: 10 * 60 * 1000, // 10 minutes
+    retry: false,
+    ...options,
+  });
 };

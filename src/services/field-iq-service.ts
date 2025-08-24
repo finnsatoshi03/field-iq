@@ -27,6 +27,7 @@ import type {
   CreateFeedProgramRequest,
   CreateFeedProgramResponse,
   FarmerDashboardData,
+  GrowthPerformanceResponse,
   IncompleteFeedProgramResponse,
 } from "@/features/farmer/types";
 import type {
@@ -259,6 +260,29 @@ export const fieldIQService = {
 
     const response = await apiClient.put<IncompleteFeedProgramResponse>(
       `${FIELD_IQ_API_CONFIG.endpoints.farmer_v2.feed_programs_incomplete}/${farmerUserProfileId}/incomplete`,
+    );
+
+    if (response.error) {
+      throw new Error(response.error);
+    }
+
+    if (!response.data) {
+      throw new Error("No data received from server");
+    }
+
+    return response.data;
+  },
+
+  // Get Growth Performance
+  async getGrowthPerformance(
+    farmerUserProfileId: number,
+  ): Promise<GrowthPerformanceResponse> {
+    if (farmerUserProfileId <= 0) {
+      throw new Error("Invalid farmer user profile ID.");
+    }
+
+    const response = await apiClient.get<GrowthPerformanceResponse>(
+      `${FIELD_IQ_API_CONFIG.endpoints.farmer_v2.growth_performance}/${farmerUserProfileId}`,
     );
 
     if (response.error) {

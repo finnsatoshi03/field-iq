@@ -22,6 +22,7 @@ export const FIELD_IQ_API_CONFIG = {
         "/farmer_v2/feed-programs/farmer-user-profile",
       feed_programs_complete: "/farmer_v2/feed-programs/farmer-user-profile",
       feed_programs_incomplete: "/farmer_v2/feed-programs/farmer-user-profile",
+      growth_performance: "/farmer_v2/growth-performance/farmer-user-profile",
     },
 
     // Sales Rep API Endpoints

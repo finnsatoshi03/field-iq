@@ -8,7 +8,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import type { FarmerDashboardViewModel } from "@/services/field-iq-service";
+import { useGrowthPerformance } from "@/hooks/use-farmer-v2";
 import { useChatWidgetStore } from "@/store/chat-widget-store";
 import { Plus, TrendingUp } from "lucide-react";
 import {
@@ -18,15 +18,19 @@ import {
   PerformanceMetrics,
 } from "./components";
 import { ANIMAL_TYPES } from "./constants";
-import { useGrowthPerformance } from "./hooks";
+import { useGrowthPerformance as useGrowthPerformanceLogic } from "./hooks";
 
 interface GrowthPerformanceLogProps {
-  dashboardData?: FarmerDashboardViewModel;
+  farmerUserProfileId: number;
 }
 
 export const GrowthPerformanceLog: React.FC<GrowthPerformanceLogProps> = ({
-  dashboardData,
+  farmerUserProfileId,
 }) => {
+  // Fetch growth performance data from V2 API
+  const { data: growthPerformanceData, isLoading } =
+    useGrowthPerformance(farmerUserProfileId);
+
   const {
     animalType,
     records,
@@ -37,7 +41,7 @@ export const GrowthPerformanceLog: React.FC<GrowthPerformanceLogProps> = ({
     progressValue,
     setAnimalType,
     setIsDetailViewOpen,
-  } = useGrowthPerformance(dashboardData?.growth_performance);
+  } = useGrowthPerformanceLogic(growthPerformanceData?.data);
 
   const { openGrowthMetricsReport } = useChatWidgetStore();
 
@@ -46,7 +50,7 @@ export const GrowthPerformanceLog: React.FC<GrowthPerformanceLogProps> = ({
   };
 
   // Show loading state if no data
-  if (!dashboardData?.growth_performance) {
+  if (isLoading || !growthPerformanceData?.data) {
     return (
       <ExpandableCard
         title="Growth Performance Log"
