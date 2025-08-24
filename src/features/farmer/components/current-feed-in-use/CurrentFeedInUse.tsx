@@ -1,4 +1,10 @@
-import { Calendar, ChevronRight, Settings, Wheat } from "lucide-react";
+import {
+  Calendar,
+  ChevronRight,
+  Database,
+  Settings,
+  Wheat,
+} from "lucide-react";
 import { useState } from "react";
 
 import { Badge } from "@/components/ui/badge";
@@ -12,6 +18,10 @@ import {
 } from "@/components/ui/dialog";
 import ExpandableCard from "@/components/ui/expandable-card";
 import { FEED_STAGE_COLORS, FEED_STAGE_DISPLAY } from "@/features/farmer/types";
+import {
+  useActiveFeedProduct,
+  useActiveFeedProgram,
+} from "@/hooks/use-farmer-v2";
 import type { FarmerDashboardViewModel } from "@/services/field-iq-service";
 
 interface CurrentFeedInUseProps {
@@ -25,6 +35,11 @@ export const CurrentFeedInUse: React.FC<CurrentFeedInUseProps> = ({
 
   // Extract used_feed data from API response
   const feedInfo = dashboardData?.used_feed;
+  const farmerUserProfileId = dashboardData?.farmer_user_profile_id || 0;
+
+  // Fetch farmer_v2 data
+  const { data: activeFeedProgram } = useActiveFeedProgram(farmerUserProfileId);
+  const { data: activeFeedProduct } = useActiveFeedProduct(farmerUserProfileId);
 
   const formatAgeRange = (start: number, end: number) => {
     if (start === 1) {
@@ -263,6 +278,97 @@ export const CurrentFeedInUse: React.FC<CurrentFeedInUseProps> = ({
                 </div>
               </div>
             </div>
+
+            {/* Farmer V2 Active Program Data */}
+            {(activeFeedProgram?.feed_program ||
+              activeFeedProduct?.feed_product) && (
+              <div className="space-y-1">
+                <h4 className="font-medium font-display flex items-center gap-2">
+                  <Database className="h-4 w-4" />
+                  Active Feed Program (V2)
+                </h4>
+                <div className="p-3 rounded-md border bg-purple-50">
+                  {activeFeedProgram?.feed_program && (
+                    <div className="space-y-2">
+                      <div className="flex justify-between items-center">
+                        <span className="text-sm font-medium text-purple-700">
+                          Program #{activeFeedProgram.feed_program.id}
+                        </span>
+                        <Badge
+                          className={`
+                          ${
+                            activeFeedProgram.feed_program.status === "active"
+                              ? "bg-green-100 text-green-800 border-green-200"
+                              : activeFeedProgram.feed_program.status ===
+                                  "completed"
+                                ? "bg-blue-100 text-blue-800 border-blue-200"
+                                : "bg-yellow-100 text-yellow-800 border-yellow-200"
+                          } capitalize text-xs
+                        `}
+                        >
+                          {activeFeedProgram.feed_program.status}
+                        </Badge>
+                      </div>
+                      <div className="grid grid-cols-2 gap-2 text-xs">
+                        <div>
+                          <span className="text-purple-600 font-medium">
+                            Created:
+                          </span>
+                          <p className="text-purple-700">
+                            {formatDate(
+                              activeFeedProgram.feed_program.created_at,
+                            )}
+                          </p>
+                        </div>
+                        <div>
+                          <span className="text-purple-600 font-medium">
+                            Updated:
+                          </span>
+                          <p className="text-purple-700">
+                            {formatDate(
+                              activeFeedProgram.feed_program.updated_at,
+                            )}
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+
+                  {activeFeedProduct?.feed_product && (
+                    <div className="mt-3 pt-3 border-t border-purple-200">
+                      <div className="space-y-1">
+                        <p className="text-sm font-medium text-purple-700">
+                          {activeFeedProduct.feed_product.name}
+                        </p>
+                        <div className="grid grid-cols-2 gap-2 text-xs">
+                          <div>
+                            <span className="text-purple-600 font-medium">
+                              Category:
+                            </span>
+                            <p className="text-purple-700">
+                              {activeFeedProduct.feed_product.category}
+                            </p>
+                          </div>
+                          <div>
+                            <span className="text-purple-600 font-medium">
+                              Price:
+                            </span>
+                            <p className="text-purple-700">
+                              ${activeFeedProduct.feed_product.price}
+                            </p>
+                          </div>
+                        </div>
+                        {activeFeedProduct.feed_product.description && (
+                          <p className="text-xs text-purple-600 mt-1">
+                            {activeFeedProduct.feed_product.description}
+                          </p>
+                        )}
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
 
             {/* Close Button */}
             <div className="flex items-center justify-end p-5 -mx-6 bg-muted/50">

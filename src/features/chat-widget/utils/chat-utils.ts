@@ -116,7 +116,7 @@ const getChatEndpointByRole = (role: UserRole): string => {
 
   switch (role) {
     case "farmer":
-      return `${baseUrl}${FIELD_IQ_API_CONFIG.endpoints.farmer.chat}`;
+      return `${baseUrl}${FIELD_IQ_API_CONFIG.endpoints.farmer_v2.chat_ai}`;
     case "sales_rep":
       return `${baseUrl}${FIELD_IQ_API_CONFIG.endpoints.sales_rep.chat}`;
     default:

@@ -8,6 +8,7 @@ import { Error } from "@/features/error";
 import {
   CurrentFeedInUse,
   FeedIntakeBehavior,
+  FeedProgramManager,
   FeedUsageCalculator,
   GrowthPerformanceLog,
 } from "@/features/farmer/components";
@@ -96,6 +97,7 @@ function FarmerDashboard() {
 
           <div className="xl:col-span-1 space-y-6">
             <FeedUsageCalculator dashboardData={dashboardData} />
+            <FeedProgramManager farmerUserProfileId={farmerUserProfileId} />
             <HealthWatchSummary dashboardData={dashboardData} />
           </div>
         </div>
