@@ -66,13 +66,23 @@ function AuthenticatedLayout() {
   useEffect(() => {
     let isMounted = true;
     const initializeUserFromSession = async () => {
-      if (isAuthenticated) {
-        return;
-      }
+      // Always check if we need to fetch/refresh user profile data
+      // This handles cases where user is authenticated but missing profile data
       try {
         setLoading(true);
         const supaUser = await authService.getCurrentUser();
         if (!supaUser) return;
+
+        // Check if we already have complete user data
+        if (
+          isAuthenticated &&
+          user?.id === supaUser.id &&
+          user?.company_id !== undefined
+        ) {
+          // User data is already complete, no need to refetch
+          return;
+        }
+
         try {
           const profileData = await authService.getUserProfileById(supaUser.id);
           const merged = transformSupabaseUser(supaUser, profileData?.[0]);
@@ -89,7 +99,7 @@ function AuthenticatedLayout() {
     return () => {
       isMounted = false;
     };
-  }, [isAuthenticated, setLoading, setUser]);
+  }, [isAuthenticated, user?.id, user?.company_id, setLoading, setUser]);
 
   useEffect(() => {
     // Show company setup modal if user is admin and has no company_id

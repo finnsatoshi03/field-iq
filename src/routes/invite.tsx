@@ -27,8 +27,21 @@ function InviteSetup() {
     try {
       const session = await authService.getCurrentSession();
       if (session?.user) {
-        const userProfile = transformSupabaseUser(session.user);
-        setUser(userProfile);
+        try {
+          // Try to get full profile data
+          const profileData = await authService.getUserProfileById(
+            session.user.id,
+          );
+          const userProfile = transformSupabaseUser(
+            session.user,
+            profileData?.[0],
+          );
+          setUser(userProfile);
+        } catch {
+          // Fallback to basic user data if profile fetch fails
+          const userProfile = transformSupabaseUser(session.user);
+          setUser(userProfile);
+        }
       }
     } catch (error) {
       console.error("Error syncing auth state:", error);
