@@ -21,6 +21,7 @@ export interface ChatAiResponse {
 export interface CreateFeedProgramRequest {
   farmer_user_profile_id: number;
   feed_product_id: number;
+  animal_quantity: number;
 }
 
 export interface CreateFeedProgramResponse {
@@ -36,6 +37,7 @@ export interface FeedProgram {
   id: number;
   farmer_user_profile_id: number;
   feed_product_id: number;
+  animal_quantity: number;
   status: "active" | "completed" | "incomplete";
   created_at: string;
   updated_at: string;
@@ -43,7 +45,7 @@ export interface FeedProgram {
 }
 
 export interface ActiveFeedProgramResponse {
-  feed_program: FeedProgram | null;
+  data: FeedProgram | null;
 }
 
 export interface FeedProduct {

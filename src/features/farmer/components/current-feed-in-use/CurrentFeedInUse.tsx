@@ -1,6 +1,21 @@
-import { Calendar, ChevronRight, Settings, Wheat } from "lucide-react";
+import {
+  AlertTriangle,
+  Calendar,
+  ChevronRight,
+  RotateCcw,
+  Settings,
+  Wheat,
+} from "lucide-react";
 import { useState } from "react";
 
+import {
+  AlertDialog,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -12,7 +27,15 @@ import {
 } from "@/components/ui/dialog";
 import ExpandableCard from "@/components/ui/expandable-card";
 import { FEED_STAGE_COLORS, FEED_STAGE_DISPLAY } from "@/features/farmer/types";
-import { useActiveFeedProduct } from "@/hooks/use-farmer-v2";
+import {
+  farmerV2Keys,
+  useActiveFeedProduct,
+  useActiveFeedProgram,
+  useCreateFeedProgram,
+} from "@/hooks/use-farmer-v2";
+import { useQueryClient } from "@tanstack/react-query";
+import { toast } from "sonner";
+import { FeedProductSelector } from "../feed-product-selector";
 
 interface CurrentFeedInUseProps {
   farmerUserProfileId: number;
@@ -21,13 +44,41 @@ interface CurrentFeedInUseProps {
 export const CurrentFeedInUse: React.FC<CurrentFeedInUseProps> = ({
   farmerUserProfileId,
 }) => {
+  const queryClient = useQueryClient();
   const [isDetailsOpen, setIsDetailsOpen] = useState(false);
+  const [isChangeFeedOpen, setIsChangeFeedOpen] = useState(false);
+  const [isConfirmationOpen, setIsConfirmationOpen] = useState(false);
+  const [selectedFeedProductId, setSelectedFeedProductId] =
+    useState<string>("");
 
   // Fetch farmer_v2 data (only source)
   const { data: activeFeedProduct } = useActiveFeedProduct(farmerUserProfileId);
+  const { data: activeFeedProgram } = useActiveFeedProgram(farmerUserProfileId);
+
+  // Feed change mutation
+  const createFeedProgramMutation = useCreateFeedProgram({
+    onSuccess: () => {
+      toast.success("Feed changed successfully!");
+      setIsChangeFeedOpen(false);
+      setIsConfirmationOpen(false);
+      setSelectedFeedProductId("");
+
+      // Invalidate and refetch active feed program for this farmer
+      queryClient.invalidateQueries({
+        queryKey: farmerV2Keys.activeFeedProgram(farmerUserProfileId),
+      });
+      queryClient.invalidateQueries({
+        queryKey: farmerV2Keys.activeFeedProduct(farmerUserProfileId),
+      });
+    },
+    onError: (error) => {
+      toast.error(error.message || "Failed to change feed");
+    },
+  });
 
   // Use only farmer_v2 data
   const feedInfo = activeFeedProduct?.data;
+  const currentFeedProductId = activeFeedProgram?.data?.feed_product_id;
 
   const formatAgeRange = (start: number, end: number) => {
     if (start === 1) {
@@ -43,6 +94,59 @@ export const CurrentFeedInUse: React.FC<CurrentFeedInUseProps> = ({
     return stage
       .replace(/_/g, " ")
       .replace(/\b\w/g, (letter) => letter.toUpperCase());
+  };
+
+  // Check if user needs age range warning
+  const getAgeRangeWarning = () => {
+    if (!feedInfo?.days_on_feed || !feedInfo?.age_range_end) return null;
+
+    if (feedInfo.days_on_feed > feedInfo.age_range_end) {
+      return `Warning: You have been using this feed for ${feedInfo.days_on_feed} days, which exceeds the recommended age range of ${feedInfo.age_range_end} days.`;
+    }
+
+    return null;
+  };
+
+  const handleChangeFeed = () => {
+    setIsChangeFeedOpen(true);
+  };
+
+  const handleInitialConfirm = () => {
+    const feedProductId = parseInt(selectedFeedProductId);
+    if (!selectedFeedProductId || feedProductId <= 0) {
+      toast.error("Please select a feed product");
+      return;
+    }
+
+    // Check if user selected the same feed
+    if (
+      typeof currentFeedProductId === "number" &&
+      feedProductId === currentFeedProductId
+    ) {
+      toast.error("Please select a different feed product");
+      return;
+    }
+
+    // Close first dialog and open confirmation dialog
+    setIsChangeFeedOpen(false);
+    setIsConfirmationOpen(true);
+  };
+
+  const handleFinalConfirmation = () => {
+    const feedProductId = parseInt(selectedFeedProductId);
+    const currentAnimalQuantity = activeFeedProgram?.data?.animal_quantity || 1;
+
+    createFeedProgramMutation.mutate({
+      farmer_user_profile_id: farmerUserProfileId,
+      feed_product_id: feedProductId,
+      animal_quantity: currentAnimalQuantity,
+    });
+  };
+
+  const handleCancelChange = () => {
+    setIsChangeFeedOpen(false);
+    setIsConfirmationOpen(false);
+    setSelectedFeedProductId("");
   };
 
   const feedStageColorClass = feedInfo?.feed_stage
@@ -164,16 +268,27 @@ export const CurrentFeedInUse: React.FC<CurrentFeedInUseProps> = ({
             </p>
           </div>
 
-          {/* Action Button */}
-          <Button
-            variant="outline"
-            size="sm"
-            className="w-full mt-3 font-medium text-xs text-muted-foreground"
-            onClick={() => setIsDetailsOpen(true)}
-          >
-            View Details & Information
-            <ChevronRight className="h-4 w-4 ml-1" />
-          </Button>
+          {/* Action Buttons */}
+          <div className="flex gap-2 mt-3">
+            <Button
+              variant="outline"
+              size="sm"
+              className="flex-1 font-medium text-xs text-muted-foreground"
+              onClick={() => setIsDetailsOpen(true)}
+            >
+              View Details
+              <ChevronRight className="h-4 w-4 ml-1" />
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              className="flex-1 font-medium text-xs"
+              onClick={handleChangeFeed}
+            >
+              <RotateCcw className="h-4 w-4 mr-1" />
+              Change Feed
+            </Button>
+          </div>
         </div>
 
         {/* Status Indicator */}
@@ -273,6 +388,186 @@ export const CurrentFeedInUse: React.FC<CurrentFeedInUseProps> = ({
           </div>
         </DialogContent>
       </Dialog>
+
+      {/* Change Feed Dialog */}
+      <AlertDialog open={isChangeFeedOpen} onOpenChange={setIsChangeFeedOpen}>
+        <AlertDialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+          <AlertDialogHeader>
+            <AlertDialogTitle className="flex items-center gap-2">
+              <RotateCcw className="h-5 w-5" />
+              Change Your Current Feed
+            </AlertDialogTitle>
+            <AlertDialogDescription>
+              Select a new feed product for your animals. This will create a new
+              feed program and replace your current one.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+
+          <div className="space-y-4">
+            {/* Age Range Warning */}
+            {getAgeRangeWarning() && (
+              <div className="flex items-start gap-3 p-3 border border-amber-200 bg-amber-50 rounded-md">
+                <AlertTriangle className="h-5 w-5 text-amber-600 flex-shrink-0 mt-0.5" />
+                <div>
+                  <p className="text-sm font-medium text-amber-800 mb-1">
+                    Feed Usage Alert
+                  </p>
+                  <p className="text-sm text-amber-700">
+                    {getAgeRangeWarning()}
+                  </p>
+                </div>
+              </div>
+            )}
+
+            {/* Current Feed Info */}
+            <div className="p-4 border rounded-md bg-muted/50">
+              <h4 className="font-medium text-sm mb-2">Current Feed</h4>
+              <div className="flex items-center gap-3">
+                <Wheat className="h-4 w-4 text-muted-foreground" />
+                <span className="text-sm font-medium">
+                  {feedInfo?.feed_name}
+                </span>
+                <Badge
+                  variant="outline"
+                  className={`${feedStageColorClass} font-medium capitalize text-xs`}
+                >
+                  {getFeedStageDisplay(feedInfo?.feed_stage)}
+                </Badge>
+              </div>
+              <div className="flex justify-between items-center mt-1">
+                <p className="text-xs text-muted-foreground">
+                  Days on feed: {feedInfo?.days_on_feed || 0} days
+                </p>
+                <p className="text-xs text-muted-foreground">
+                  {activeFeedProgram?.data?.animal_quantity || 0} animals
+                </p>
+              </div>
+            </div>
+
+            {/* Feed Product Selector */}
+            <div>
+              <FeedProductSelector
+                value={selectedFeedProductId}
+                onValueChange={setSelectedFeedProductId}
+                // Custom prop to disable current feed
+                disabledProductId={currentFeedProductId}
+              />
+            </div>
+
+            {/* Warning about changing feed */}
+            <div className="p-3 border border-blue-200 bg-blue-50 rounded-md">
+              <p className="text-sm text-blue-700">
+                <strong>Note:</strong> Changing your feed will create a new feed
+                program. Make sure to transition your animals properly when
+                switching feeds.
+              </p>
+            </div>
+          </div>
+
+          <AlertDialogFooter>
+            <Button
+              variant="outline"
+              onClick={handleCancelChange}
+              disabled={createFeedProgramMutation.isPending}
+            >
+              Cancel
+            </Button>
+            <Button
+              onClick={handleInitialConfirm}
+              disabled={
+                !selectedFeedProductId ||
+                (typeof currentFeedProductId === "number" &&
+                  parseInt(selectedFeedProductId) === currentFeedProductId)
+              }
+            >
+              Continue
+            </Button>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      {/* Final Confirmation Dialog */}
+      <AlertDialog
+        open={isConfirmationOpen}
+        onOpenChange={setIsConfirmationOpen}
+      >
+        <AlertDialogContent className="max-w-md">
+          <AlertDialogHeader>
+            <AlertDialogTitle className="flex items-center gap-2">
+              <AlertTriangle className="h-5 w-5 text-amber-600" />
+              Confirm Feed Change
+            </AlertDialogTitle>
+            <AlertDialogDescription>
+              Are you sure you want to change your feed? This action will:
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+
+          <div className="space-y-3">
+            <ul className="space-y-2 text-sm text-muted-foreground">
+              <li className="flex items-start gap-2">
+                <span className="w-1.5 h-1.5 rounded-full bg-muted-foreground flex-shrink-0 mt-2"></span>
+                Complete your current feed program
+              </li>
+              <li className="flex items-start gap-2">
+                <span className="w-1.5 h-1.5 rounded-full bg-muted-foreground flex-shrink-0 mt-2"></span>
+                Create a new feed program with the selected feed
+              </li>
+              <li className="flex items-start gap-2">
+                <span className="w-1.5 h-1.5 rounded-full bg-muted-foreground flex-shrink-0 mt-2"></span>
+                Reset your days on feed counter
+              </li>
+            </ul>
+
+            {/* Selected Feed Preview */}
+            {selectedFeedProductId && (
+              <div className="p-3 border rounded-md bg-blue-50 border-blue-200">
+                <p className="text-sm font-medium text-blue-900 mb-1">
+                  New Feed Selected
+                </p>
+                <p className="text-sm text-blue-700">
+                  Feed Product ID: {selectedFeedProductId}
+                </p>
+                <p className="text-sm text-blue-700">
+                  Animal Count: {activeFeedProgram?.data?.animal_quantity || 1}{" "}
+                  animals
+                </p>
+              </div>
+            )}
+
+            {/* Age Range Warning in confirmation */}
+            {getAgeRangeWarning() && (
+              <div className="p-3 border border-amber-200 bg-amber-50 rounded-md">
+                <p className="text-xs font-medium text-amber-800 mb-1">
+                  Current Feed Usage Alert
+                </p>
+                <p className="text-xs text-amber-700">{getAgeRangeWarning()}</p>
+              </div>
+            )}
+          </div>
+
+          <AlertDialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => {
+                setIsConfirmationOpen(false);
+                setIsChangeFeedOpen(true); // Go back to feed selection
+              }}
+              disabled={createFeedProgramMutation.isPending}
+            >
+              Go Back
+            </Button>
+            <Button
+              onClick={handleFinalConfirmation}
+              disabled={createFeedProgramMutation.isPending}
+              className="bg-red-600 hover:bg-red-700"
+            >
+              {createFeedProgramMutation.isPending
+                ? "Changing Feed..."
+                : "Yes, Change Feed"}
+            </Button>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </ExpandableCard>
   );
 };

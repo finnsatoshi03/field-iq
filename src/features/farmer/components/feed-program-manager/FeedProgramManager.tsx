@@ -33,6 +33,7 @@ export const FeedProgramManager: React.FC<FeedProgramOnboardingProps> = ({
   const [step, setStep] = useState(1);
   const [selectedFeedProductId, setSelectedFeedProductId] =
     useState<string>("");
+  const [animalQuantity, setAnimalQuantity] = useState<string>("");
   const [isOpen, setIsOpen] = useState(false);
 
   // Queries
@@ -50,6 +51,7 @@ export const FeedProgramManager: React.FC<FeedProgramOnboardingProps> = ({
       setIsOpen(false);
       setStep(1);
       setSelectedFeedProductId("");
+      setAnimalQuantity("");
 
       // Invalidate and refetch active feed program for this farmer
       queryClient.invalidateQueries({
@@ -72,7 +74,7 @@ export const FeedProgramManager: React.FC<FeedProgramOnboardingProps> = ({
   const needsOnboarding =
     !loadingFeedProgram &&
     !loadingFeedProduct &&
-    !activeFeedProgram?.feed_program &&
+    !activeFeedProgram?.data &&
     !activeFeedProduct?.data;
 
   // Auto-open dialog when user needs onboarding
@@ -96,6 +98,12 @@ export const FeedProgramManager: React.FC<FeedProgramOnboardingProps> = ({
       icon: <Package className="h-12 w-12 text-blue-600" />,
     },
     {
+      title: "How Many Animals?",
+      description:
+        "Tell us how many animals you'll be feeding to help us calculate the right amount of feed.",
+      icon: <CheckCircle className="h-12 w-12 text-orange-600" />,
+    },
+    {
       title: "Complete Your Setup",
       description:
         "Finalize your feed program setup and start tracking your farm's performance.",
@@ -113,14 +121,22 @@ export const FeedProgramManager: React.FC<FeedProgramOnboardingProps> = ({
 
   const handleCreateFeedProgram = () => {
     const feedProductId = parseInt(selectedFeedProductId);
+    const animalCount = parseInt(animalQuantity);
+
     if (!selectedFeedProductId || feedProductId <= 0) {
       toast.error("Please select a feed product");
+      return;
+    }
+
+    if (!animalQuantity || animalCount <= 0) {
+      toast.error("Please enter a valid number of animals");
       return;
     }
 
     createFeedProgramMutation.mutate({
       farmer_user_profile_id: farmerUserProfileId,
       feed_product_id: feedProductId,
+      animal_quantity: animalCount,
     });
   };
 
@@ -138,7 +154,11 @@ export const FeedProgramManager: React.FC<FeedProgramOnboardingProps> = ({
           return;
         }
         setIsOpen(open);
-        if (open) setStep(1);
+        if (open) {
+          setStep(1);
+          setSelectedFeedProductId("");
+          setAnimalQuantity("");
+        }
       }}
     >
       <AlertDialogContent className="gap-0 p-0 max-w-lg max-h-[90vh] overflow-y-auto">
@@ -166,6 +186,34 @@ export const FeedProgramManager: React.FC<FeedProgramOnboardingProps> = ({
             </div>
           )}
 
+          {/* Animal Quantity Input on Step 3 */}
+          {step === 3 && (
+            <div className="mt-6 space-y-4">
+              <div className="text-left">
+                <label
+                  htmlFor="animalQuantity"
+                  className="block text-sm font-medium text-foreground mb-2"
+                >
+                  Number of Animals
+                </label>
+                <input
+                  id="animalQuantity"
+                  type="number"
+                  min="1"
+                  max="10000"
+                  value={animalQuantity}
+                  onChange={(e) => setAnimalQuantity(e.target.value)}
+                  placeholder="Enter number of animals (e.g., 100)"
+                  className="w-full px-3 py-2 border border-input rounded-md focus:outline-none focus:ring-2 focus:ring-ring focus:border-transparent"
+                />
+                <p className="text-xs text-muted-foreground mt-1">
+                  This helps us calculate the right amount of feed for your
+                  animals
+                </p>
+              </div>
+            </div>
+          )}
+
           {/* Progress Indicators */}
           <div className="flex justify-center space-x-2 mt-8 mb-6">
             {[...Array(totalSteps)].map((_, index) => (
@@ -189,9 +237,17 @@ export const FeedProgramManager: React.FC<FeedProgramOnboardingProps> = ({
                 className="group w-full sm:w-auto"
                 type="button"
                 onClick={handleContinue}
-                disabled={step === 2 && !selectedFeedProductId}
+                disabled={
+                  (step === 2 && !selectedFeedProductId) ||
+                  (step === 3 &&
+                    (!animalQuantity || parseInt(animalQuantity) <= 0))
+                }
               >
-                {step === 2 ? "Continue with Selected Feed" : "Next"}
+                {step === 2
+                  ? "Continue with Selected Feed"
+                  : step === 3
+                    ? "Continue with Animal Count"
+                    : "Next"}
                 <ArrowRightIcon
                   className="-me-1 ms-2 opacity-60 transition-transform group-hover:translate-x-0.5"
                   size={16}
@@ -203,7 +259,10 @@ export const FeedProgramManager: React.FC<FeedProgramOnboardingProps> = ({
                 type="button"
                 onClick={handleCreateFeedProgram}
                 disabled={
-                  createFeedProgramMutation.isPending || !selectedFeedProductId
+                  createFeedProgramMutation.isPending ||
+                  !selectedFeedProductId ||
+                  !animalQuantity ||
+                  parseInt(animalQuantity) <= 0
                 }
                 className="w-full sm:w-auto"
               >

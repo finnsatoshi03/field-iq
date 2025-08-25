@@ -15,12 +15,14 @@ interface FeedProductSelectorProps {
   value: string;
   onValueChange: (value: string) => void;
   companyId?: number;
+  disabledProductId?: number;
 }
 
 export const FeedProductSelector: React.FC<FeedProductSelectorProps> = ({
   value,
   onValueChange,
   companyId,
+  disabledProductId,
 }) => {
   const id = useId();
   const { data: feedProducts, isLoading, error } = useFeedProducts(companyId);
@@ -128,126 +130,152 @@ export const FeedProductSelector: React.FC<FeedProductSelectorProps> = ({
           value={value}
           onValueChange={onValueChange}
         >
-          {feedProducts.map((product) => (
-            <Tooltip key={product.id}>
-              <TooltipTrigger asChild>
-                <div className="border-input has-data-[state=checked]:border-primary/50 has-focus-visible:border-ring has-focus-visible:ring-ring/50 relative flex cursor-pointer flex-col items-center gap-3 rounded-md border px-3 py-4 text-center shadow-xs transition-[color,box-shadow] outline-none has-focus-visible:ring-[3px] hover:bg-muted/50">
-                  <RadioGroupItem
-                    id={`${id}-${product.id}`}
-                    value={product.id.toString()}
-                    className="sr-only"
-                  />
-                  {getProductIcon(product)}
-                  <label
-                    htmlFor={`${id}-${product.id}`}
-                    className="text-foreground cursor-pointer text-xs leading-none font-medium after:absolute after:inset-0"
+          {feedProducts.map((product) => {
+            const isDisabled = disabledProductId === product.id;
+            const isCurrentFeed = isDisabled;
+
+            return (
+              <Tooltip key={product.id}>
+                <TooltipTrigger asChild>
+                  <div
+                    className={`border-input has-data-[state=checked]:border-primary/50 has-focus-visible:border-ring has-focus-visible:ring-ring/50 relative flex flex-col items-center gap-3 rounded-md border px-3 py-4 text-center shadow-xs transition-[color,box-shadow] outline-none has-focus-visible:ring-[3px] ${
+                      isDisabled
+                        ? "opacity-50 cursor-not-allowed bg-muted"
+                        : "cursor-pointer hover:bg-muted/50"
+                    }`}
                   >
-                    {product.name || "Unnamed Product"}
-                  </label>
-                  {product.is_medicated && (
-                    <div className="absolute -top-1 -right-1 w-3 h-3 bg-red-500 rounded-full border-2 border-white" />
-                  )}
-                </div>
-              </TooltipTrigger>
-              <TooltipContent side="bottom" className="max-w-sm">
-                <div className="space-y-2">
-                  <div>
-                    <p className="font-medium text-sm">{product.name}</p>
-                    {product.product_line && (
-                      <p className="text-xs ">{product.product_line}</p>
+                    <RadioGroupItem
+                      id={`${id}-${product.id}`}
+                      value={product.id.toString()}
+                      className="sr-only"
+                      disabled={isDisabled}
+                    />
+                    {getProductIcon(product)}
+                    <label
+                      htmlFor={`${id}-${product.id}`}
+                      className={`text-xs leading-none font-medium after:absolute after:inset-0 ${
+                        isDisabled
+                          ? "text-muted-foreground cursor-not-allowed"
+                          : "text-foreground cursor-pointer"
+                      }`}
+                    >
+                      {product.name || "Unnamed Product"}
+                      {isCurrentFeed && (
+                        <span className="block text-xs text-green-600 font-medium mt-1">
+                          Current Feed
+                        </span>
+                      )}
+                    </label>
+                    {product.is_medicated && (
+                      <div className="absolute -top-1 -right-1 w-3 h-3 bg-red-500 rounded-full border-2 border-white" />
+                    )}
+                    {isCurrentFeed && (
+                      <div className="absolute -top-1 -left-1 w-3 h-3 bg-green-500 rounded-full border-2 border-white" />
                     )}
                   </div>
+                </TooltipTrigger>
+                <TooltipContent side="bottom" className="max-w-sm">
+                  <div className="space-y-2">
+                    <div>
+                      <p className="font-medium text-sm">{product.name}</p>
+                      {product.product_line && (
+                        <p className="text-xs ">{product.product_line}</p>
+                      )}
+                    </div>
 
-                  {(() => {
-                    const details = getTooltipContent(product);
-                    return (
-                      <div className="space-y-1">
-                        {details.goal && (
-                          <div className="flex items-start gap-2">
-                            <span className="text-xs font-medium  min-w-0">
-                              Goal:
-                            </span>
-                            <span className="text-xs flex-1">
-                              {details.goal}
-                            </span>
+                    {(() => {
+                      const details = getTooltipContent(product);
+                      return (
+                        <div className="space-y-1">
+                          {details.goal && (
+                            <div className="flex items-start gap-2">
+                              <span className="text-xs font-medium  min-w-0">
+                                Goal:
+                              </span>
+                              <span className="text-xs flex-1">
+                                {details.goal}
+                              </span>
+                            </div>
+                          )}
+
+                          <div className="grid grid-cols-2 gap-x-3 gap-y-1">
+                            {details.stage && (
+                              <div className="flex items-center gap-1">
+                                <span className="text-xs font-medium ">
+                                  Stage:
+                                </span>
+                                <span className="text-xs capitalize">
+                                  {details.stage}
+                                </span>
+                              </div>
+                            )}
+
+                            {details.animal && (
+                              <div className="flex items-center gap-1">
+                                <span className="text-xs font-medium ">
+                                  Animal:
+                                </span>
+                                <span className="text-xs capitalize">
+                                  {details.animal}
+                                </span>
+                              </div>
+                            )}
+
+                            {details.ageRange && (
+                              <div className="flex items-center gap-1">
+                                <span className="text-xs font-medium ">
+                                  Age:
+                                </span>
+                                <span className="text-xs">
+                                  {details.ageRange}
+                                </span>
+                              </div>
+                            )}
+
+                            {details.category && (
+                              <div className="flex items-center gap-1">
+                                <span className="text-xs font-medium ">
+                                  Type:
+                                </span>
+                                <span className="text-xs">
+                                  {details.category}
+                                </span>
+                              </div>
+                            )}
+
+                            {details.format && (
+                              <div className="flex items-center gap-1">
+                                <span className="text-xs font-medium ">
+                                  Format:
+                                </span>
+                                <span className="text-xs capitalize">
+                                  {details.format}
+                                </span>
+                              </div>
+                            )}
+
+                            {details.isMediated && (
+                              <div className="flex items-center gap-1">
+                                <span className="text-xs font-medium text-red-600">
+                                  ⚠️ Medicated
+                                </span>
+                              </div>
+                            )}
                           </div>
-                        )}
 
-                        <div className="grid grid-cols-2 gap-x-3 gap-y-1">
-                          {details.stage && (
-                            <div className="flex items-center gap-1">
-                              <span className="text-xs font-medium ">
-                                Stage:
-                              </span>
-                              <span className="text-xs capitalize">
-                                {details.stage}
-                              </span>
-                            </div>
-                          )}
-
-                          {details.animal && (
-                            <div className="flex items-center gap-1">
-                              <span className="text-xs font-medium ">
-                                Animal:
-                              </span>
-                              <span className="text-xs capitalize">
-                                {details.animal}
-                              </span>
-                            </div>
-                          )}
-
-                          {details.ageRange && (
-                            <div className="flex items-center gap-1">
-                              <span className="text-xs font-medium ">Age:</span>
-                              <span className="text-xs">
-                                {details.ageRange}
-                              </span>
-                            </div>
-                          )}
-
-                          {details.category && (
-                            <div className="flex items-center gap-1">
-                              <span className="text-xs font-medium ">
-                                Type:
-                              </span>
-                              <span className="text-xs">
-                                {details.category}
-                              </span>
-                            </div>
-                          )}
-
-                          {details.format && (
-                            <div className="flex items-center gap-1">
-                              <span className="text-xs font-medium ">
-                                Format:
-                              </span>
-                              <span className="text-xs capitalize">
-                                {details.format}
-                              </span>
-                            </div>
-                          )}
-
-                          {details.isMediated && (
-                            <div className="flex items-center gap-1">
-                              <span className="text-xs font-medium text-red-600">
-                                ⚠️ Medicated
-                              </span>
+                          {details.usp && (
+                            <div className="pt-1 border-t border-border">
+                              <p className="text-xs  italic">"{details.usp}"</p>
                             </div>
                           )}
                         </div>
-
-                        {details.usp && (
-                          <div className="pt-1 border-t border-border">
-                            <p className="text-xs  italic">"{details.usp}"</p>
-                          </div>
-                        )}
-                      </div>
-                    );
-                  })()}
-                </div>
-              </TooltipContent>
-            </Tooltip>
-          ))}
+                      );
+                    })()}
+                  </div>
+                </TooltipContent>
+              </Tooltip>
+            );
+          })}
         </RadioGroup>
       </div>
     </TooltipProvider>
