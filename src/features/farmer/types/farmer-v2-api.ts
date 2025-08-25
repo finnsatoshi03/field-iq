@@ -22,6 +22,7 @@ export interface CreateFeedProgramRequest {
   farmer_user_profile_id: number;
   feed_product_id: number;
   animal_quantity: number;
+  switch_reason?: string;
 }
 
 export interface CreateFeedProgramResponse {

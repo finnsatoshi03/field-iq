@@ -26,6 +26,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import ExpandableCard from "@/components/ui/expandable-card";
+import { Textarea } from "@/components/ui/textarea";
 import { FEED_STAGE_COLORS, FEED_STAGE_DISPLAY } from "@/features/farmer/types";
 import {
   farmerV2Keys,
@@ -50,6 +51,7 @@ export const CurrentFeedInUse: React.FC<CurrentFeedInUseProps> = ({
   const [isConfirmationOpen, setIsConfirmationOpen] = useState(false);
   const [selectedFeedProductId, setSelectedFeedProductId] =
     useState<string>("");
+  const [switchReason, setSwitchReason] = useState<string>("");
 
   // Fetch farmer_v2 data (only source)
   const { data: activeFeedProduct } = useActiveFeedProduct(farmerUserProfileId);
@@ -62,6 +64,7 @@ export const CurrentFeedInUse: React.FC<CurrentFeedInUseProps> = ({
       setIsChangeFeedOpen(false);
       setIsConfirmationOpen(false);
       setSelectedFeedProductId("");
+      setSwitchReason("");
 
       // Invalidate and refetch active feed program for this farmer
       queryClient.invalidateQueries({
@@ -136,10 +139,16 @@ export const CurrentFeedInUse: React.FC<CurrentFeedInUseProps> = ({
     const feedProductId = parseInt(selectedFeedProductId);
     const currentAnimalQuantity = activeFeedProgram?.data?.animal_quantity || 1;
 
+    if (!switchReason.trim()) {
+      toast.error("Please provide a reason for switching feeds");
+      return;
+    }
+
     createFeedProgramMutation.mutate({
       farmer_user_profile_id: farmerUserProfileId,
       feed_product_id: feedProductId,
       animal_quantity: currentAnimalQuantity,
+      switch_reason: switchReason.trim(),
     });
   };
 
@@ -147,6 +156,7 @@ export const CurrentFeedInUse: React.FC<CurrentFeedInUseProps> = ({
     setIsChangeFeedOpen(false);
     setIsConfirmationOpen(false);
     setSelectedFeedProductId("");
+    setSwitchReason("");
   };
 
   const feedStageColorClass = feedInfo?.feed_stage
@@ -534,6 +544,28 @@ export const CurrentFeedInUse: React.FC<CurrentFeedInUseProps> = ({
               </div>
             )}
 
+            {/* Switch Reason Input */}
+            <div className="space-y-2">
+              <label
+                htmlFor="switchReason"
+                className="block text-sm font-medium text-foreground"
+              >
+                Reason for Feed Change <span className="text-red-500">*</span>
+              </label>
+              <Textarea
+                id="switchReason"
+                value={switchReason}
+                onChange={(e) => setSwitchReason(e.target.value)}
+                placeholder="Please explain why you're changing to this feed (e.g., better FCR, recommendation from nutritionist, cost optimization, etc.)"
+                className="min-h-20"
+                rows={3}
+              />
+              <p className="text-xs text-muted-foreground">
+                This information helps us track feed performance and provide
+                better recommendations.
+              </p>
+            </div>
+
             {/* Age Range Warning in confirmation */}
             {getAgeRangeWarning() && (
               <div className="p-3 border border-amber-200 bg-amber-50 rounded-md">
@@ -551,6 +583,7 @@ export const CurrentFeedInUse: React.FC<CurrentFeedInUseProps> = ({
               onClick={() => {
                 setIsConfirmationOpen(false);
                 setIsChangeFeedOpen(true); // Go back to feed selection
+                setSwitchReason(""); // Reset switch reason
               }}
               disabled={createFeedProgramMutation.isPending}
             >
@@ -558,7 +591,9 @@ export const CurrentFeedInUse: React.FC<CurrentFeedInUseProps> = ({
             </Button>
             <Button
               onClick={handleFinalConfirmation}
-              disabled={createFeedProgramMutation.isPending}
+              disabled={
+                createFeedProgramMutation.isPending || !switchReason.trim()
+              }
               className="bg-red-600 hover:bg-red-700"
             >
               {createFeedProgramMutation.isPending
