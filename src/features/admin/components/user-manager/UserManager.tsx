@@ -464,8 +464,8 @@ export const UserManager = ({ className, companyId }: UserManagerProps) => {
             </Badge>
           </div>
 
-          {/* Mini Farmer Previews */}
-          <div className="space-y-3">
+          {/* Scrollable Farmer Previews */}
+          <div className="max-h-64 overflow-y-auto space-y-3 pr-2">
             {isLoadingFarmers ? (
               <div className="space-y-3">
                 {[...Array(3)].map((_, i) => (
@@ -485,7 +485,7 @@ export const UserManager = ({ className, companyId }: UserManagerProps) => {
                 <p className="text-xs">Created by sales representatives</p>
               </div>
             ) : (
-              farmers.slice(0, 3).map((farmer) => (
+              farmers.map((farmer) => (
                 <div
                   key={farmer.id}
                   className="bg-background rounded-lg p-3 border border-border hover:bg-muted/30 transition-colors"
@@ -497,9 +497,19 @@ export const UserManager = ({ className, companyId }: UserManagerProps) => {
                       </div>
                       <div>
                         <p className="text-sm font-medium text-foreground">
-                          {farmer.email}
+                          {farmer.user_metadata?.first_name &&
+                          farmer.user_metadata?.last_name
+                            ? `${farmer.user_metadata.first_name} ${farmer.user_metadata.last_name}`
+                            : farmer.email}
                         </p>
-                        <p className="text-xs text-muted-foreground">Farmer</p>
+                        <p className="text-xs text-muted-foreground">
+                          {farmer.user_metadata?.farm_name || "Farmer"}
+                        </p>
+                        {farmer.user_metadata?.location && (
+                          <p className="text-xs text-muted-foreground">
+                            📍 {farmer.user_metadata.location}
+                          </p>
+                        )}
                       </div>
                     </div>
                     <Badge
@@ -512,8 +522,13 @@ export const UserManager = ({ className, companyId }: UserManagerProps) => {
                       </span>
                     </Badge>
                   </div>
-                  <div className="text-xs text-muted-foreground">
-                    Joined: {formatDate(farmer.created_at)}
+                  <div className="flex items-center justify-between text-xs text-muted-foreground">
+                    <span>Joined: {formatDate(farmer.created_at)}</span>
+                    {farmer.user_metadata?.livestock_type && (
+                      <span className="capitalize">
+                        {farmer.user_metadata.livestock_type}
+                      </span>
+                    )}
                   </div>
                 </div>
               ))
@@ -722,6 +737,12 @@ export const UserManager = ({ className, companyId }: UserManagerProps) => {
                       <CardTitle className="text-base flex items-center gap-2">
                         <Shield className="h-4 w-4" />
                         Company Farmers
+                        <Badge
+                          variant="outline"
+                          className="font-medium rounded-full border-border bg-background text-foreground text-xs ml-auto"
+                        >
+                          {farmers.length} Total
+                        </Badge>
                       </CardTitle>
                     </CardHeader>
                     <CardContent>
@@ -741,7 +762,7 @@ export const UserManager = ({ className, companyId }: UserManagerProps) => {
                           ))}
                         </div>
                       ) : (
-                        <div className="space-y-3">
+                        <div className="max-h-80 overflow-y-auto space-y-3 pr-2">
                           {farmers.length === 0 ? (
                             <div className="text-center py-8">
                               <Shield className="h-12 w-12 text-muted-foreground mx-auto mb-4 opacity-50" />
@@ -754,7 +775,7 @@ export const UserManager = ({ className, companyId }: UserManagerProps) => {
                               </p>
                             </div>
                           ) : (
-                            farmers.slice(0, 5).map((farmer) => (
+                            farmers.map((farmer) => (
                               <div
                                 key={farmer.id}
                                 className="flex items-center justify-between p-3 rounded-lg border border-border hover:bg-muted/30 transition-colors"
@@ -765,11 +786,20 @@ export const UserManager = ({ className, companyId }: UserManagerProps) => {
                                   </div>
                                   <div>
                                     <p className="text-sm font-medium text-foreground">
-                                      {farmer.email}
+                                      {farmer.user_metadata?.first_name &&
+                                      farmer.user_metadata?.last_name
+                                        ? `${farmer.user_metadata.first_name} ${farmer.user_metadata.last_name}`
+                                        : farmer.email}
                                     </p>
                                     <p className="text-xs text-muted-foreground">
-                                      Farmer
+                                      {farmer.user_metadata?.farm_name ||
+                                        "Farmer"}
                                     </p>
+                                    {farmer.user_metadata?.location && (
+                                      <p className="text-xs text-muted-foreground">
+                                        📍 {farmer.user_metadata.location}
+                                      </p>
+                                    )}
                                   </div>
                                 </div>
                                 <Badge

@@ -100,6 +100,38 @@ export const useGetFarmersByCompanyId = (companyId?: number | null) => {
   });
 };
 
+// Get farmers by assigned sales rep user profile ID query
+export const useGetFarmersByAssignedSalesRep = (
+  salesRepUserProfileId?: number | null,
+) => {
+  const { isDev, isAdmin, isSalesRep } = useUser();
+
+  return useQuery({
+    queryKey: salesRepUserProfileId
+      ? [...adminQueryKeys.farmers, "assigned", salesRepUserProfileId]
+      : [...adminQueryKeys.farmers, "assigned"],
+    queryFn: () => {
+      if (!isDev && !isAdmin && !isSalesRep) {
+        throw new Error("Access denied. Dev role required.");
+      }
+
+      if (!salesRepUserProfileId) {
+        throw new Error(
+          "Sales rep user profile ID is required to fetch farmers.",
+        );
+      }
+
+      return adminService.getFarmersByAssignedSalesRep(salesRepUserProfileId);
+    },
+    staleTime: 1000 * 60 * 5, // 5 minutes
+    enabled: Boolean(
+      (isDev || isAdmin || isSalesRep) &&
+        salesRepUserProfileId &&
+        salesRepUserProfileId > 0,
+    ),
+  });
+};
+
 // Get user by ID query
 export const useGetUser = (userId: string) => {
   return useQuery({
@@ -132,6 +164,10 @@ export const useCreateUser = () => {
         old ? [...old, newUser] : [newUser],
       );
 
+      // Invalidate and refetch farmers
+      queryClient.invalidateQueries({
+        queryKey: adminQueryKeys.farmers,
+      });
       queryClient.invalidateQueries({
         queryKey: adminQueryKeys.users,
       });
@@ -238,6 +274,7 @@ export const useGenerateEmailLink = () => {
 
 // Invite user by email mutation
 export const useInviteUserByEmail = () => {
+  const queryClient = useQueryClient();
   const { isDev, isAdmin, isSalesRep } = useUser();
 
   return useMutation({
@@ -253,9 +290,46 @@ export const useInviteUserByEmail = () => {
       }
 
       toast.success(`Invitation sent to ${params.email}`);
+
+      queryClient.invalidateQueries({
+        queryKey: adminQueryKeys.farmers,
+      });
+      queryClient.invalidateQueries({
+        queryKey: adminQueryKeys.users,
+      });
     },
     onError: (error: any) => {
       toast.error(error.message || "Failed to send invitation");
+    },
+  });
+};
+
+// Assign farmer to sales rep mutation
+export const useAssignFarmerToSalesRep = () => {
+  const queryClient = useQueryClient();
+  const { isDev, isAdmin, isSalesRep } = useUser();
+
+  return useMutation({
+    mutationFn: (params: {
+      companyId: number;
+      farmerUserProfileId: number;
+      assignedSalesRepUserProfileId: number;
+    }) => {
+      if (!isDev && !isAdmin && !isSalesRep) {
+        throw new Error("Access denied. Dev role required.");
+      }
+      return adminService.assignFarmerToSalesRep(params);
+    },
+    onSuccess: () => {
+      // Invalidate farmers queries to refresh the list
+      queryClient.invalidateQueries({
+        queryKey: adminQueryKeys.farmers,
+      });
+
+      toast.success("Farmer assigned successfully");
+    },
+    onError: (error: any) => {
+      toast.error(error.message || "Failed to assign farmer");
     },
   });
 };

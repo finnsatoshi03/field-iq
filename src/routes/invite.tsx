@@ -7,8 +7,7 @@ import { authService } from "@/services/auth-service";
 import { transformSupabaseUser, useUserStore } from "@/store/user-store";
 
 export const Route = createFileRoute("/invite")({
-  // This is a public route - accessible by all roles when they have valid invite tokens
-  // If no invite tokens are present, authenticated users are redirected to their dashboard
+  // This is a public route - no authentication required
   component: () => (
     <div className="min-h-screen bg-background">
       <InviteSetup />
@@ -21,7 +20,7 @@ function InviteSetup() {
   const [userEmail, setUserEmail] = useState<string>();
   const [userRole, setUserRole] = useState<string>();
   const [isProcessing, setIsProcessing] = useState(true);
-  const { setUser } = useUserStore();
+  const { setUser, clearPersistedState } = useUserStore();
 
   // Manual auth sync function
   const syncAuthState = async () => {
@@ -50,6 +49,10 @@ function InviteSetup() {
   };
 
   useEffect(() => {
+    // Clear any existing user session when processing an invite
+    // This ensures the invite flow works properly even if there's persisted data
+    clearPersistedState();
+
     // Parse hash parameters for invite flow
     const parseHashParams = () => {
       const hash = window.location.hash.substring(1);
@@ -101,7 +104,7 @@ function InviteSetup() {
       // No valid invite parameters, redirect to sign-in
       window.location.href = "/auth/sign-in";
     }
-  }, [setUser]);
+  }, [setUser, clearPersistedState]);
 
   const handleInviteComplete = async () => {
     setShowInviteSetup(false);

@@ -27,7 +27,11 @@ import {
 import type { AdminFarmApiItem } from "@/features/admin/types";
 
 // Transform farm type to crop types mapping
-export const mapFarmTypeToCropTypes = (farmType: string): string[] => {
+export const mapFarmTypeToCropTypes = (farmType: string | null): string[] => {
+  if (!farmType) {
+    return ["Unknown"];
+  }
+
   const farmTypeMap: Record<string, string[]> = {
     broiler: ["Broiler Chicken"],
     layer: ["Layer Chicken"],
@@ -58,7 +62,7 @@ export const generateMockContactInfo = (farmerId: number) => ({
 // Calculate mock monthly revenue based on farm size and type
 export const calculateMockRevenue = (
   farmSize: number,
-  farmType: string,
+  farmType: string | null,
 ): number => {
   const revenuePerHectare: Record<string, number> = {
     broiler: 15000,
@@ -73,7 +77,9 @@ export const calculateMockRevenue = (
     fish: 16000,
   };
 
-  const baseRevenue = revenuePerHectare[farmType.toLowerCase()] || 10000;
+  const baseRevenue = farmType
+    ? revenuePerHectare[farmType.toLowerCase()] || 10000
+    : 10000;
   return Math.round(farmSize * baseRevenue * (0.8 + Math.random() * 0.4)); // ±20% variation
 };
 

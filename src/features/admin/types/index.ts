@@ -50,7 +50,7 @@ export interface AdminFarmDetail {
   latitude: number;
   farm_name: string;
   farm_size: number;
-  farm_type: string;
+  farm_type: string | null;
   longitude: number;
   created_at: string;
   updated_at: string;
