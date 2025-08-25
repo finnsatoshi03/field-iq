@@ -135,6 +135,176 @@ This onboarding is essential because many farmer dashboard features depend on ha
 
 ---
 
+## System Flow Diagrams
+
+The following diagrams provide a visual overview of how users navigate through the Field-IQ system, from initial access to feature usage.
+
+### Overall System Flow
+
+This diagram shows the complete user journey from landing page to role-specific dashboards:
+
+```mermaid
+graph TD
+    A[Landing Page<br/>Onboarding Questions] --> B[Sign In Page]
+    
+    B --> C{Authentication}
+    C -->|Success| D{Role Check}
+    C -->|Failed| B
+    
+    D -->|Admin| E[Admin Dashboard]
+    D -->|Sales Rep| F[Sales Rep Dashboard]
+    D -->|Farmer| G[Farmer Dashboard]
+    D -->|Super Admin| H[Super Admin Dashboard]
+    
+    %% Admin Flow
+    E --> E1{Company Setup?}
+    E1 -->|No| E2[Company Setup Modal<br/>Mandatory]
+    E2 --> E3[Admin Dashboard Unlocked]
+    E1 -->|Yes| E3
+    
+    E3 --> E4[User Manager]
+    E3 --> E5[Sales Activity Summary]
+    E3 --> E6[Farm Registration Tracker]
+    E3 --> E7[Dealer Issue Tracker]
+    E3 --> E8[Feed Performance Tracker]
+    E3 --> E9[Competitor Intelligence]
+    E3 --> E10[FAQ Manager]
+    
+    %% Sales Rep Flow
+    F --> F1[Visit Schedule]
+    F --> F2[Farmer Manager]
+    F --> F3[Dealer Alert Log]
+    F --> F4[Monthly Sales Chart]
+    F --> F5[Training Tracker]
+    F --> F6[Chat Widget]
+    
+    %% Farmer Flow
+    G --> G1{Feed Program?}
+    G1 -->|No| G2[Feed Program Onboarding<br/>Step 1: Welcome]
+    G2 --> G3[Step 2: Feed Selection]
+    G3 --> G4[Step 3: Completion]
+    G4 --> G5[Dashboard Unlocked]
+    G1 -->|Yes| G5
+    
+    G5 --> G6[Current Feed in Use]
+    G5 --> G7[Growth Performance Log]
+    G5 --> G8[Feed Intake Behavior]
+    G5 --> G9[Feed Usage Calculator]
+    G5 --> G10[Health Watch Summary]
+    G5 --> G11[Chat Widget]
+    
+    %% Super Admin Flow
+    H --> H1[Email Link Generator]
+    H --> H2[Users Table]
+    H --> H3[System Management]
+    
+    %% Chat System (Sales Rep & Farmer)
+    F6 --> I[Chat Welcome]
+    G11 --> I
+    I --> I1[Chat Categories]
+    I1 --> I2[Ask Question]
+    I1 --> I3[Report Issues]
+    I1 --> I4[Log Performance]
+    
+    %% Invitation Flows
+    E4 --> J[Invite Sales Rep]
+    F2 --> K[Invite Farmer]
+    H1 --> L[Create Admin]
+    
+    J --> M[Email Invitation]
+    K --> M
+    L --> M
+    M --> N[Set Password Page]
+    N --> B
+    
+    %% Better contrast styling
+    classDef onboarding fill:#ffffff,stroke:#1565c0,stroke-width:2px,color:#000000
+    classDef admin fill:#f8f9fa,stroke:#6a1b9a,stroke-width:2px,color:#000000
+    classDef sales fill:#f1f8e9,stroke:#2e7d32,stroke-width:2px,color:#000000
+    classDef farmer fill:#fff8e1,stroke:#ef6c00,stroke-width:2px,color:#000000
+    classDef superadmin fill:#fce4ec,stroke:#ad1457,stroke-width:2px,color:#000000
+    classDef mandatory fill:#ffebee,stroke:#c62828,stroke-width:3px,color:#000000
+    
+    class A,I,M,N onboarding
+    class E,E1,E2,E3,E4,E5,E6,E7,E8,E9,E10,J admin
+    class F,F1,F2,F3,F4,F5,F6,K sales
+    class G,G1,G5,G6,G7,G8,G9,G10,G11 farmer
+    class H,H1,H2,H3,L superadmin
+    class E2,G2,G3,G4 mandatory
+```
+
+**Key Elements:**
+- **Blue**: General entry points and shared systems
+- **Purple**: Admin-specific flows and features
+- **Green**: Sales Rep dashboard and capabilities
+- **Orange**: Farmer dashboard and tools
+- **Pink**: Super Admin system management
+- **Red borders**: Mandatory onboarding processes that cannot be skipped
+
+### Simplified Architecture Overview
+
+This streamlined view shows the main user paths and decision points:
+
+```mermaid
+flowchart TD
+    Start[User Entry Point] --> Landing[Landing Page<br/>Animated Welcome]
+    Landing --> Auth[Authentication<br/>Sign In / Password Setup]
+    
+    Auth --> Role{User Role<br/>Detection}
+    
+    Role -->|Admin| AdminFlow[Admin Dashboard<br/>Company Management]
+    Role -->|Sales Rep| SalesFlow[Sales Dashboard<br/>Territory Management]
+    Role -->|Farmer| FarmerFlow[Farmer Dashboard<br/>Farm Operations]
+    Role -->|Super Admin| SuperFlow[Super Admin<br/>System Management]
+    
+    AdminFlow --> AdminCheck{Company<br/>Setup?}
+    AdminCheck -->|No| AdminOnboard[Company Setup Modal<br/>Mandatory Configuration]
+    AdminCheck -->|Yes| AdminFeatures[Admin Features<br/>Users, Analytics, FAQ]
+    AdminOnboard --> AdminFeatures
+    
+    SalesFlow --> SalesFeatures[Sales Features<br/>Visits, Farmers, Alerts, Chat]
+    
+    FarmerFlow --> FarmerCheck{Feed Program<br/>Setup?}
+    FarmerCheck -->|No| FarmerOnboard[Feed Program Onboarding<br/>3-Step Wizard]
+    FarmerCheck -->|Yes| FarmerFeatures[Farmer Features<br/>Feed, Growth, Health, Chat]
+    FarmerOnboard --> FarmerFeatures
+    
+    SuperFlow --> SuperFeatures[Super Admin Features<br/>Global Management, Email Tools]
+    
+    SalesFeatures --> Chat[Chat System<br/>Intent-based Logging]
+    FarmerFeatures --> Chat
+    
+    AdminFeatures --> Invite[Invitation System<br/>User Creation]
+    SalesFeatures --> Invite
+    SuperFeatures --> Invite
+    
+    %% High contrast color scheme
+    classDef mandatory fill:#ffebee,stroke:#b71c1c,stroke-width:3px,color:#000000
+    classDef admin fill:#fafafa,stroke:#4a148c,stroke-width:2px,color:#000000
+    classDef sales fill:#f1f8e9,stroke:#1b5e20,stroke-width:2px,color:#000000
+    classDef farmer fill:#fff8e1,stroke:#e65100,stroke-width:2px,color:#000000
+    classDef system fill:#f8f9fa,stroke:#263238,stroke-width:2px,color:#000000
+    classDef entry fill:#ffffff,stroke:#0d47a1,stroke-width:2px,color:#000000
+    
+    class AdminOnboard,FarmerOnboard mandatory
+    class AdminFlow,AdminCheck,AdminFeatures admin
+    class SalesFlow,SalesFeatures sales
+    class FarmerFlow,FarmerCheck,FarmerFeatures farmer
+    class SuperFlow,SuperFeatures,Chat,Invite system
+    class Start,Landing,Auth,Role entry
+```
+
+**Understanding the Flow:**
+- **Entry Points** (white): Every user starts here regardless of role
+- **Role Detection**: System automatically routes users to appropriate dashboards
+- **Mandatory Setup** (red borders): Required onboarding that cannot be bypassed
+- **Feature Access**: Users reach their role-specific tools after setup completion
+- **Shared Systems** (gray): Chat and invitation features used across multiple roles
+
+These diagrams illustrate how the Field-IQ system ensures every user has a proper setup before accessing their dashboard features, maintaining data integrity and user experience consistency.
+
+---
+
 ## Your Dashboard by Role
 
 Below is a plain‑English tour of each dashboard block (the main sections/cards you’ll see). Each block lists what it shows, how to use it, and common actions.
