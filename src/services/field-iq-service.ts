@@ -29,6 +29,7 @@ import type {
   CreateFeedProgramResponse,
   FeedCalculationLogResponse,
   FeedIntakeBehavior,
+  FeedIntakeBehaviorResponse,
   GrowthPerformanceResponse,
   HealthWatch,
   HealthWatchResponse,
@@ -388,7 +389,7 @@ export const fieldIQService = {
       throw new Error("Invalid farmer user profile ID.");
     }
 
-    const response = await apiClient.get<FeedIntakeBehavior>(
+    const response = await apiClient.get<FeedIntakeBehaviorResponse>(
       `${FIELD_IQ_API_CONFIG.endpoints.farmer_v2.feed_intake_behavior}/${farmerUserProfileId}`,
     );
 
@@ -399,7 +400,9 @@ export const fieldIQService = {
     if (!response.data) {
       throw new Error("No data received from server");
     }
-    return response.data;
+
+    // Return the data property from the response
+    return response.data.data;
   },
 
   // Sales Rep Monthly Sales

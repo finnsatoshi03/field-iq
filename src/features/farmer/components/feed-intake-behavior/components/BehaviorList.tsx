@@ -2,6 +2,7 @@ import {
   AlertTriangle,
   CircleDot,
   Cloud,
+  Info,
   Moon,
   Sun,
   Utensils,
@@ -65,34 +66,49 @@ export const BehaviorList = ({ records, maxItems = 5 }: BehaviorListProps) => {
   }
 
   return (
-    <div className="space-y-2">
+    <div className="space-y-3">
       {displayRecords.map((record) => (
         <div
           key={record.id}
-          className="flex justify-between p-3 rounded-md border-black/20 border"
+          className="flex flex-col p-3 rounded-md border-black/20 border bg-white"
         >
-          <div className="flex items-center gap-3">
-            <div className="text-lg">{getBehaviorIcon(record.behavior)}</div>
-            <div>
-              <p className="font-medium font-display text-sm">
-                {getBehaviorLabel(record.behavior)} - {record.percentage}%
-              </p>
-              <p className="text-xs text-muted-foreground font-medium flex items-center gap-1">
-                {formatDate(record.date)} • {getTimeOfDayIcon(record.timeOfDay)}{" "}
-                {formatTimeOfDay(record.timeOfDay)} • {record.feedConsumed}kg
-                consumed
-              </p>
+          <div className="flex justify-between items-start">
+            <div className="flex items-start gap-3 flex-1">
+              <div className="text-lg mt-0.5">
+                {getBehaviorIcon(record.behavior)}
+              </div>
+              <div className="flex-1">
+                <p className="font-medium font-display text-sm text-foreground">
+                  {getBehaviorLabel(record.behavior)} - {record.percentage}%
+                </p>
+                <p className="text-xs text-muted-foreground font-medium mt-1 flex items-center gap-1">
+                  {formatDate(record.date)} •{" "}
+                  {getTimeOfDayIcon(record.timeOfDay)}{" "}
+                  {formatTimeOfDay(record.timeOfDay)} • {record.feedConsumed}kg
+                  consumed • {record.flockSize} animals
+                </p>
+                {record.notes && (
+                  <div className="mt-2 p-2 bg-muted/30 rounded-md">
+                    <div className="flex items-start gap-2">
+                      <Info className="h-3 w-3 text-muted-foreground mt-0.5 flex-shrink-0" />
+                      <p className="text-xs text-muted-foreground leading-relaxed">
+                        {record.notes}
+                      </p>
+                    </div>
+                  </div>
+                )}
+              </div>
             </div>
-          </div>
-          <div className="flex items-center gap-2">
-            <span
-              className={`text-xs px-2 py-1 rounded-full ${getBehaviorColor(record.behavior)}`}
-            >
-              {record.percentage}%
-            </span>
-            {record.behavior === "not_eating" && (
-              <AlertTriangle className="h-4 w-4 text-red-600" />
-            )}
+            <div className="flex items-center gap-2 ml-2">
+              <span
+                className={`text-xs px-2 py-1 rounded-full font-medium ${getBehaviorColor(record.behavior)}`}
+              >
+                {record.percentage}%
+              </span>
+              {record.behavior === "not_eating" && (
+                <AlertTriangle className="h-4 w-4 text-red-600" />
+              )}
+            </div>
           </div>
         </div>
       ))}

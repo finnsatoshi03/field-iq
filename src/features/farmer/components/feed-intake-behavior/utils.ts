@@ -144,7 +144,25 @@ export const getBehaviorLabel = (behavior: FeedBehavior): string => {
 };
 
 export const formatDate = (dateString: string): string => {
-  const date = new Date(dateString);
+  // Handle different date formats
+  let date: Date;
+
+  // Check if the date is in ISO format (with T and timezone)
+  if (dateString.includes("T")) {
+    date = new Date(dateString);
+  } else if (dateString.includes("/")) {
+    // Handle YYYY/MM/DD format
+    const [year, month, day] = dateString.split("/");
+    date = new Date(parseInt(year), parseInt(month) - 1, parseInt(day));
+  } else {
+    date = new Date(dateString);
+  }
+
+  // Check if the date is valid
+  if (isNaN(date.getTime())) {
+    return dateString; // Return original string if parsing fails
+  }
+
   return date.toLocaleDateString("en-US", {
     month: "short",
     day: "numeric",

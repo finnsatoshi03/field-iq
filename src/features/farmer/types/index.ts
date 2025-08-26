@@ -68,19 +68,20 @@ export interface FeedIntakeRecord {
 }
 
 export interface FeedIntakeBehavior {
-  daily_average_growth_rate: number;
-  current_fcr: number;
-  actual_weight: number;
-  target_weight: number;
-  growth_chart_data: any[]; // Array structure to be defined based on actual data
-  performance_analytics: {
-    total_logs: number;
-    total_weight_kg: number;
-    mortality_count: number;
-    mortality_percentage: number;
-    performance_index: number;
-    recent_records: any[]; // Array structure to be defined based on actual data
+  behavior_score: number;
+  behavior_status: string;
+  summary: {
+    eating_well: number;
+    picky: number;
+    not_eating: number;
   };
+  recent_feed_records: FeedIntakeRecord[];
+}
+
+// API Response wrapper for Feed Intake Behavior
+export interface FeedIntakeBehaviorResponse {
+  message: string;
+  data: FeedIntakeBehavior;
 }
 
 export interface HealthIssue {

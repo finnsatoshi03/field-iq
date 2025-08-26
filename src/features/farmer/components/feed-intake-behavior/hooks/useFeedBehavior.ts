@@ -9,30 +9,56 @@ import {
   FEED_BEHAVIOR,
 } from "../constants";
 
+// Type guard to check if a record has the expected structure
+const isValidFeedRecord = (record: any): record is any => {
+  return (
+    record &&
+    typeof record === "object" &&
+    typeof record.date === "string" &&
+    typeof record.feed_intake_status === "string" &&
+    typeof record.feed_intake_kg === "number"
+  );
+};
+
+// Transform API behavior status to component format
+const transformApiBehaviorStatus = (apiStatus: string): FeedBehavior => {
+  switch (apiStatus.toLowerCase()) {
+    case "eating_well":
+      return FEED_BEHAVIOR.EATING_WELL;
+    case "picky":
+      return FEED_BEHAVIOR.PICKING_ONLY;
+    case "not_eating":
+      return FEED_BEHAVIOR.NOT_EATING;
+    default:
+      return FEED_BEHAVIOR.EATING_WELL;
+  }
+};
+
 // Transform API data to component format
 const transformApiDataToRecords = (
   apiBehaviorData?: ApiFeedIntakeBehavior,
+  animalQuantity?: number,
 ): FeedIntakeRecord[] => {
   if (
-    !apiBehaviorData?.performance_analytics?.recent_records ||
-    apiBehaviorData.performance_analytics.recent_records.length === 0
+    !apiBehaviorData?.recent_feed_records ||
+    apiBehaviorData.recent_feed_records.length === 0
   ) {
     return [];
   }
 
-  // Since recent_records structure is unknown, we'll create mock records based on available data
-  return apiBehaviorData.performance_analytics.recent_records.map(
-    (_record, index) => ({
+  // Filter and transform valid feed records
+  return apiBehaviorData.recent_feed_records
+    .filter(isValidFeedRecord)
+    .map((record, index) => ({
       id: index.toString(),
-      date: new Date().toISOString().split("T")[0], // Use current date as fallback
-      behavior: FEED_BEHAVIOR.EATING_WELL, // Default to eating well
-      percentage: 85, // Default percentage
-      timeOfDay: "morning" as const,
-      flockSize: 1000, // Default flock size
-      feedConsumed: 0, // Default feed consumed
-      notes: `Record ${index + 1} - Performance data available`,
-    }),
-  );
+      date: record.date || new Date().toISOString().split("T")[0],
+      behavior: transformApiBehaviorStatus(record.feed_intake_status),
+      percentage: record.feed_intake_kg > 0 ? 85 : 25, // Estimate percentage based on feed intake
+      timeOfDay: "morning" as const, // Default since API doesn't provide this
+      flockSize: animalQuantity || 1000, // Use actual animal quantity or fallback
+      feedConsumed: record.feed_intake_kg,
+      notes: `Feed intake: ${record.feed_intake_kg}kg - Status: ${record.feed_intake_status}`,
+    }));
 };
 
 // Create summary from API data
@@ -54,57 +80,56 @@ const createSummaryFromApiData = (
     };
   }
 
-  // Determine status based on performance index and total records
-  const getStatus = (
-    performanceIndex: number,
-    totalRecords: number,
-  ): BehaviorStatus => {
-    // If no records, show neutral status
-    if (totalRecords === 0) return BEHAVIOR_STATUS.WARNING;
-
-    if (performanceIndex >= 90) return BEHAVIOR_STATUS.EXCELLENT;
-    if (performanceIndex >= 75) return BEHAVIOR_STATUS.GOOD;
-    if (performanceIndex >= 50) return BEHAVIOR_STATUS.WARNING;
+  // Determine status based on behavior score
+  const getStatus = (behaviorScore: number): BehaviorStatus => {
+    if (behaviorScore >= 90) return BEHAVIOR_STATUS.EXCELLENT;
+    if (behaviorScore >= 75) return BEHAVIOR_STATUS.GOOD;
+    if (behaviorScore >= 50) return BEHAVIOR_STATUS.WARNING;
     return BEHAVIOR_STATUS.CRITICAL;
   };
 
-  // Calculate behavior score based on available metrics
-  const behaviorScore =
-    apiBehaviorData.performance_analytics?.performance_index || 0;
-
-  // Calculate average percentage based on FCR and growth rate
+  // Calculate average percentage based on behavior score
   const averagePercentage = Math.min(
     100,
-    Math.max(
-      0,
-      (apiBehaviorData.daily_average_growth_rate || 0) * 10 +
-        (apiBehaviorData.current_fcr > 0
-          ? (2.0 / apiBehaviorData.current_fcr) * 50
-          : 50),
-    ),
+    Math.max(0, apiBehaviorData.behavior_score),
   );
 
-  const totalRecords = apiBehaviorData.performance_analytics?.total_logs || 0;
+  // Get counts from summary
+  const summary = apiBehaviorData.summary || {
+    eating_well: 0,
+    picky: 0,
+    not_eating: 0,
+  };
+
+  const totalRecords = summary.eating_well + summary.picky + summary.not_eating;
+
+  // Get the most recent date from recent_feed_records or use current date
+  const lastUpdated =
+    (apiBehaviorData.recent_feed_records &&
+      apiBehaviorData.recent_feed_records.length > 0 &&
+      apiBehaviorData.recent_feed_records[0]?.date) ||
+    new Date().toISOString().split("T")[0];
 
   return {
-    currentBehavior: FEED_BEHAVIOR.EATING_WELL, // Default to eating well
-    averagePercentage,
-    behaviorScore,
-    status: getStatus(behaviorScore, totalRecords),
-    trend: "stable" as const, // API doesn't provide trend
-    lastUpdated: new Date().toISOString().split("T")[0],
-    totalRecords,
-    eatingWellCount: Math.max(
-      0,
-      totalRecords -
-        (apiBehaviorData.performance_analytics?.mortality_count || 0),
+    currentBehavior: transformApiBehaviorStatus(
+      apiBehaviorData.behavior_status,
     ),
-    pickingOnlyCount: 0, // Not available in new API
-    notEatingCount: apiBehaviorData.performance_analytics?.mortality_count || 0,
+    averagePercentage,
+    behaviorScore: apiBehaviorData.behavior_score,
+    status: getStatus(apiBehaviorData.behavior_score),
+    trend: "stable" as const, // API doesn't provide trend
+    lastUpdated,
+    totalRecords,
+    eatingWellCount: summary.eating_well,
+    pickingOnlyCount: summary.picky,
+    notEatingCount: summary.not_eating,
   };
 };
 
-export const useFeedBehavior = (apiBehaviorData?: ApiFeedIntakeBehavior) => {
+export const useFeedBehavior = (
+  apiBehaviorData?: ApiFeedIntakeBehavior,
+  animalQuantity?: number,
+) => {
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
   const [currentBehavior, setCurrentBehavior] =
     useState<FeedBehavior>("eating_well");
@@ -113,15 +138,15 @@ export const useFeedBehavior = (apiBehaviorData?: ApiFeedIntakeBehavior) => {
     behavior: "eating_well",
     percentage: 100,
     timeOfDay: "morning",
-    flockSize: 1000,
+    flockSize: animalQuantity || 1000,
     feedConsumed: 0,
     notes: "",
   });
 
   // Transform API data to records
   const records = useMemo(() => {
-    return transformApiDataToRecords(apiBehaviorData);
-  }, [apiBehaviorData]);
+    return transformApiDataToRecords(apiBehaviorData, animalQuantity);
+  }, [apiBehaviorData, animalQuantity]);
 
   // Create summary from API data
   const summary = useMemo(() => {
@@ -137,7 +162,7 @@ export const useFeedBehavior = (apiBehaviorData?: ApiFeedIntakeBehavior) => {
       behavior: newRecord.behavior,
       percentage: newRecord.percentage || 0,
       timeOfDay: newRecord.timeOfDay || "morning",
-      flockSize: newRecord.flockSize || 1000,
+      flockSize: newRecord.flockSize || animalQuantity || 1000,
       feedConsumed: newRecord.feedConsumed || 0,
       notes: newRecord.notes,
     };
@@ -151,7 +176,7 @@ export const useFeedBehavior = (apiBehaviorData?: ApiFeedIntakeBehavior) => {
       behavior: "eating_well",
       percentage: 100,
       timeOfDay: "morning",
-      flockSize: 1000,
+      flockSize: animalQuantity || 1000,
       feedConsumed: 0,
       notes: "",
     });
