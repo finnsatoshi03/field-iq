@@ -53,6 +53,7 @@ export const CurrentFeedInUse: React.FC<CurrentFeedInUseProps> = ({
     useState(false);
   const [selectedFeedProductId, setSelectedFeedProductId] =
     useState<string>("");
+  const [animalQuantity, setAnimalQuantity] = useState<string>("");
   const [notes, setNotes] = useState<string>("");
 
   // Fetch farmer_v2 data (only source)
@@ -62,10 +63,11 @@ export const CurrentFeedInUse: React.FC<CurrentFeedInUseProps> = ({
   // Feed change mutation
   const createFeedProgramMutation = useCreateFeedProgram({
     onSuccess: () => {
-      toast.success("Feed changed successfully!");
+      toast.success("Feed program updated successfully!");
       setIsChangeFeedOpen(false);
       setIsConfirmationOpen(false);
       setSelectedFeedProductId("");
+      setAnimalQuantity("");
       setNotes("");
 
       // Invalidate and refetch active feed program for this farmer
@@ -77,13 +79,14 @@ export const CurrentFeedInUse: React.FC<CurrentFeedInUseProps> = ({
       });
     },
     onError: (error) => {
-      toast.error(error.message || "Failed to change feed");
+      toast.error(error.message || "Failed to update feed program");
     },
   });
 
   // Use only farmer_v2 data
   const feedInfo = activeFeedProduct?.data;
   const currentFeedProductId = activeFeedProgram?.data?.feed_product_id;
+  const currentAnimalQuantity = activeFeedProgram?.data?.animal_quantity || 1;
 
   const formatAgeRange = (start: number, end: number) => {
     if (start === 1) {
@@ -106,7 +109,7 @@ export const CurrentFeedInUse: React.FC<CurrentFeedInUseProps> = ({
     if (!feedInfo?.days_on_feed || !feedInfo?.age_range_end) return null;
 
     if (feedInfo.days_on_feed < feedInfo.age_range_end) {
-      return `You have only been using this feed for ${feedInfo.days_on_feed} days, which is less than the recommended age range of ${feedInfo.age_range_end} days. Are you sure you want to change feeds early?`;
+      return `You have only been using this feed for ${feedInfo.days_on_feed} days, which is less than the recommended age range of ${feedInfo.age_range_end} days. Are you sure you want to update your feed program early?`;
     }
 
     return null;
@@ -144,12 +147,19 @@ export const CurrentFeedInUse: React.FC<CurrentFeedInUseProps> = ({
 
   const handleFinalConfirmation = () => {
     const feedProductId = parseInt(selectedFeedProductId);
-    const currentAnimalQuantity = activeFeedProgram?.data?.animal_quantity || 1;
+    const newAnimalQuantity = animalQuantity
+      ? parseInt(animalQuantity)
+      : currentAnimalQuantity;
+
+    if (newAnimalQuantity <= 0) {
+      toast.error("Please enter a valid number of animals");
+      return;
+    }
 
     createFeedProgramMutation.mutate({
       farmer_user_profile_id: farmerUserProfileId,
       feed_product_id: feedProductId,
-      animal_quantity: currentAnimalQuantity,
+      animal_quantity: newAnimalQuantity,
       notes: notes.trim() || undefined,
     });
   };
@@ -159,6 +169,7 @@ export const CurrentFeedInUse: React.FC<CurrentFeedInUseProps> = ({
     setIsConfirmationOpen(false);
     setIsEarlyChangeWarningOpen(false);
     setSelectedFeedProductId("");
+    setAnimalQuantity("");
     setNotes("");
   };
 
@@ -308,7 +319,7 @@ export const CurrentFeedInUse: React.FC<CurrentFeedInUseProps> = ({
               onClick={handleChangeFeed}
             >
               <RotateCcw className="h-4 w-4 mr-1" />
-              Change Feed
+              Update Feed
               {getEarlyChangeWarning() && (
                 <AlertTriangle className="h-3 w-3 ml-1 text-amber-600" />
               )}
@@ -420,18 +431,18 @@ export const CurrentFeedInUse: React.FC<CurrentFeedInUseProps> = ({
           <AlertDialogHeader>
             <AlertDialogTitle className="flex items-center gap-2">
               <RotateCcw className="h-5 w-5" />
-              Change Your Current Feed
+              Update Your Feed Program
             </AlertDialogTitle>
             <AlertDialogDescription>
-              Select a new feed product for your animals. This will create a new
-              feed program and replace your current one.
+              Select a new feed product and update your animal count. This will
+              create a new feed program and replace your current one.
             </AlertDialogDescription>
           </AlertDialogHeader>
 
           <div className="space-y-4">
             {/* Current Feed Info */}
             <div className="p-4 border rounded-md bg-muted/50">
-              <h4 className="font-medium text-sm mb-2">Current Feed</h4>
+              <h4 className="font-medium text-sm mb-2">Current Feed Program</h4>
               <div className="flex items-center gap-3">
                 <Wheat className="h-4 w-4 text-muted-foreground" />
                 <span className="text-sm font-medium">
@@ -449,7 +460,7 @@ export const CurrentFeedInUse: React.FC<CurrentFeedInUseProps> = ({
                   Days on feed: {feedInfo?.days_on_feed || 0} days
                 </p>
                 <p className="text-xs text-muted-foreground">
-                  {activeFeedProgram?.data?.animal_quantity || 0} animals
+                  {currentAnimalQuantity} animals
                 </p>
               </div>
             </div>
@@ -464,12 +475,36 @@ export const CurrentFeedInUse: React.FC<CurrentFeedInUseProps> = ({
               />
             </div>
 
+            {/* Animal Quantity Update */}
+            <div className="space-y-2">
+              <label
+                htmlFor="animalQuantity"
+                className="block text-sm font-medium text-foreground"
+              >
+                Update Animal Count
+              </label>
+              <input
+                id="animalQuantity"
+                type="number"
+                min="1"
+                max="10000"
+                value={animalQuantity}
+                onChange={(e) => setAnimalQuantity(e.target.value)}
+                placeholder={`Current: ${currentAnimalQuantity} animals`}
+                className="w-full px-3 py-2 border border-input rounded-md focus:outline-none focus:ring-2 focus:ring-ring focus:border-transparent"
+              />
+              <p className="text-xs text-muted-foreground">
+                Leave empty to keep current count of {currentAnimalQuantity}{" "}
+                animals
+              </p>
+            </div>
+
             {/* Warning about changing feed */}
             <div className="p-3 border border-blue-200 bg-blue-50 rounded-md">
               <p className="text-sm text-blue-700">
-                <strong>Note:</strong> Changing your feed will create a new feed
-                program. Make sure to transition your animals properly when
-                switching feeds.
+                <strong>Note:</strong> Updating your feed program will create a
+                new feed program. Make sure to transition your animals properly
+                when switching feeds.
               </p>
             </div>
           </div>
@@ -505,10 +540,11 @@ export const CurrentFeedInUse: React.FC<CurrentFeedInUseProps> = ({
           <AlertDialogHeader>
             <AlertDialogTitle className="flex items-center gap-2">
               <AlertTriangle className="h-5 w-5 text-amber-600" />
-              Confirm Feed Change
+              Confirm Feed Program Update
             </AlertDialogTitle>
             <AlertDialogDescription>
-              Are you sure you want to change your feed? This action will:
+              Are you sure you want to update your feed program? This action
+              will:
             </AlertDialogDescription>
           </AlertDialogHeader>
 
@@ -532,14 +568,27 @@ export const CurrentFeedInUse: React.FC<CurrentFeedInUseProps> = ({
             {selectedFeedProductId && (
               <div className="p-3 border rounded-md bg-blue-50 border-blue-200">
                 <p className="text-sm font-medium text-blue-900 mb-1">
-                  New Feed Selected
+                  Updated Feed Program
                 </p>
                 <p className="text-sm text-blue-700">
                   Feed Product ID: {selectedFeedProductId}
                 </p>
                 <p className="text-sm text-blue-700">
-                  Animal Count: {activeFeedProgram?.data?.animal_quantity || 1}{" "}
+                  Animal Count:{" "}
+                  {animalQuantity
+                    ? parseInt(animalQuantity)
+                    : currentAnimalQuantity}{" "}
                   animals
+                  {animalQuantity &&
+                    parseInt(animalQuantity) !== currentAnimalQuantity && (
+                      <span className="text-xs text-blue-600 ml-1">
+                        (
+                        {parseInt(animalQuantity) > currentAnimalQuantity
+                          ? "+"
+                          : ""}
+                        {parseInt(animalQuantity) - currentAnimalQuantity})
+                      </span>
+                    )}
                 </p>
               </div>
             )}
@@ -559,7 +608,7 @@ export const CurrentFeedInUse: React.FC<CurrentFeedInUseProps> = ({
                 id="notes"
                 value={notes}
                 onChange={(e) => setNotes(e.target.value)}
-                placeholder="Add any notes about this feed change (e.g., observations, recommendations, etc.)"
+                placeholder="Add any notes about this feed program update (e.g., observations, recommendations, etc.)"
                 className="min-h-20 resize-none"
                 rows={3}
               />
@@ -587,8 +636,8 @@ export const CurrentFeedInUse: React.FC<CurrentFeedInUseProps> = ({
               className="bg-red-600 hover:bg-red-700"
             >
               {createFeedProgramMutation.isPending
-                ? "Changing Feed..."
-                : "Yes, Change Feed"}
+                ? "Updating Feed Program..."
+                : "Yes, Update Feed Program"}
             </Button>
           </AlertDialogFooter>
         </AlertDialogContent>
@@ -603,7 +652,7 @@ export const CurrentFeedInUse: React.FC<CurrentFeedInUseProps> = ({
           <AlertDialogHeader>
             <AlertDialogTitle className="flex items-center gap-2">
               <AlertTriangle className="h-5 w-5 text-amber-600" />
-              Early Feed Change Warning
+              Early Feed Program Update Warning
             </AlertDialogTitle>
             <AlertDialogDescription>
               {getEarlyChangeWarning()}
@@ -613,9 +662,9 @@ export const CurrentFeedInUse: React.FC<CurrentFeedInUseProps> = ({
           <div className="space-y-3">
             <div className="p-3 border border-amber-200 bg-amber-50 rounded-md">
               <p className="text-sm text-amber-700">
-                <strong>Consider:</strong> Changing feeds before the recommended
-                age range may affect your animals' growth and performance. Make
-                sure this change is necessary.
+                <strong>Consider:</strong> Updating your feed program before the
+                recommended age range may affect your animals' growth and
+                performance. Make sure this update is necessary.
               </p>
             </div>
           </div>
