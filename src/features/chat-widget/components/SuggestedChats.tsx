@@ -1,4 +1,6 @@
-import { motion } from "framer-motion";
+import { AnimatePresence, motion } from "framer-motion";
+import { ChevronUp } from "lucide-react";
+import { useState } from "react";
 import { SUGGESTED_CHAT_OPTIONS, SUGGESTED_CHAT_TEMPLATES } from "../const";
 
 interface SuggestedChatsProps {
@@ -39,6 +41,25 @@ const suggestionVariants = {
   },
 };
 
+const collapseVariants = {
+  collapsed: {
+    height: 0,
+    opacity: 0,
+    transition: {
+      duration: 0.2,
+      ease: "easeInOut" as const,
+    },
+  },
+  expanded: {
+    height: "auto",
+    opacity: 1,
+    transition: {
+      duration: 0.3,
+      ease: "easeInOut" as const,
+    },
+  },
+};
+
 export const SuggestedChats = ({
   reportType,
   reportSubType,
@@ -46,6 +67,10 @@ export const SuggestedChats = ({
   disabled = false,
   showTemplates = false,
 }: SuggestedChatsProps) => {
+  const [isQuickNotesExpanded, setIsQuickNotesExpanded] = useState(true);
+  const [isSuggestedTopicsExpanded, setIsSuggestedTopicsExpanded] =
+    useState(true);
+
   // Get initial suggestions based on report type and subtype
   const getInitialSuggestions = () => {
     const typeOptions =
@@ -145,59 +170,125 @@ export const SuggestedChats = ({
       variants={containerVariants}
       initial="hidden"
       animate="visible"
-      className="space-y-3"
+      className="space-y-2"
     >
-      {/* Initial Suggestions */}
+      {/* Quick Notes Section */}
       {validInitialSuggestions.length > 0 && (
-        <div className="space-y-2">
-          <p className="text-xs text-gray-600 font-medium">Quick notes:</p>
-          <div className="flex flex-wrap gap-2">
-            {validInitialSuggestions.map((suggestion) => (
-              <motion.button
-                key={suggestion.id}
-                variants={suggestionVariants}
-                whileHover={disabled ? undefined : "hover"}
-                whileTap={disabled ? undefined : "tap"}
-                onClick={() => !disabled && onSelect(suggestion.label)}
-                disabled={disabled}
-                className={`inline-flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-medium transition-all duration-150 ${
-                  disabled
-                    ? "bg-gray-100 text-gray-400 cursor-not-allowed"
-                    : "bg-blue-50 hover:bg-blue-100 text-blue-700 hover:text-blue-800 border border-blue-200 hover:border-blue-300 shadow-sm hover:shadow-md"
-                }`}
+        <div className="border border-gray-200 rounded-lg overflow-hidden">
+          <button
+            onClick={() => setIsQuickNotesExpanded(!isQuickNotesExpanded)}
+            className="w-full px-3 py-2 bg-gray-50 hover:bg-gray-100 transition-colors flex items-center justify-between text-left"
+            disabled={disabled}
+          >
+            <div className="flex items-center gap-2">
+              <span className="text-xs font-medium text-gray-700">
+                Quick notes
+              </span>
+              <span className="text-xs text-gray-500 bg-gray-200 px-1.5 py-0.5 rounded-full">
+                {validInitialSuggestions.length}
+              </span>
+            </div>
+            <motion.div
+              animate={{ rotate: isQuickNotesExpanded ? 180 : 0 }}
+              transition={{ duration: 0.2 }}
+            >
+              <ChevronUp className="size-4 text-gray-500" />
+            </motion.div>
+          </button>
+
+          <AnimatePresence>
+            {isQuickNotesExpanded && (
+              <motion.div
+                variants={collapseVariants}
+                initial="collapsed"
+                animate="expanded"
+                exit="collapsed"
+                className="px-3 py-2 bg-white"
               >
-                <span className="text-sm">{suggestion.emoji}</span>
-                <span className="leading-tight">{suggestion.label}</span>
-              </motion.button>
-            ))}
-          </div>
+                <div className="flex flex-wrap gap-2">
+                  {validInitialSuggestions.map((suggestion) => (
+                    <motion.button
+                      key={suggestion.id}
+                      variants={suggestionVariants}
+                      whileHover={disabled ? undefined : "hover"}
+                      whileTap={disabled ? undefined : "tap"}
+                      onClick={() => !disabled && onSelect(suggestion.label)}
+                      disabled={disabled}
+                      className={`inline-flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-medium transition-all duration-150 ${
+                        disabled
+                          ? "bg-gray-100 text-gray-400 cursor-not-allowed"
+                          : "bg-blue-50 hover:bg-blue-100 text-blue-700 hover:text-blue-800 border border-blue-200 hover:border-blue-300 shadow-sm hover:shadow-md"
+                      }`}
+                    >
+                      <span className="text-sm">{suggestion.emoji}</span>
+                      <span className="leading-tight">{suggestion.label}</span>
+                    </motion.button>
+                  ))}
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
         </div>
       )}
 
       {/* Template Suggestions (API-based) */}
       {templateSuggestions.length > 0 && (
-        <div className="space-y-2">
-          <p className="text-xs text-gray-600 font-medium">Suggested topics:</p>
-          <div className="flex flex-wrap gap-2">
-            {templateSuggestions.map((template, index) => (
-              <motion.button
-                key={index}
-                variants={suggestionVariants}
-                whileHover={disabled ? undefined : "hover"}
-                whileTap={disabled ? undefined : "tap"}
-                onClick={() => !disabled && onSelect(template)}
-                disabled={disabled}
-                className={`inline-flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-medium transition-all duration-150 ${
-                  disabled
-                    ? "bg-gray-100 text-gray-400 cursor-not-allowed"
-                    : "bg-green-50 hover:bg-green-100 text-green-700 hover:text-green-800 border border-green-200 hover:border-green-300 shadow-sm hover:shadow-md"
-                }`}
+        <div className="border border-gray-200 rounded-lg overflow-hidden">
+          <button
+            onClick={() =>
+              setIsSuggestedTopicsExpanded(!isSuggestedTopicsExpanded)
+            }
+            className="w-full px-3 py-2 bg-gray-50 hover:bg-gray-100 transition-colors flex items-center justify-between text-left"
+            disabled={disabled}
+          >
+            <div className="flex items-center gap-2">
+              <span className="text-xs font-medium text-gray-700">
+                Suggested topics
+              </span>
+              <span className="text-xs text-gray-500 bg-gray-200 px-1.5 py-0.5 rounded-full">
+                {templateSuggestions.length}
+              </span>
+            </div>
+            <motion.div
+              animate={{ rotate: isSuggestedTopicsExpanded ? 180 : 0 }}
+              transition={{ duration: 0.2 }}
+            >
+              <ChevronUp className="size-4 text-gray-500" />
+            </motion.div>
+          </button>
+
+          <AnimatePresence>
+            {isSuggestedTopicsExpanded && (
+              <motion.div
+                variants={collapseVariants}
+                initial="collapsed"
+                animate="expanded"
+                exit="collapsed"
+                className="px-3 py-2 bg-white"
               >
-                <span className="text-sm">📝</span>
-                <span className="leading-tight">{template}</span>
-              </motion.button>
-            ))}
-          </div>
+                <div className="flex flex-wrap gap-2">
+                  {templateSuggestions.map((template, index) => (
+                    <motion.button
+                      key={index}
+                      variants={suggestionVariants}
+                      whileHover={disabled ? undefined : "hover"}
+                      whileTap={disabled ? undefined : "tap"}
+                      onClick={() => !disabled && onSelect(template)}
+                      disabled={disabled}
+                      className={`inline-flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-medium transition-all duration-150 ${
+                        disabled
+                          ? "bg-gray-100 text-gray-400 cursor-not-allowed"
+                          : "bg-green-50 hover:bg-green-100 text-green-700 hover:text-green-800 border border-green-200 hover:border-green-300 shadow-sm hover:shadow-md"
+                      }`}
+                    >
+                      <span className="text-sm">📝</span>
+                      <span className="leading-tight">{template}</span>
+                    </motion.button>
+                  ))}
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
         </div>
       )}
     </motion.div>

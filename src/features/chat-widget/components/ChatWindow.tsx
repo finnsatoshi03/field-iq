@@ -1,5 +1,5 @@
 import { AnimatePresence, motion } from "framer-motion";
-import { ArrowLeft, Minimize2, X } from "lucide-react";
+import { ArrowLeft, Maximize2, Minimize2, X } from "lucide-react";
 import { useEffect, useState } from "react";
 
 import { useUser } from "@/hooks/use-user";
@@ -46,6 +46,7 @@ interface ChatWindowProps {
 
 export const ChatWindow = ({ isOpen, onClose }: ChatWindowProps) => {
   const { user } = useUser();
+  const [isExpanded, setIsExpanded] = useState(false);
 
   // Use store for state management
   const {
@@ -136,6 +137,10 @@ export const ChatWindow = ({ isOpen, onClose }: ChatWindowProps) => {
     onClose();
   };
 
+  const handleToggleSize = () => {
+    setIsExpanded(!isExpanded);
+  };
+
   // Helper function to get header title and description
   const getHeaderInfo = () => {
     if (currentStage === "welcome") {
@@ -223,10 +228,33 @@ export const ChatWindow = ({ isOpen, onClose }: ChatWindowProps) => {
           initial="hidden"
           animate="visible"
           exit="exit"
-          className="fixed bottom-20 right-4 max-w-92 w-fit max-h-[70vh] h-fit bg-white rounded-lg shadow-xl z-40 flex flex-col"
+          layout
+          transition={{
+            layout: {
+              duration: 0.3,
+              ease: "easeInOut",
+            },
+          }}
+          className="fixed bg-white rounded-lg shadow-xl z-40 flex flex-col"
+          style={{
+            // Responsive positioning and sizing
+            bottom: "5rem", // 20 in Tailwind
+            right: "1rem", // 4 in Tailwind
+            width: isExpanded ? "32rem" : "24rem", // 512px : 384px
+            maxWidth: "calc(100vw - 2rem)",
+            maxHeight: isExpanded ? "85vh" : "75vh",
+            // Mobile-specific adjustments
+            ...(window.innerWidth < 768 && {
+              bottom: "1rem",
+              right: "1rem",
+              left: "1rem",
+              width: "auto",
+              maxWidth: "none",
+            }),
+          }}
         >
           {/* Header */}
-          <div className="flex justify-between gap-8 p-4">
+          <div className="flex justify-between gap-8 p-4 border-b border-gray-100">
             <div className="flex gap-3">
               {headerInfo.showBack && (
                 <button
@@ -247,12 +275,22 @@ export const ChatWindow = ({ isOpen, onClose }: ChatWindowProps) => {
               </div>
             </div>
             <div className="flex items-center h-fit gap-2">
+              {/* Only show expand/minimize button on desktop */}
               <button
-                onClick={handleClose}
-                className="text-gray-400 hover:text-gray-600 p-1 rounded hover:bg-gray-100 transition-colors"
-                aria-label="Minimize chat"
+                onClick={handleToggleSize}
+                className="hidden md:block text-gray-400 hover:text-gray-600 p-1 rounded hover:bg-gray-100 transition-colors"
+                aria-label={isExpanded ? "Shrink chat" : "Expand chat"}
               >
-                <Minimize2 className="size-4" />
+                <motion.div
+                  animate={{ rotate: isExpanded ? 180 : 0 }}
+                  transition={{ duration: 0.2 }}
+                >
+                  {isExpanded ? (
+                    <Minimize2 className="size-4" />
+                  ) : (
+                    <Maximize2 className="size-4" />
+                  )}
+                </motion.div>
               </button>
               <button
                 onClick={handleClose}
@@ -265,7 +303,7 @@ export const ChatWindow = ({ isOpen, onClose }: ChatWindowProps) => {
           </div>
 
           {/* Stage Content */}
-          {renderCurrentStage()}
+          <div className="flex-1 min-h-0">{renderCurrentStage()}</div>
         </motion.div>
       )}
     </AnimatePresence>

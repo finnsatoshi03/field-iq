@@ -149,7 +149,7 @@ export const ChatStage = ({
 
       {/* Suggested Chats for Sales Representatives */}
       {shouldShowSuggestedChats && !isTyping && (
-        <div className="px-4 py-3 border-t border-gray-100 bg-gray-50/30">
+        <div className="px-4 py-2 border-t border-gray-100 bg-gray-50/30">
           <SuggestedChats
             reportType={reportContext.reportType}
             reportSubType={reportContext.reportSubType}
