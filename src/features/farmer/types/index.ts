@@ -90,7 +90,7 @@ export interface HealthIssue {
   symptoms: string;
   suspected_cause: string;
   requires_vet_visit: boolean;
-  feed_info: any; // nullable
+  feed_info: string | null; // Updated to be nullable string
   actions_taken: string;
 }
 
@@ -102,6 +102,13 @@ export interface HealthWatch {
     notes: number;
   };
   recent_issues: HealthIssue[];
+  filter_applied?: string; // Added to match API response
+}
+
+// API Response wrapper for Health Watch
+export interface HealthWatchResponse {
+  message: string;
+  data: HealthWatch;
 }
 
 // Main Dashboard Response Type

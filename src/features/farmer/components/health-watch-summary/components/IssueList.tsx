@@ -1,4 +1,4 @@
-import { AlertTriangle, FileText, Skull } from "lucide-react";
+import { AlertTriangle, FileText, Info, Skull } from "lucide-react";
 import { type HealthIssue } from "../constants";
 import { formatDate, getSeverityColor } from "../utils";
 
@@ -43,32 +43,46 @@ export const IssueList = ({ issues, maxItems = 5 }: IssueListProps) => {
   }
 
   return (
-    <div className="space-y-2">
+    <div className="space-y-3">
       {displayIssues.map((issue) => (
         <div
           key={issue.id}
-          className="flex justify-between p-3 rounded-md border-black/20 border"
+          className="flex flex-col p-3 rounded-md border-black/20 border bg-white"
         >
-          <div className="flex items-center gap-3">
-            <div className="text-lg">{getIssueTypeIcon(issue.type)}</div>
-            <div>
-              <p className="font-medium font-display text-sm">
-                {issue.description}
-              </p>
-              <p className="text-xs text-muted-foreground font-medium">
-                {formatDate(issue.date)} • Count: {issue.count}
-              </p>
+          <div className="flex justify-between items-start">
+            <div className="flex items-start gap-3 flex-1">
+              <div className="text-lg mt-0.5">
+                {getIssueTypeIcon(issue.type)}
+              </div>
+              <div className="flex-1">
+                <p className="font-medium font-display text-sm text-foreground">
+                  {issue.description}
+                </p>
+                <p className="text-xs text-muted-foreground font-medium mt-1">
+                  {formatDate(issue.date)} • Count: {issue.count}
+                </p>
+                {issue.notes && issue.notes !== "No additional notes" && (
+                  <div className="mt-2 p-2 bg-muted/30 rounded-md">
+                    <div className="flex items-start gap-2">
+                      <Info className="h-3 w-3 text-muted-foreground mt-0.5 flex-shrink-0" />
+                      <p className="text-xs text-muted-foreground leading-relaxed">
+                        {issue.notes}
+                      </p>
+                    </div>
+                  </div>
+                )}
+              </div>
             </div>
-          </div>
-          <div className="flex items-center gap-2">
-            <span
-              className={`text-xs px-2 py-1 rounded-full ${getSeverityColor(issue.severity)}`}
-            >
-              {issue.severity}
-            </span>
-            {issue.severity === "high" && (
-              <AlertTriangle className="h-4 w-4 text-red-600" />
-            )}
+            <div className="flex items-center gap-2 ml-2">
+              <span
+                className={`text-xs px-2 py-1 rounded-full font-medium ${getSeverityColor(issue.severity)}`}
+              >
+                {issue.severity}
+              </span>
+              {issue.severity === "high" && (
+                <AlertTriangle className="h-4 w-4 text-red-600" />
+              )}
+            </div>
           </div>
         </div>
       ))}

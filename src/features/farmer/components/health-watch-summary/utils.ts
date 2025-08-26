@@ -143,7 +143,22 @@ export const getSmileyIcon = (score: number): string => {
 };
 
 export const formatDate = (dateString: string): string => {
-  const date = new Date(dateString);
+  // Handle different date formats
+  let date: Date;
+
+  // Check if the date is in YYYY/MM/DD format
+  if (dateString.includes("/")) {
+    const [year, month, day] = dateString.split("/");
+    date = new Date(parseInt(year), parseInt(month) - 1, parseInt(day));
+  } else {
+    date = new Date(dateString);
+  }
+
+  // Check if the date is valid
+  if (isNaN(date.getTime())) {
+    return dateString; // Return original string if parsing fails
+  }
+
   return date.toLocaleDateString("en-US", {
     month: "short",
     day: "numeric",

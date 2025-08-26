@@ -31,6 +31,7 @@ import type {
   FeedIntakeBehavior,
   GrowthPerformanceResponse,
   HealthWatch,
+  HealthWatchResponse,
   IncompleteFeedProgramResponse,
   UpdateFeedCalculationLogRequest,
 } from "@/features/farmer/types";
@@ -363,7 +364,7 @@ export const fieldIQService = {
     }
 
     const queryParams = filter ? `?filter=${encodeURIComponent(filter)}` : "";
-    const response = await apiClient.get<HealthWatch>(
+    const response = await apiClient.get<HealthWatchResponse>(
       `${FIELD_IQ_API_CONFIG.endpoints.farmer_v2.health_watch}/${farmerUserProfileId}${queryParams}`,
     );
 
@@ -374,7 +375,9 @@ export const fieldIQService = {
     if (!response.data) {
       throw new Error("No data received from server");
     }
-    return response.data;
+
+    // Return the data property from the response
+    return response.data.data;
   },
 
   // Get Feed Intake Behavior data for farmer

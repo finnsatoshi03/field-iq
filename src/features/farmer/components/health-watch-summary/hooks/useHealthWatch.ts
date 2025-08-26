@@ -18,20 +18,21 @@ const isValidHealthIssue = (issue: any): issue is ApiHealthIssue => {
     issue &&
     typeof issue === "object" &&
     typeof issue.incident_type === "string" &&
-    typeof issue.affected_count === "number"
+    typeof issue.affected_count === "number" &&
+    typeof issue.symptoms === "string"
   );
 };
 
 // Transform API incident type to component format
 const transformApiIncidentType = (apiType: string): IssueType => {
-  switch (apiType) {
+  switch (apiType.toLowerCase()) {
     case "sickness":
+    case "sick":
       return ISSUE_TYPES.SICK;
     case "mortality":
       return ISSUE_TYPES.MORTALITY;
     case "feed_rejection":
     case "notes":
-      return ISSUE_TYPES.NOTES;
     default:
       return ISSUE_TYPES.NOTES;
   }
@@ -72,11 +73,13 @@ const transformApiDataToIssues = (
       ),
       description: issue.symptoms || "No description available",
       notes:
-        issue.suspected_cause && issue.actions_taken
-          ? `${issue.suspected_cause} | Actions: ${issue.actions_taken}`
-          : issue.suspected_cause ||
-            issue.actions_taken ||
-            "No additional notes",
+        [
+          issue.suspected_cause,
+          issue.actions_taken,
+          issue.feed_info && `Feed: ${issue.feed_info}`,
+        ]
+          .filter(Boolean)
+          .join(" | ") || "No additional notes",
     }));
 };
 
@@ -113,6 +116,13 @@ const createSummaryFromApiData = (
   const totalIssues =
     issueSummary.sick + issueSummary.mortality + issueSummary.notes;
 
+  // Get the most recent date from recent_issues or use current date
+  const lastUpdated =
+    (apiHealthData.recent_issues &&
+      apiHealthData.recent_issues.length > 0 &&
+      apiHealthData.recent_issues[0]?.date) ||
+    new Date().toISOString().split("T")[0];
+
   return {
     totalIssues,
     sickCount: issueSummary.sick,
@@ -120,11 +130,7 @@ const createSummaryFromApiData = (
     notesCount: issueSummary.notes,
     healthScore: apiHealthData.health_score || 100,
     trend: getTrend(apiHealthData.health_score || 100),
-    lastUpdated:
-      (apiHealthData.recent_issues &&
-        apiHealthData.recent_issues.length > 0 &&
-        apiHealthData.recent_issues[0]?.date) ||
-      new Date().toISOString().split("T")[0],
+    lastUpdated,
   };
 };
 
