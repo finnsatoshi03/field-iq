@@ -49,6 +49,8 @@ export const CurrentFeedInUse: React.FC<CurrentFeedInUseProps> = ({
   const [isDetailsOpen, setIsDetailsOpen] = useState(false);
   const [isChangeFeedOpen, setIsChangeFeedOpen] = useState(false);
   const [isConfirmationOpen, setIsConfirmationOpen] = useState(false);
+  const [isEarlyChangeWarningOpen, setIsEarlyChangeWarningOpen] =
+    useState(false);
   const [selectedFeedProductId, setSelectedFeedProductId] =
     useState<string>("");
   const [switchReason, setSwitchReason] = useState<string>("");
@@ -110,8 +112,24 @@ export const CurrentFeedInUse: React.FC<CurrentFeedInUseProps> = ({
     return null;
   };
 
+  // Check if user needs early feed change warning
+  const getEarlyChangeWarning = () => {
+    if (!feedInfo?.days_on_feed || !feedInfo?.age_range_end) return null;
+
+    if (feedInfo.days_on_feed < feedInfo.age_range_end) {
+      return `You have only been using this feed for ${feedInfo.days_on_feed} days, which is less than the recommended age range of ${feedInfo.age_range_end} days. Are you sure you want to change feeds early?`;
+    }
+
+    return null;
+  };
+
   const handleChangeFeed = () => {
-    setIsChangeFeedOpen(true);
+    // Check if user is trying to change feed early
+    if (getEarlyChangeWarning()) {
+      setIsEarlyChangeWarningOpen(true);
+    } else {
+      setIsChangeFeedOpen(true);
+    }
   };
 
   const handleInitialConfirm = () => {
@@ -155,8 +173,14 @@ export const CurrentFeedInUse: React.FC<CurrentFeedInUseProps> = ({
   const handleCancelChange = () => {
     setIsChangeFeedOpen(false);
     setIsConfirmationOpen(false);
+    setIsEarlyChangeWarningOpen(false);
     setSelectedFeedProductId("");
     setSwitchReason("");
+  };
+
+  const handleEarlyChangeConfirm = () => {
+    setIsEarlyChangeWarningOpen(false);
+    setIsChangeFeedOpen(true);
   };
 
   const feedStageColorClass = feedInfo?.feed_stage
@@ -292,11 +316,18 @@ export const CurrentFeedInUse: React.FC<CurrentFeedInUseProps> = ({
             <Button
               variant="outline"
               size="sm"
-              className="flex-1 font-medium text-xs"
+              className={`flex-1 font-medium text-xs ${
+                getEarlyChangeWarning()
+                  ? "border-amber-300 text-amber-700 hover:bg-amber-50"
+                  : ""
+              }`}
               onClick={handleChangeFeed}
             >
               <RotateCcw className="h-4 w-4 mr-1" />
               Change Feed
+              {getEarlyChangeWarning() && (
+                <AlertTriangle className="h-3 w-3 ml-1 text-amber-600" />
+              )}
             </Button>
           </div>
         </div>
@@ -599,6 +630,46 @@ export const CurrentFeedInUse: React.FC<CurrentFeedInUseProps> = ({
               {createFeedProgramMutation.isPending
                 ? "Changing Feed..."
                 : "Yes, Change Feed"}
+            </Button>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      {/* Early Change Warning Dialog */}
+      <AlertDialog
+        open={isEarlyChangeWarningOpen}
+        onOpenChange={setIsEarlyChangeWarningOpen}
+      >
+        <AlertDialogContent className="max-w-md">
+          <AlertDialogHeader>
+            <AlertDialogTitle className="flex items-center gap-2">
+              <AlertTriangle className="h-5 w-5 text-amber-600" />
+              Early Feed Change Warning
+            </AlertDialogTitle>
+            <AlertDialogDescription>
+              {getEarlyChangeWarning()}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+
+          <div className="space-y-3">
+            <div className="p-3 border border-amber-200 bg-amber-50 rounded-md">
+              <p className="text-sm text-amber-700">
+                <strong>Consider:</strong> Changing feeds before the recommended
+                age range may affect your animals' growth and performance. Make
+                sure this change is necessary.
+              </p>
+            </div>
+          </div>
+
+          <AlertDialogFooter>
+            <Button variant="outline" onClick={handleCancelChange}>
+              Cancel
+            </Button>
+            <Button
+              onClick={handleEarlyChangeConfirm}
+              className="bg-amber-600 hover:bg-amber-700"
+            >
+              Continue Anyway
             </Button>
           </AlertDialogFooter>
         </AlertDialogContent>
