@@ -24,10 +24,9 @@ interface HealthStatusIndicatorProps {
 }
 
 const getHealthStatus = (stats: any): HealthIndicator => {
-  const performanceIndex = stats.performanceIndex;
   const mortalityRate = stats.mortalityRate;
 
-  if (performanceIndex >= 85 && mortalityRate < 2) {
+  if (mortalityRate < 2) {
     return {
       status: "normal",
       label: "Healthy",
@@ -36,7 +35,7 @@ const getHealthStatus = (stats: any): HealthIndicator => {
         <ShieldCheck className="h-4 w-4 text-green-600" strokeWidth={2.5} />
       ),
     };
-  } else if (performanceIndex >= 70 || mortalityRate < 5) {
+  } else if (mortalityRate < 5) {
     return {
       status: "watch",
       label: "Monitor",
@@ -45,7 +44,7 @@ const getHealthStatus = (stats: any): HealthIndicator => {
         <ShieldAlert className="h-4 w-4 text-yellow-600" strokeWidth={2.5} />
       ),
     };
-  } else if (performanceIndex >= 50 || mortalityRate < 8) {
+  } else if (mortalityRate < 8) {
     return {
       status: "warning",
       label: "Warning",

@@ -5,14 +5,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import {
-  Circle,
-  Egg,
-  Files,
-  Skull,
-  TrendingUpDown,
-  Weight,
-} from "lucide-react";
+import { Circle, Egg, Files, Skull, Weight } from "lucide-react";
 import {
   CartesianGrid,
   Legend,
@@ -61,7 +54,7 @@ export const DetailViewDialog = ({
 
         <div className="space-y-4">
           {/* Summary Stats */}
-          <div className="grid grid-cols-2 gap-2">
+          <div className="grid grid-cols-3 gap-2">
             <div className="text-center p-2 border rounded-md">
               <div className="flex items-center justify-center gap-1">
                 <Files className="size-4 text-blue-600" strokeWidth={3} />
@@ -99,20 +92,6 @@ export const DetailViewDialog = ({
               </div>
               <p className="text-xs text-muted-foreground font-medium">
                 Mortality Rate
-              </p>
-            </div>
-            <div className="text-center p-2 border rounded-md">
-              <div className="flex items-center justify-center gap-1">
-                <TrendingUpDown
-                  className="size-4 text-green-600"
-                  strokeWidth={3}
-                />
-                <p className="text-xl font-display font-medium">
-                  {stats.performanceIndex}
-                </p>
-              </div>
-              <p className="text-xs text-muted-foreground font-medium">
-                Performance Index
               </p>
             </div>
           </div>

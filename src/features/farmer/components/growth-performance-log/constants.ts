@@ -35,11 +35,11 @@ export interface PerformanceStats {
   totalRecords: number;
   averageWeight: number;
   averageEggProduction: number;
-  currentFcr: number;
+  currentFcr?: number; // Optional - removed from UI
   growthRate: number; // kg per day or percentage
   productionRate: number; // eggs per bird per day
   mortalityRate: number; // percentage
-  performanceIndex: number; // overall score 0-100
+  performanceIndex?: number; // Optional - removed from UI
 }
 
 // Mock data for broiler performance
@@ -126,13 +126,6 @@ export const MOCK_LAYER_RECORDS: PerformanceRecord[] = [
     notes: "Peak performance maintained",
   },
 ];
-
-export const PERFORMANCE_THRESHOLDS = {
-  EXCELLENT: 90,
-  GOOD: 75,
-  AVERAGE: 60,
-  POOR: 40,
-} as const;
 
 export const PERFORMANCE_COLORS = {
   EXCELLENT: "text-green-600 bg-green-100 border-green-200",
