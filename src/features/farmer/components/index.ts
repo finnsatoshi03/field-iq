@@ -1,3 +1,4 @@
+export { AgeRangeWarning } from "./age-range-warning";
 export { CurrentFeedInUse } from "./current-feed-in-use";
 export { FeedIntakeBehavior } from "./feed-intake-behavior";
 export { FeedProductSelector } from "./feed-product-selector";

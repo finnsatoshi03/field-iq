@@ -20,7 +20,7 @@ const transformApiDataToRecords = (
     (record, index) => ({
       id: index.toString(),
       date: record.date,
-      ageInDays: parseInt(record.day.replace("Day ", "")),
+      ageInDays: record.day ? parseInt(record.day.replace("Day ", "")) : 0,
       measurements: {
         weight: record.actual_weight,
         feedIntake: undefined, // Not available in API

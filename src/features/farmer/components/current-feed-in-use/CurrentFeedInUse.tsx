@@ -101,17 +101,6 @@ export const CurrentFeedInUse: React.FC<CurrentFeedInUseProps> = ({
       .replace(/\b\w/g, (letter) => letter.toUpperCase());
   };
 
-  // Check if user needs age range warning
-  const getAgeRangeWarning = () => {
-    if (!feedInfo?.days_on_feed || !feedInfo?.age_range_end) return null;
-
-    if (feedInfo.days_on_feed > feedInfo.age_range_end) {
-      return `Warning: You have been using this feed for ${feedInfo.days_on_feed} days, which exceeds the recommended age range of ${feedInfo.age_range_end} days.`;
-    }
-
-    return null;
-  };
-
   // Check if user needs early feed change warning
   const getEarlyChangeWarning = () => {
     if (!feedInfo?.days_on_feed || !feedInfo?.age_range_end) return null;
@@ -445,21 +434,6 @@ export const CurrentFeedInUse: React.FC<CurrentFeedInUseProps> = ({
           </AlertDialogHeader>
 
           <div className="space-y-4">
-            {/* Age Range Warning */}
-            {getAgeRangeWarning() && (
-              <div className="flex items-start gap-3 p-3 border border-amber-200 bg-amber-50 rounded-md">
-                <AlertTriangle className="h-5 w-5 text-amber-600 flex-shrink-0 mt-0.5" />
-                <div>
-                  <p className="text-sm font-medium text-amber-800 mb-1">
-                    Feed Usage Alert
-                  </p>
-                  <p className="text-sm text-amber-700">
-                    {getAgeRangeWarning()}
-                  </p>
-                </div>
-              </div>
-            )}
-
             {/* Current Feed Info */}
             <div className="p-4 border rounded-md bg-muted/50">
               <h4 className="font-medium text-sm mb-2">Current Feed</h4>
@@ -596,16 +570,6 @@ export const CurrentFeedInUse: React.FC<CurrentFeedInUseProps> = ({
                 better recommendations.
               </p>
             </div>
-
-            {/* Age Range Warning in confirmation */}
-            {getAgeRangeWarning() && (
-              <div className="p-3 border border-amber-200 bg-amber-50 rounded-md">
-                <p className="text-xs font-medium text-amber-800 mb-1">
-                  Current Feed Usage Alert
-                </p>
-                <p className="text-xs text-amber-700">{getAgeRangeWarning()}</p>
-              </div>
-            )}
           </div>
 
           <AlertDialogFooter>

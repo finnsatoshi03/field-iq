@@ -4,6 +4,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { RefreshCw } from "lucide-react";
 
 import {
+  AgeRangeWarning,
   CurrentFeedInUse,
   FeedIntakeBehavior,
   FeedProgramManager,
@@ -72,6 +73,7 @@ function FarmerDashboard() {
 
       {/* Persistent Onboarding Overlay */}
       <FeedProgramManager farmerUserProfileId={farmerUserProfileId} />
+      <AgeRangeWarning farmerUserProfileId={farmerUserProfileId} />
     </div>
   );
 }

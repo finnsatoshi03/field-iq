@@ -1,14 +1,14 @@
 import {
+  type AnimalType,
   type PerformanceRecord,
   type PerformanceStats,
-  type AnimalType,
   ANIMAL_TYPES,
   PERFORMANCE_THRESHOLDS,
 } from "./constants";
 
 export const calculateFCR = (
   feedIntake: number,
-  weightGain: number
+  weightGain: number,
 ): number => {
   if (weightGain <= 0) return 0;
   return parseFloat((feedIntake / weightGain).toFixed(2));
@@ -18,7 +18,7 @@ export const calculateGrowthRate = (records: PerformanceRecord[]): number => {
   if (records.length < 2) return 0;
 
   const sorted = records.sort(
-    (a, b) => new Date(a.date).getTime() - new Date(b.date).getTime()
+    (a, b) => new Date(a.date).getTime() - new Date(b.date).getTime(),
   );
   const first = sorted[0];
   const last = sorted[sorted.length - 1];
@@ -33,7 +33,7 @@ export const calculateGrowthRate = (records: PerformanceRecord[]): number => {
 
 export const calculateProductionRate = (
   records: PerformanceRecord[],
-  flockSize: number = 100
+  flockSize: number = 100,
 ): number => {
   if (records.length === 0) return 0;
 
@@ -47,7 +47,7 @@ export const calculateProductionRate = (
 
 export const calculateMortalityRate = (
   records: PerformanceRecord[],
-  initialFlockSize: number = 1000
+  initialFlockSize: number = 1000,
 ): number => {
   const totalMortality = records.reduce((sum, record) => {
     return sum + (record.measurements.mortality || 0);
@@ -62,7 +62,7 @@ export const calculatePerformanceIndex = (
   expectedWeight?: number,
   productionRate?: number,
   fcr?: number,
-  mortalityRate?: number
+  mortalityRate?: number,
 ): number => {
   let score = 0;
   let factors = 0;
@@ -126,7 +126,7 @@ export const formatEggProduction = (eggs: number): string => {
 };
 
 export const formatFCR = (fcr: number): string => {
-  return fcr.toFixed(2);
+  return fcr?.toFixed(2);
 };
 
 export const formatGrowthRate = (rate: number): string => {
@@ -143,7 +143,7 @@ export const formatMortalityRate = (rate: number): string => {
 
 export const generateChartData = (
   records: PerformanceRecord[],
-  measurementType: "weight" | "eggProduction"
+  measurementType: "weight" | "eggProduction",
 ) => {
   return records
     .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime())
@@ -163,7 +163,7 @@ export const generateChartData = (
 };
 
 export const getLatestRecord = (
-  records: PerformanceRecord[]
+  records: PerformanceRecord[],
 ): PerformanceRecord | null => {
   if (records.length === 0) return null;
 
@@ -174,7 +174,7 @@ export const getLatestRecord = (
 
 export const calculateStats = (
   records: PerformanceRecord[],
-  animalType: AnimalType
+  animalType: AnimalType,
 ): PerformanceStats => {
   if (records.length === 0) {
     return {
@@ -207,7 +207,7 @@ export const calculateStats = (
     latest?.expectedWeight,
     productionRate,
     currentFcr,
-    mortalityRate
+    mortalityRate,
   );
 
   return {
