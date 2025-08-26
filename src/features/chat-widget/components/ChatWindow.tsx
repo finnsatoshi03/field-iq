@@ -39,6 +39,25 @@ const chatWindowVariants = {
   },
 };
 
+const sizeVariants = {
+  compact: {
+    width: "24rem",
+    maxHeight: "75vh",
+    transition: {
+      duration: 0.3,
+      ease: "easeInOut" as const,
+    },
+  },
+  expanded: {
+    width: "32rem",
+    maxHeight: "85vh",
+    transition: {
+      duration: 0.3,
+      ease: "easeInOut" as const,
+    },
+  },
+};
+
 interface ChatWindowProps {
   isOpen: boolean;
   onClose: () => void;
@@ -233,9 +252,7 @@ export const ChatWindow = ({ isOpen, onClose }: ChatWindowProps) => {
             // Responsive positioning and sizing
             bottom: "5rem", // 20 in Tailwind
             right: "1rem", // 4 in Tailwind
-            width: isExpanded ? "32rem" : "24rem", // 512px : 384px
             maxWidth: "calc(100vw - 2rem)",
-            maxHeight: isExpanded ? "85vh" : "75vh",
             // Mobile-specific adjustments
             ...(window.innerWidth < 768 && {
               bottom: "1rem",
@@ -245,68 +262,69 @@ export const ChatWindow = ({ isOpen, onClose }: ChatWindowProps) => {
               maxWidth: "none",
             }),
           }}
-          transition={{
-            width: {
-              duration: 0.3,
-              ease: "easeInOut",
-            },
-            maxHeight: {
-              duration: 0.3,
-              ease: "easeInOut",
-            },
-          }}
         >
-          {/* Header */}
-          <div className="flex justify-between gap-8 p-4 border-b border-gray-100">
-            <div className="flex gap-3">
-              {headerInfo.showBack && (
+          {/* Animated size container */}
+          <motion.div
+            variants={sizeVariants}
+            animate={isExpanded ? "expanded" : "compact"}
+            className="flex flex-col"
+            style={{
+              width: "100%",
+              height: "100%",
+            }}
+          >
+            {/* Header */}
+            <div className="flex justify-between gap-8 p-4 border-b border-gray-100">
+              <div className="flex gap-3">
+                {headerInfo.showBack && (
+                  <button
+                    onClick={handleBackToWelcome}
+                    className="text-gray-600 hover:text-gray-800 p-1 h-fit rounded hover:bg-gray-100 transition-colors"
+                    aria-label="Go back"
+                  >
+                    <ArrowLeft className="size-4" />
+                  </button>
+                )}
+                <div className="flex-1">
+                  <h3 className="font-display leading-none font-semibold text-gray-800 text-lg">
+                    {headerInfo.title}
+                  </h3>
+                  <p className="text-sm text-gray-600">
+                    {headerInfo.description}
+                  </p>
+                </div>
+              </div>
+              <div className="flex items-center h-fit gap-2">
+                {/* Only show expand/minimize button on desktop */}
                 <button
-                  onClick={handleBackToWelcome}
-                  className="text-gray-600 hover:text-gray-800 p-1 h-fit rounded hover:bg-gray-100 transition-colors"
-                  aria-label="Go back"
+                  onClick={handleToggleSize}
+                  className="hidden md:block text-gray-400 hover:text-gray-600 p-1 rounded hover:bg-gray-100 transition-colors"
+                  aria-label={isExpanded ? "Shrink chat" : "Expand chat"}
                 >
-                  <ArrowLeft className="size-4" />
+                  <motion.div
+                    animate={{ rotate: isExpanded ? 180 : 0 }}
+                    transition={{ duration: 0.2 }}
+                  >
+                    {isExpanded ? (
+                      <Minimize2 className="size-4" />
+                    ) : (
+                      <Maximize2 className="size-4" />
+                    )}
+                  </motion.div>
                 </button>
-              )}
-              <div className="flex-1">
-                <h3 className="font-display leading-none font-semibold text-gray-800 text-lg">
-                  {headerInfo.title}
-                </h3>
-                <p className="text-sm text-gray-600">
-                  {headerInfo.description}
-                </p>
+                <button
+                  onClick={handleClose}
+                  className="text-gray-400 hover:text-gray-600 p-1 rounded hover:bg-gray-100 transition-colors"
+                  aria-label="Close chat"
+                >
+                  <X className="size-4" />
+                </button>
               </div>
             </div>
-            <div className="flex items-center h-fit gap-2">
-              {/* Only show expand/minimize button on desktop */}
-              <button
-                onClick={handleToggleSize}
-                className="hidden md:block text-gray-400 hover:text-gray-600 p-1 rounded hover:bg-gray-100 transition-colors"
-                aria-label={isExpanded ? "Shrink chat" : "Expand chat"}
-              >
-                <motion.div
-                  animate={{ rotate: isExpanded ? 180 : 0 }}
-                  transition={{ duration: 0.2 }}
-                >
-                  {isExpanded ? (
-                    <Minimize2 className="size-4" />
-                  ) : (
-                    <Maximize2 className="size-4" />
-                  )}
-                </motion.div>
-              </button>
-              <button
-                onClick={handleClose}
-                className="text-gray-400 hover:text-gray-600 p-1 rounded hover:bg-gray-100 transition-colors"
-                aria-label="Close chat"
-              >
-                <X className="size-4" />
-              </button>
-            </div>
-          </div>
 
-          {/* Stage Content */}
-          <div className="flex-1 min-h-0 pt-4">{renderCurrentStage()}</div>
+            {/* Stage Content */}
+            <div className="flex-1 min-h-0 pt-4">{renderCurrentStage()}</div>
+          </motion.div>
         </motion.div>
       )}
     </AnimatePresence>
