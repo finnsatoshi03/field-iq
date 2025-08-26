@@ -13,7 +13,36 @@ export const getInitialMessage = (
 ): string => {
   // Handle report mode with context
   if (chatMode === "report" && reportContext) {
-    return `I see you've submitted a ${reportContext.reportType.replace("-", " ")} about ${reportContext.reportSubType.replace("-", " ")}. How can I help you with this?`;
+    const reportType = reportContext.reportType.replaceAll("-", " ");
+    const reportSubType = reportContext.reportSubType.replaceAll("-", " ");
+
+    // Format based on report type
+    if (reportType === "report issue sales") {
+      if (reportSubType === "sales rep problems") {
+        return "You've chosen Report Issue → Sales Rep Problems. Let's log the details so I can route it to the right team. What happened?";
+      }
+      if (reportSubType === "product or field issues") {
+        return "You've chosen Report Issue → Product or Field Issues. Let's capture the details so I can help. What's the problem?";
+      }
+      if (reportSubType === "dealer problems") {
+        return "You've chosen Report Issue → Dealer Problems. Let's log the details so I can route it to the right team. What happened?";
+      }
+    }
+
+    if (reportType === "report sales") {
+      if (reportSubType === "sales report") {
+        return "You've chosen Log Performance → Sales Report. Let's record the details. Share the following information: farm name, product, amount ordered, and date of transaction.";
+      }
+      if (reportSubType === "daily sales") {
+        return "You've chosen Log Performance → Sales Report. Let's record the details. Share the following information: farm name, product, amount ordered, and date of transaction.";
+      }
+      if (reportSubType === "farm visit") {
+        return "You've chosen Log Performance → Farm Visit. Let's log the details. Share the following information: farm name, product, visit date and status.";
+      }
+    }
+
+    // Default report message
+    return `You've chosen ${reportType} → ${reportSubType}. How can I help you with this?`;
   }
 
   // Handle quick chat mode
