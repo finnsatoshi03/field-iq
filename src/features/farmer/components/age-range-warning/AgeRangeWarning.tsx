@@ -35,7 +35,7 @@ export const AgeRangeWarning: React.FC<AgeRangeWarningProps> = ({
   const [isConfirmationOpen, setIsConfirmationOpen] = useState(false);
   const [selectedFeedProductId, setSelectedFeedProductId] =
     useState<string>("");
-  const [switchReason, setSwitchReason] = useState<string>("");
+  const [notes, setNotes] = useState<string>("");
 
   // Fetch farmer_v2 data
   const { data: activeFeedProduct } = useActiveFeedProduct(farmerUserProfileId);
@@ -48,7 +48,7 @@ export const AgeRangeWarning: React.FC<AgeRangeWarningProps> = ({
       setIsChangeFeedOpen(false);
       setIsConfirmationOpen(false);
       setSelectedFeedProductId("");
-      setSwitchReason("");
+      setNotes("");
 
       // Invalidate and refetch active feed program for this farmer
       queryClient.invalidateQueries({
@@ -126,16 +126,11 @@ export const AgeRangeWarning: React.FC<AgeRangeWarningProps> = ({
     const feedProductId = parseInt(selectedFeedProductId);
     const currentAnimalQuantity = activeFeedProgram?.data?.animal_quantity || 1;
 
-    if (!switchReason.trim()) {
-      toast.error("Please provide a reason for switching feeds");
-      return;
-    }
-
     createFeedProgramMutation.mutate({
       farmer_user_profile_id: farmerUserProfileId,
       feed_product_id: feedProductId,
       animal_quantity: currentAnimalQuantity,
-      switch_reason: switchReason.trim(),
+      notes: notes.trim() || undefined,
     });
   };
 
@@ -143,7 +138,7 @@ export const AgeRangeWarning: React.FC<AgeRangeWarningProps> = ({
     setIsChangeFeedOpen(false);
     setIsConfirmationOpen(false);
     setSelectedFeedProductId("");
-    setSwitchReason("");
+    setNotes("");
   };
 
   const feedStageColorClass = feedInfo?.feed_stage
@@ -169,7 +164,7 @@ export const AgeRangeWarning: React.FC<AgeRangeWarningProps> = ({
           setIsOpen(open);
           if (open) {
             setSelectedFeedProductId("");
-            setSwitchReason("");
+            setNotes("");
           }
         }}
       >
@@ -374,25 +369,27 @@ export const AgeRangeWarning: React.FC<AgeRangeWarningProps> = ({
               </div>
             )}
 
-            {/* Switch Reason Input */}
+            {/* Notes Input (Optional) */}
             <div className="space-y-2">
               <label
-                htmlFor="switchReason"
+                htmlFor="notes"
                 className="block text-sm font-medium text-foreground"
               >
-                Reason for Feed Change <span className="text-red-500">*</span>
+                Additional Notes{" "}
+                <span className="text-muted-foreground text-xs">
+                  (Optional)
+                </span>
               </label>
               <textarea
-                id="switchReason"
-                value={switchReason}
-                onChange={(e) => setSwitchReason(e.target.value)}
-                placeholder="Please explain why you're changing to this feed (e.g., better FCR, recommendation from nutritionist, cost optimization, etc.)"
-                className="w-full min-h-20 p-3 border border-input rounded-md focus:outline-none focus:ring-2 focus:ring-ring focus:border-transparent"
+                id="notes"
+                value={notes}
+                onChange={(e) => setNotes(e.target.value)}
+                placeholder="Add any notes about this feed change (e.g., observations, recommendations, etc.)"
+                className="w-full min-h-20 p-3 border border-input rounded-md focus:outline-none focus:ring-2 focus:ring-ring focus:border-transparent resize-none"
                 rows={3}
               />
               <p className="text-xs text-muted-foreground">
-                This information helps us track feed performance and provide
-                better recommendations.
+                Optional notes to help track your feed management decisions.
               </p>
             </div>
           </div>
@@ -403,7 +400,7 @@ export const AgeRangeWarning: React.FC<AgeRangeWarningProps> = ({
               onClick={() => {
                 setIsConfirmationOpen(false);
                 setIsChangeFeedOpen(true); // Go back to feed selection
-                setSwitchReason(""); // Reset switch reason
+                setNotes(""); // Reset notes
               }}
               disabled={createFeedProgramMutation.isPending}
             >
@@ -411,9 +408,7 @@ export const AgeRangeWarning: React.FC<AgeRangeWarningProps> = ({
             </Button>
             <Button
               onClick={handleFinalConfirmation}
-              disabled={
-                createFeedProgramMutation.isPending || !switchReason.trim()
-              }
+              disabled={createFeedProgramMutation.isPending}
               className="bg-red-600 hover:bg-red-700"
             >
               {createFeedProgramMutation.isPending

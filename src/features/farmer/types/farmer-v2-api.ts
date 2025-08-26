@@ -23,6 +23,7 @@ export interface CreateFeedProgramRequest {
   feed_product_id: number;
   animal_quantity: number;
   switch_reason?: string;
+  notes?: string;
 }
 
 export interface CreateFeedProgramResponse {
