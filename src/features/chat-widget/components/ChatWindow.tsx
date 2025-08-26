@@ -228,13 +228,6 @@ export const ChatWindow = ({ isOpen, onClose }: ChatWindowProps) => {
           initial="hidden"
           animate="visible"
           exit="exit"
-          layout
-          transition={{
-            layout: {
-              duration: 0.3,
-              ease: "easeInOut",
-            },
-          }}
           className="fixed bg-white rounded-lg shadow-xl z-40 flex flex-col"
           style={{
             // Responsive positioning and sizing
@@ -251,6 +244,16 @@ export const ChatWindow = ({ isOpen, onClose }: ChatWindowProps) => {
               width: "auto",
               maxWidth: "none",
             }),
+          }}
+          transition={{
+            width: {
+              duration: 0.3,
+              ease: "easeInOut",
+            },
+            maxHeight: {
+              duration: 0.3,
+              ease: "easeInOut",
+            },
           }}
         >
           {/* Header */}
@@ -303,7 +306,7 @@ export const ChatWindow = ({ isOpen, onClose }: ChatWindowProps) => {
           </div>
 
           {/* Stage Content */}
-          <div className="flex-1 min-h-0">{renderCurrentStage()}</div>
+          <div className="flex-1 min-h-0 pt-4">{renderCurrentStage()}</div>
         </motion.div>
       )}
     </AnimatePresence>

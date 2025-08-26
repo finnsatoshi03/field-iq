@@ -184,110 +184,90 @@ export const SUGGESTED_CHAT_OPTIONS = {
       {
         id: "dealer-contract",
         label: "Sales rep didn't sign contract",
-        emoji: "📝",
       },
       {
         id: "client-meeting",
         label: "Had meeting with client",
-        emoji: "🤝",
       },
       {
         id: "territory-visit",
         label: "Visited new territory",
-        emoji: "🗺️",
       },
       {
         id: "sales-target",
         label: "Met/fell short of daily target",
-        emoji: "🎯",
       },
     ],
     "weekly-sales": [
       {
         id: "weekly-performance",
         label: "Weekly performance summary",
-        emoji: "📊",
       },
       {
         id: "top-clients",
         label: "Top performing clients this week",
-        emoji: "⭐",
       },
       {
         id: "challenges-faced",
         label: "Challenges faced this week",
-        emoji: "⚠️",
       },
       {
         id: "next-week-plan",
         label: "Plans for next week",
-        emoji: "📅",
       },
     ],
     "client-visit": [
       {
         id: "visit-outcome",
         label: "Client visit outcome",
-        emoji: "✅",
       },
       {
         id: "client-feedback",
         label: "Client provided feedback",
-        emoji: "💬",
       },
       {
         id: "follow-up-needed",
         label: "Follow-up actions needed",
-        emoji: "📞",
       },
       {
         id: "sales-opportunities",
         label: "New sales opportunities identified",
-        emoji: "💰",
       },
     ],
     "territory-update": [
       {
         id: "territory-changes",
         label: "Changes in territory",
-        emoji: "🗺️",
       },
       {
         id: "market-trends",
         label: "Market trends observed",
-        emoji: "📈",
       },
       {
         id: "competition-update",
         label: "Competitor activities",
-        emoji: "👥",
       },
       {
         id: "territory-potential",
         label: "Territory potential assessment",
-        emoji: "🚀",
       },
     ],
     "other-sales": [
       {
         id: "general-update",
         label: "General sales update",
-        emoji: "📝",
       },
       {
         id: "special-circumstances",
         label: "Special circumstances to note",
-        emoji: "⚠️",
       },
       {
         id: "training-needed",
         label: "Training or support needed",
-        emoji: "📚",
       },
       {
         id: "equipment-issues",
         label: "Equipment or technical issues",
-        emoji: "🔧",
       },
     ],
   },
@@ -295,67 +275,55 @@ export const SUGGESTED_CHAT_OPTIONS = {
     "dealer-problems": [
       {
         id: "dealer-complaint",
-        label: "Sales rep filed complaint",
-        emoji: "😤",
+        label: "Filed complaint",
       },
       {
         id: "dealer-dissatisfaction",
-        label: "Sales rep expressed dissatisfaction",
-        emoji: "😞",
+        label: "Report issue",
       },
       {
         id: "dealer-request",
-        label: "Sales rep made special request",
-        emoji: "🙏",
+        label: "Special request",
       },
       {
         id: "dealer-feedback",
-        label: "Sales rep provided feedback",
-        emoji: "💬",
+        label: "Provide feedback",
       },
     ],
     "product-or-field-issues": [
       {
         id: "product-problem",
-        label: "Product malfunction reported",
-        emoji: "🔧",
+        label: "Report product issue",
       },
       {
         id: "field-issue",
-        label: "Field-related problem",
-        emoji: "🌾",
+        label: "Report field concern",
       },
       {
         id: "quality-issue",
-        label: "Quality control issue",
-        emoji: "⚠️",
+        label: "Log quality issue",
       },
       {
         id: "delivery-problem",
-        label: "Delivery or logistics issue",
-        emoji: "🚚",
+        label: "Log delivery issue",
       },
     ],
     "other-sales": [
       {
         id: "general-issue",
         label: "General issue to report",
-        emoji: "📝",
       },
       {
         id: "urgent-matter",
         label: "Urgent matter requiring attention",
-        emoji: "🚨",
       },
       {
         id: "safety-concern",
         label: "Safety concern",
-        emoji: "🛡️",
       },
       {
         id: "compliance-issue",
         label: "Compliance or regulatory issue",
-        emoji: "📋",
       },
     ],
   },
@@ -365,88 +333,72 @@ export const SUGGESTED_CHAT_OPTIONS = {
       {
         id: "sick-birds",
         label: "Birds showing signs of illness",
-        emoji: "🏥",
       },
       {
         id: "mortality-increase",
         label: "Increased mortality rate",
-        emoji: "💀",
       },
       {
         id: "behavior-changes",
         label: "Unusual bird behavior",
-        emoji: "🤔",
       },
       {
         id: "disease-symptoms",
         label: "Disease symptoms observed",
-        emoji: "🦠",
       },
     ],
     "feed-issue": [
       {
         id: "feed-quality",
         label: "Feed quality concerns",
-        emoji: "🌾",
       },
       {
         id: "consumption-drop",
         label: "Reduced feed consumption",
-        emoji: "📉",
       },
       {
         id: "feed-wastage",
         label: "Excessive feed wastage",
-        emoji: "🗑️",
       },
       {
         id: "nutrition-problem",
         label: "Nutrition-related issues",
-        emoji: "🥗",
       },
     ],
     "equipment-issue": [
       {
         id: "equipment-breakdown",
         label: "Equipment malfunction",
-        emoji: "🔧",
       },
       {
         id: "system-failure",
         label: "System or automation failure",
-        emoji: "⚙️",
       },
       {
         id: "maintenance-needed",
         label: "Maintenance required",
-        emoji: "🔨",
       },
       {
         id: "safety-equipment",
         label: "Safety equipment issue",
-        emoji: "🛡️",
       },
     ],
     "other-issue": [
       {
         id: "environmental-concern",
         label: "Environmental concern",
-        emoji: "🌍",
       },
       {
         id: "weather-impact",
         label: "Weather-related problem",
-        emoji: "🌦️",
       },
       {
         id: "infrastructure-issue",
         label: "Infrastructure problem",
-        emoji: "🏗️",
       },
       {
         id: "general-problem",
         label: "Other general problem",
-        emoji: "⚠️",
       },
     ],
   },
@@ -456,110 +408,90 @@ export const SUGGESTED_CHAT_OPTIONS = {
       {
         id: "daily-eggs",
         label: "Daily egg count recorded",
-        emoji: "🥚",
       },
       {
         id: "production-drop",
         label: "Egg production decreased",
-        emoji: "📉",
       },
       {
         id: "quality-issues",
         label: "Egg quality problems",
-        emoji: "🔍",
       },
       {
         id: "production-peak",
         label: "Peak production period",
-        emoji: "📈",
       },
     ],
     "feed-consumption": [
       {
         id: "daily-consumption",
         label: "Daily feed consumption",
-        emoji: "📊",
       },
       {
         id: "consumption-change",
         label: "Feed consumption pattern change",
-        emoji: "🔄",
       },
       {
         id: "efficiency-metric",
         label: "Feed conversion efficiency",
-        emoji: "⚡",
       },
       {
         id: "cost-analysis",
         label: "Feed cost analysis",
-        emoji: "💰",
       },
     ],
     "flock-mortality": [
       {
         id: "mortality-rate",
         label: "Mortality rate recorded",
-        emoji: "📋",
       },
       {
         id: "death-causes",
         label: "Death causes identified",
-        emoji: "🔍",
       },
       {
         id: "age-related-losses",
         label: "Age-related mortality",
-        emoji: "⏰",
       },
       {
         id: "prevention-measures",
         label: "Prevention measures taken",
-        emoji: "🛡️",
       },
     ],
     "growth-metrics": [
       {
         id: "weight-gain",
         label: "Weight gain recorded",
-        emoji: "⚖️",
       },
       {
         id: "growth-rate",
         label: "Growth rate measurement",
-        emoji: "📏",
       },
       {
         id: "development-stage",
         label: "Development stage tracking",
-        emoji: "🌱",
       },
       {
         id: "health-indicators",
         label: "Health indicators noted",
-        emoji: "💪",
       },
     ],
     "other-performance": [
       {
         id: "general-observation",
         label: "General flock observation",
-        emoji: "👀",
       },
       {
         id: "behavior-tracking",
         label: "Behavior pattern tracking",
-        emoji: "📝",
       },
       {
         id: "environmental-factors",
         label: "Environmental factors noted",
-        emoji: "🌡️",
       },
       {
         id: "management-action",
         label: "Management action taken",
-        emoji: "👨‍🌾",
       },
     ],
   },
