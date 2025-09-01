@@ -247,12 +247,13 @@ export const ChatWindow = ({ isOpen, onClose }: ChatWindowProps) => {
           initial="hidden"
           animate="visible"
           exit="exit"
-          className="fixed bg-white rounded-lg shadow-xl z-40 flex flex-col"
+          className="fixed bg-white rounded-lg shadow-xl z-40 flex flex-col overflow-hidden"
           style={{
             // Responsive positioning and sizing
             bottom: "5rem", // 20 in Tailwind
             right: "1rem", // 4 in Tailwind
             maxWidth: "calc(100vw - 2rem)",
+            maxHeight: "calc(100vh - 2rem)",
             // Mobile-specific adjustments
             ...(window.innerWidth < 768 && {
               bottom: "1rem",
@@ -260,6 +261,7 @@ export const ChatWindow = ({ isOpen, onClose }: ChatWindowProps) => {
               left: "1rem",
               width: "auto",
               maxWidth: "none",
+              maxHeight: "none",
             }),
           }}
         >
@@ -267,7 +269,7 @@ export const ChatWindow = ({ isOpen, onClose }: ChatWindowProps) => {
           <motion.div
             variants={sizeVariants}
             animate={isExpanded ? "expanded" : "compact"}
-            className="flex flex-col"
+            className="flex flex-col flex-1 min-h-0"
             style={{
               width: "100%",
               height: "100%",
@@ -323,7 +325,9 @@ export const ChatWindow = ({ isOpen, onClose }: ChatWindowProps) => {
             </div>
 
             {/* Stage Content */}
-            <div className="flex-1 min-h-0 pt-4">{renderCurrentStage()}</div>
+            <div className="flex-1 min-h-0 pt-4 flex flex-col">
+              {renderCurrentStage()}
+            </div>
           </motion.div>
         </motion.div>
       )}

@@ -287,7 +287,7 @@ export const SUGGESTED_CHAT_OPTIONS = {
     "dealer-problems": [
       {
         id: "dealer-complaint",
-        label: "Filed complaint",
+        label: "File complaint",
       },
       {
         id: "dealer-dissatisfaction",
