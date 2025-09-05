@@ -84,13 +84,13 @@ export const CHAT_OPTIONS = {
       type: "chat" as const,
       intent: 2,
     },
-    {
-      id: "get-info",
-      label: "Ask if Safe",
-      emoji: "📝",
-      type: "chat" as const,
-      intent: 3,
-    },
+    // {
+    //   id: "get-info",
+    //   label: "Ask if Safe",
+    //   emoji: "📝",
+    //   type: "chat" as const,
+    //   intent: 3,
+    // },
     {
       id: "report-sales",
       label: "Log Farm Performance",
