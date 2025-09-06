@@ -52,7 +52,7 @@ export const CHAT_OPTIONS = {
       label: "Ask Question",
       emoji: "❓",
       type: "chat" as const,
-      intent: 0,
+      intent: 1,
     },
     {
       id: "report-issue-sales",
