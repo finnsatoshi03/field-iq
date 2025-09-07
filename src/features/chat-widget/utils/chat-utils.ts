@@ -153,31 +153,19 @@ const getChatEndpointByRole = (role: UserRole): string => {
   }
 };
 
+export interface AIResponse {
+  message: string;
+  nextAction?: string;
+  logType?: string;
+}
+
 export const getAIResponse = async (
   userMessage: string,
   intent: number,
   userRole: UserRole,
   userId?: number,
   chatId?: number,
-): Promise<string> => {
-  // Simple response logic based on keywords
-
-  // // Handle quick selections
-  // if (message.includes("quick selection:")) {
-  //   const selectionText = message.replace("quick selection:", "").trim();
-  //   return `Thank you for letting me know about ${selectionText}. Based on this information, I recommend monitoring this closely. Would you like specific advice on how to address this?`;
-  // }
-
-  // if (message.includes("feed") || message.includes("nutrition")) {
-  //   return "For optimal chicken nutrition, I recommend a balanced diet with proper protein levels. Could you tell me more about your current feeding schedule?";
-  // }
-  // if (message.includes("egg") || message.includes("production")) {
-  //   return "Egg production depends on several factors including nutrition, lighting, and flock health. What specific concerns do you have about egg production?";
-  // }
-  // if (message.includes("health") || message.includes("sick")) {
-  //   return "Chicken health is crucial for productivity. Are you noticing any specific symptoms in your flock?";
-  // }
-
+): Promise<AIResponse> => {
   // Validate that the user role is allowed to access chat
   if (userRole !== "farmer" && userRole !== "sales_rep") {
     throw new Error(`Chat is not available for role: ${userRole}`);
@@ -202,16 +190,25 @@ export const getAIResponse = async (
 
     const data = await response.json();
 
-    return (
+    // Parse the response to extract next_action and other metadata
+    const responseMessage =
       data.data.response ||
-      "Received a response, but it was not in the expected format."
-    );
+      "Received a response, but it was not in the expected format.";
+    const nextAction = data.data.next_action;
+    const logType = data.data.log_type;
+
+    return {
+      message: responseMessage,
+      nextAction,
+      logType,
+    };
   } catch (error) {
     console.error("Error fetching AI response:", error);
-    return "Sorry I can't answer your question right now. Can you please try again later.";
+    return {
+      message:
+        "Sorry I can't answer your question right now. Can you please try again later.",
+    };
   }
-
-  // return "I understand your concern. Let me help you with that. Could you provide more details so I can give you the most accurate assistance?";
 };
 
 /**
@@ -225,7 +222,7 @@ export const useAIChat = () => {
     userMessage: string,
     intent: number,
     chatId?: number,
-  ): Promise<string> => {
+  ): Promise<AIResponse> => {
     if (!user) {
       throw new Error("User must be authenticated to use chat");
     }

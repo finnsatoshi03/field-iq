@@ -1,5 +1,6 @@
 import { useState } from "react";
-import { useAIChat } from "../utils/chat-utils";
+import { useAIChat, type AIResponse } from "../utils/chat-utils";
+import { useDashboardRefresh } from "./use-dashboard-refresh";
 
 export interface Message {
   id: number;
@@ -11,6 +12,7 @@ export interface Message {
 
 export const useChatMessages = (initialMessage: string) => {
   const { sendMessage } = useAIChat();
+  const { refreshDashboardData } = useDashboardRefresh();
   const [messages, setMessages] = useState<Message[]>([
     {
       id: 1,
@@ -39,34 +41,38 @@ export const useChatMessages = (initialMessage: string) => {
   const sendAIResponse = async (userMessage: string, intent: number) => {
     setIsTyping(true);
 
-    // Simulate AI response with realistic delay
-    // setTimeout(
-    //   async () => {
-    //     setIsTyping(false);
-    //     const response: Message = {
-    //       id: Date.now() + 1,
-    //       message: await getAIResponse(userMessage, intent),
-    //       isUser: false,
-    //       timestamp: new Date(),
-    //       feedback: null,
-    //     };
-    //     setMessages((prev) => [...prev, response]);
-    //   },
-    //   1500 + Math.random() * 1000
-    // ); // Random delay between 1.5-2.5s
+    try {
+      const aiResponse: AIResponse = await sendMessage(userMessage, intent);
 
-    const aiMessage = await sendMessage(userMessage, intent);
+      const response: Message = {
+        id: Date.now() + 1,
+        message: aiResponse.message,
+        isUser: false,
+        timestamp: new Date(),
+        feedback: null,
+      };
 
-    const response: Message = {
-      id: Date.now() + 1,
-      message: aiMessage,
-      isUser: false,
-      timestamp: new Date(),
-      feedback: null,
-    };
+      setIsTyping(false);
+      setMessages((prev) => [...prev, response]);
 
-    setIsTyping(false);
-    setMessages((prev) => [...prev, response]);
+      // Check if log was completed and refresh dashboard data
+      if (aiResponse.nextAction === "log_complete") {
+        console.log("Log completed, refreshing dashboard data...");
+        refreshDashboardData(aiResponse.logType);
+      }
+    } catch (error) {
+      console.error("Error sending AI response:", error);
+      const errorResponse: Message = {
+        id: Date.now() + 1,
+        message: "Sorry, I encountered an error. Please try again.",
+        isUser: false,
+        timestamp: new Date(),
+        feedback: null,
+      };
+
+      setIsTyping(false);
+      setMessages((prev) => [...prev, errorResponse]);
+    }
   };
 
   return {
